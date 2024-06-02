@@ -3,7 +3,7 @@ import mongoose, { ObjectId } from "mongoose";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country {
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, unique: true, required: true })
   name: string;
   @Prop({ type: String })
   description: string;
@@ -15,4 +15,4 @@ export class Country {
 
 const schema = SchemaFactory.createForClass(Country);
 
-export const userSchema = schema;
+export const countrySchema = schema;
