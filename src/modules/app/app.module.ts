@@ -16,6 +16,7 @@ import helmet from "helmet";
 import * as cookieParser from "cookie-parser";
 import { cacheConfig } from "../../config/cache.config";
 import { mongooseConfig } from "../../config/mongoose.config";
+import { CountriesModule } from "../countries/countries.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { mongooseConfig } from "../../config/mongoose.config";
     CacheModule.registerAsync(cacheConfig()),
     UsersModule,
     MailModule,
+    CountriesModule
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },
