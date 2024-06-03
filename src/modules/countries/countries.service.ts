@@ -56,7 +56,7 @@ export class CountriesService {
     user: User,
     file: Express.Multer.File
   ) {
-    const existingCountry = await this.countryModel.findById(id);
+    const existingCountry = await (this as any).countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
@@ -87,7 +87,23 @@ export class CountriesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} country`;
+  async remove(id: string, user: User) {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    if (String(user._id) !== String(existingCountry.createdBy)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(CountriesMessages.CannotRemoveCountry);
+    }
+
+    try {
+      await existingCountry.deleteOne();
+      return CountriesMessages.RemoveCountrySuccess
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 }

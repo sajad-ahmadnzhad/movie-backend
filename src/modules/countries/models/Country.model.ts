@@ -60,4 +60,16 @@ schema.pre("updateOne", async function (next) {
   }
 });
 
+schema.pre("deleteOne", async function (next) {
+  try {
+    const country = await this.model.findOne(this.getFilter());
+
+    removeFile(country.flag_image_URL);
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export const countrySchema = schema;

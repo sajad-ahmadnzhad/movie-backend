@@ -42,3 +42,7 @@ export const UpdateCountryDecorator = applyDecorators(
   ),
   ApiConsumes("multipart/form-data")
 );
+
+export const RemoveCountryDecorator = applyDecorators(
+  UseGuards(AuthGuard , IsAdminGuard)
+)

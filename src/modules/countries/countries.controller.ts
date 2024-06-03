@@ -16,6 +16,7 @@ import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 import {
   CreateCountryDecorator,
+  RemoveCountryDecorator,
   UpdateCountryDecorator,
 } from "../../common/decorators/countries.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
@@ -71,7 +72,13 @@ export class CountriesController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.countriesService.remove(+id);
+  @RemoveCountryDecorator
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ) {
+    const success = await this.countriesService.remove(id, user);
+
+    return { message: success };
   }
 }
