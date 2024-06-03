@@ -28,10 +28,10 @@ import {
   SearchUserDecorator,
   UpdateUserDecorator,
 } from "../../common/decorators/users.decorator";
-import { PaginatedUserList } from "./users.interface";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { Throttle } from "@nestjs/throttler";
+import { PaginatedList } from "../../common/interfaces/public.interface";
 
 @Controller("users")
 @ApiTags("users")
@@ -51,7 +51,7 @@ export class UsersController {
   findAllUsers(
     @Query("page", new ParseIntPipe({ optional: true })) page?: number,
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  ): Promise<PaginatedUserList<User>> {
+  ): Promise<PaginatedList<User>> {
     return this.usersService.findAllUsers(page, limit);
   }
 

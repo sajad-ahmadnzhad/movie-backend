@@ -15,12 +15,12 @@ import {
   cachePagination,
   mongoosePagination,
 } from "../../common/utils/pagination.util";
-import { PaginatedUserList } from "./users.interface";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile, sendError } from "../../common/utils/functions.util";
+import { PaginatedList } from "../../common/interfaces/public.interface";
 
 @Injectable()
 export class UsersService {
@@ -32,7 +32,7 @@ export class UsersService {
   async findAllUsers(
     page?: number,
     limit?: number
-  ): Promise<PaginatedUserList<User>> {
+  ): Promise<PaginatedList<User>> {
     const usersCache: User[] = await this.redisCache.get("users");
 
     if (usersCache) {

@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UploadedFile,
+  Query,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { CountriesService } from "./countries.service";
 import { CreateCountryDto } from "./dto/create-country.dto";
@@ -16,11 +18,13 @@ import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 import {
   CreateCountryDecorator,
+  GetAllCountriesDecorator,
   GetOneCountryDecorator,
   RemoveCountryDecorator,
   UpdateCountryDecorator,
 } from "../../common/decorators/countries.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { Document } from "mongoose";
 
 @Controller("countries")
 @ApiCookieAuth()
@@ -45,13 +49,17 @@ export class CountriesController {
   }
 
   @Get()
-  findAll() {
-    return this.countriesService.findAll();
+  @GetAllCountriesDecorator
+  findAll(
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ) {
+    return this.countriesService.findAll(limit, page);
   }
 
   @Get(":id")
   @GetOneCountryDecorator
-  findOne(@Param("id", IsValidObjectIdPipe) id: string) {
+  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.countriesService.findOne(id);
   }
 
@@ -62,7 +70,7 @@ export class CountriesController {
     @Body() updateCountryDto: UpdateCountryDto,
     @UserDecorator() user: User,
     @UploadedFile() file?: Express.Multer.File
-  ) {
+  ): Promise<{ message: string }> {
     const success = await this.countriesService.update(
       id,
       updateCountryDto,
@@ -78,7 +86,7 @@ export class CountriesController {
   async remove(
     @Param("id", IsValidObjectIdPipe) id: string,
     @UserDecorator() user: User
-  ) {
+  ): Promise<{ message: string }> {
     const success = await this.countriesService.remove(id, user);
 
     return { message: success };

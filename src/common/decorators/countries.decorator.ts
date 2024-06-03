@@ -12,6 +12,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiQuery,
 } from "@nestjs/swagger";
 import { CountriesMessages } from "../enum/countriesMessages.enum";
 
@@ -71,5 +72,13 @@ export const RemoveCountryDecorator = applyDecorators(
 //* Get one country decorator
 export const GetOneCountryDecorator = applyDecorators(
   ApiOperation({ summary: "get one country by id" }),
-  ApiOkResponse({type: Object})
-)
+  ApiOkResponse({ type: Object })
+);
+
+//* Get all countries
+export const GetAllCountriesDecorator = applyDecorators(
+  ApiOperation({ summary: "get one country by id" }),
+  ApiQuery({ name: "page", type: Number, required: false}),
+  ApiQuery({ name: "limit", type: Number, required: false }),
+  ApiOkResponse({ type: [Object] })
+);

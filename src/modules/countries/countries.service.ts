@@ -1,5 +1,6 @@
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -12,11 +13,19 @@ import { InjectModel } from "@nestjs/mongoose";
 import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { RedisCache } from "cache-manager-redis-yet";
+import {
+  cachePagination,
+  mongoosePagination,
+} from "../../common/utils/pagination.util";
+import { PaginatedList } from "../../common/interfaces/public.interface";
 
 @Injectable()
 export class CountriesService {
   constructor(
-    @InjectModel(Country.name) private readonly countryModel: Model<Country>
+    @InjectModel(Country.name) private readonly countryModel: Model<Country>,
+    @Inject(CACHE_MANAGER) private redisCache: RedisCache
   ) {}
 
   async create(
@@ -42,8 +51,30 @@ export class CountriesService {
     }
   }
 
-  findAll() {
-    return this.countryModel.find();
+  async findAll(
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Country>> {
+    const countriesCache =
+      await this.redisCache.get<Array<Country>>("countries");
+
+    if (countriesCache) {
+      return cachePagination(limit, page, countriesCache);
+    }
+
+    const countries = await this.countryModel.find();
+    await this.redisCache.set("countries", countries, 30_000);
+
+    const query = this.countryModel.find();
+
+    const mongoosePaginationResult = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.countryModel
+    );
+
+    return mongoosePaginationResult;
   }
 
   async findOne(id: string): Promise<Document> {
@@ -61,7 +92,7 @@ export class CountriesService {
     updateCountryDto: UpdateCountryDto,
     user: User,
     file: Express.Multer.File
-  ) {
+  ): Promise<string> {
     const existingCountry = await this.countryModel.findById(id);
 
     if (!existingCountry) {
@@ -93,7 +124,7 @@ export class CountriesService {
     }
   }
 
-  async remove(id: string, user: User) {
+  async remove(id: string, user: User): Promise<string> {
     const existingCountry = await this.countryModel.findById(id);
 
     if (!existingCountry) {

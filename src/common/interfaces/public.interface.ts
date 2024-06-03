@@ -1,4 +1,4 @@
-export interface PaginatedUserList<T> {
+export interface PaginatedList<T> {
   count: number;
   page: number;
   pages: number;
