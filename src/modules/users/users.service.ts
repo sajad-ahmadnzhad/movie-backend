@@ -22,6 +22,7 @@ import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
+import { removeFile, sendError } from "src/common/utils/functions.util";
 
 @Injectable()
 export class UsersService {
@@ -73,9 +74,7 @@ export class UsersService {
   ): Promise<string> {
     let avatarURL: string | undefined = file && saveFile(file, "user-avatar");
 
-    if (avatarURL) {
-      avatarURL = `/uploads/user-avatar/${avatarURL}`;
-    }
+    if (avatarURL) avatarURL = `/uploads/user-avatar/${avatarURL}`;
 
     try {
       await this.usersModel.updateOne(
@@ -85,8 +84,8 @@ export class UsersService {
         }
       );
     } catch (error) {
-      rimrafSync(`${process.cwd()}/public/${avatarURL}`);
-      throw new HttpException(error.message, error.status || 500);
+      removeFile(avatarURL);
+      throw sendError(error.message, error.status);
     }
 
     return UsersMessages.UpdatedSuccess;
