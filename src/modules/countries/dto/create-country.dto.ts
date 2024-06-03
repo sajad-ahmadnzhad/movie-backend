@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 
 export class CreateCountryDto {
   @IsString()
@@ -10,7 +10,7 @@ export class CreateCountryDto {
   @IsString()
   @IsOptional()
   @Length(5, 150)
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false  })
   description?: string;
 
   @ApiProperty({ type: "string", format: "binary", required: false })

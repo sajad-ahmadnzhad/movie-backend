@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
   Inject,
   Injectable,
   NotFoundException,
@@ -12,7 +11,6 @@ import { Model } from "mongoose";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import { UsersMessages } from "../../common/enum/usersMessages.enum";
-import { rimrafSync } from "rimraf";
 import {
   cachePagination,
   mongoosePagination,
@@ -22,7 +20,7 @@ import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
-import { removeFile, sendError } from "src/common/utils/functions.util";
+import { removeFile, sendError } from "../../common/utils/functions.util";
 
 @Injectable()
 export class UsersService {

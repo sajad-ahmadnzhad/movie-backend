@@ -13,6 +13,7 @@ import {
 } from "@nestjs/swagger";
 import { CountriesMessages } from "../enum/countriesMessages.enum";
 
+//* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   UseInterceptors(
@@ -25,6 +26,19 @@ export const CreateCountryDecorator = applyDecorators(
   ApiConsumes("multipart/form-data"),
   ApiOperation({ summary: "create new country" }),
   ApiConflictResponse({ description: CountriesMessages.AlreadyExistsCountry }),
-  ApiOkResponse({ description: CountriesMessages.CreatedSuccess }),
+  ApiOkResponse({ description: CountriesMessages.CreatedCountrySuccess }),
   ApiForbiddenResponse({ description: "Forbidden resource" })
+);
+
+//* Update country decorator
+export const UpdateCountryDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  UseInterceptors(
+    FileInterceptor("countryFlag", {
+      fileFilter,
+      storage: memoryStorage(),
+      limits: { fileSize: 2048 * 1024, files: 1 },
+    })
+  ),
+  ApiConsumes("multipart/form-data")
 );

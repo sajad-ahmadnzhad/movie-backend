@@ -1,13 +1,13 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { Country } from "./models/Country.model";
 import { Model } from "mongoose";
 import { User } from "../users/models/User.model";
 import { InjectModel } from "@nestjs/mongoose";
-import { saveFile } from "src/common/utils/upload-file.util";
-import { removeFile, sendError } from "src/common/utils/functions.util";
-import { CountriesMessages } from "src/common/enum/countriesMessages.enum";
+import { saveFile } from "../../common/utils/upload-file.util";
+import { removeFile, sendError } from "../../common/utils/functions.util";
+import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 
 @Injectable()
 export class CountriesService {
@@ -19,7 +19,7 @@ export class CountriesService {
     createCountryDto: CreateCountryDto,
     user: User,
     file?: Express.Multer.File
-  ) {
+  ): Promise<string> {
     let filePath = file && saveFile(file, "country-flag");
 
     if (file) filePath = `/uploads/country-flag/${filePath}`;
@@ -31,7 +31,7 @@ export class CountriesService {
         flag_image_URL: filePath,
       });
 
-      return CountriesMessages.CreatedSuccess;
+      return CountriesMessages.CreatedCountrySuccess;
     } catch (error) {
       removeFile(filePath);
       throw sendError(error.message, error.status);
@@ -39,15 +39,43 @@ export class CountriesService {
   }
 
   findAll() {
-    return `This action returns all countries`;
+    return this.countryModel.find();
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} country`;
+    return this.countryModel.findById(id);
   }
 
-  update(id: number, updateCountryDto: UpdateCountryDto) {
-    return `This action updates a #${id} country`;
+  async update(
+    id: string,
+    updateCountryDto: UpdateCountryDto,
+    user: User,
+    file: Express.Multer.File
+  ) {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    let filePath = file && saveFile(file, "country-flag");
+
+    if (file) filePath = `/uploads/country-flag/${filePath}`;
+
+    try {
+      await existingCountry.updateOne({
+        $set: {
+          ...updateCountryDto,
+          createdBy: user._id,
+          flag_image_URL: filePath,
+        },
+      });
+
+      return CountriesMessages.UpdatedCountrySuccess;
+    } catch (error) {
+      removeFile(filePath);
+      throw sendError(error.message, error.status);
+    }
   }
 
   remove(id: number) {

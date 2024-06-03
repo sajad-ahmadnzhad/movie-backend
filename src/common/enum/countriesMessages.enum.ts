@@ -1,4 +1,6 @@
 export enum CountriesMessages {
-  CreatedSuccess = "Country created successfully",
+  CreatedCountrySuccess = "Country created successfully",
   AlreadyExistsCountry = "Country with this name already exists",
+  NotFoundCountry = 'Country not found',
+  UpdatedCountrySuccess = 'Country updated successfully'
 }

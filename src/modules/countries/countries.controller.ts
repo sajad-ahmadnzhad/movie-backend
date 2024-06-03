@@ -14,7 +14,11 @@ import { UpdateCountryDto } from "./dto/update-country.dto";
 import { ApiCookieAuth, ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
-import { CreateCountryDecorator } from "src/common/decorators/countries.decorator";
+import {
+  CreateCountryDecorator,
+  UpdateCountryDecorator,
+} from "../../common/decorators/countries.decorator";
+import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 
 @Controller("countries")
 @ApiCookieAuth()
@@ -24,12 +28,18 @@ export class CountriesController {
 
   @Post()
   @CreateCountryDecorator
-  create(
+  async create(
     @Body() createCountryDto: CreateCountryDto,
     @UserDecorator() user: User,
     @UploadedFile() file?: Express.Multer.File
-  ) {
-    return this.countriesService.create(createCountryDto, user, file);
+  ): Promise<{ message: string }> {
+    const success = await this.countriesService.create(
+      createCountryDto,
+      user,
+      file
+    );
+
+    return { message: success };
   }
 
   @Get()
@@ -43,8 +53,21 @@ export class CountriesController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateCountryDto: UpdateCountryDto) {
-    return this.countriesService.update(+id, updateCountryDto);
+  @UpdateCountryDecorator
+  async update(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @Body() updateCountryDto: UpdateCountryDto,
+    @UserDecorator() user: User,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    const success = await this.countriesService.update(
+      id,
+      updateCountryDto,
+      user,
+      file
+    );
+
+    return { message: success };
   }
 
   @Delete(":id")

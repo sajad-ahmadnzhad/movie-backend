@@ -21,7 +21,7 @@ export function fileFilter(
 export function saveFile(file: Express.Multer.File, pathName: string): string {
   const extname = path.extname(file.originalname);
   const filename = file.originalname?.split(".")?.[0];
-  const newFilename = `${Date.now()}${Math.random() * 9999}--${filename}${extname}`;
+  const newFilename = `${Date.now()}${Math.random() * 9999}--${filename.replaceAll(" ", "-")}${extname}`;
 
   const filePath = `${process.cwd()}/public//uploads/${pathName}/${newFilename}`;
   fs.writeFileSync(filePath, file.buffer);

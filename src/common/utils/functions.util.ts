@@ -15,7 +15,9 @@ export const sendError = (
   return new HttpException(message, statusCode);
 };
 
-export const removeFile = (filePath: string): void => {
+export const removeFile = (filePath: string | undefined): void => {
+  if (!filePath) return;
+
   const removeFilePath = path.join(process.cwd(), "public", filePath);
 
   rimrafSync(removeFilePath);
