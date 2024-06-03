@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { Country } from "./models/Country.model";
@@ -56,6 +60,11 @@ export class CountriesService {
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    if (String(user._id) !== String(existingCountry.createdBy)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(CountriesMessages.CannotUpdateCountry);
     }
 
     let filePath = file && saveFile(file, "country-flag");
