@@ -20,7 +20,7 @@ import {
   cachePagination,
   mongoosePagination,
 } from "../../common/utils/pagination.util";
-import { PaginatedList } from "../../common/interfaces/public.interface";
+import { ICreatedBy, PaginatedList } from "../../common/interfaces/public.interface";
 
 @Injectable()
 export class CountriesService {
@@ -88,15 +88,16 @@ export class CountriesService {
     return existingCountry;
   }
 
-  async search(countryQuery: string) {
-
+  search(countryQuery: string): Promise<Array<Document>> {
     if (!countryQuery?.trim()) {
-      throw new BadRequestException(CountriesMessages.RequiredCountryQuery)
+      throw new BadRequestException(CountriesMessages.RequiredCountryQuery);
     }
 
-    const countries = this.countryModel.find({ name: { $regex: countryQuery } })
-    
-    return countries
+    const countries = this.countryModel.find({
+      name: { $regex: countryQuery },
+    });
+
+    return countries;
   }
 
   async update(
@@ -105,13 +106,13 @@ export class CountriesService {
     user: User,
     file: Express.Multer.File
   ): Promise<string> {
-    const existingCountry = await this.countryModel.findById(id);
+    const existingCountry: ICreatedBy<Country> = await this.countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
     }
 
-    if (String(user._id) !== String(existingCountry.createdBy)) {
+    if (String(user._id) !== String(existingCountry.createdBy._id)) {
       if (!user.isSuperAdmin)
         throw new ForbiddenException(CountriesMessages.CannotUpdateCountry);
     }
@@ -137,13 +138,13 @@ export class CountriesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingCountry = await this.countryModel.findById(id);
+    const existingCountry: ICreatedBy<Country> = await this.countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
     }
 
-    if (String(user._id) !== String(existingCountry.createdBy)) {
+    if (String(user._id) !== String(existingCountry.createdBy._id)) {
       if (!user.isSuperAdmin)
         throw new ForbiddenException(CountriesMessages.CannotRemoveCountry);
     }

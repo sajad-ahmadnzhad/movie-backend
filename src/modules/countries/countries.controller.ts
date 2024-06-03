@@ -13,7 +13,7 @@ import {
 import { CountriesService } from "./countries.service";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
-import { ApiCookieAuth, ApiTags } from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 import {
@@ -26,10 +26,11 @@ import {
 } from "../../common/decorators/countries.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
+import { Throttle } from "@nestjs/throttler";
 
 @Controller("countries")
-@ApiCookieAuth()
 @ApiTags("countries")
+@Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
@@ -60,10 +61,8 @@ export class CountriesController {
 
   @Get("search")
   @SearchCountriesDecorator
-  search(
-    @Query('country') country: string
-  ) {
-    return this.countriesService.search(country)
+  search(@Query("country") country: string): Promise<Array<Document>> {
+    return this.countriesService.search(country);
   }
 
   @Get(":id")

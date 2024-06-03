@@ -1,12 +1,12 @@
 import { ConflictException } from "@nestjs/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { ObjectId } from "mongoose";
+import mongoose, { Document, ObjectId } from "mongoose";
 import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
 import { removeFile } from "src/common/utils/functions.util";
 import { User } from "src/modules/users/models/User.model";
 
 @Schema({ versionKey: false, timestamps: true })
-export class Country {
+export class Country extends Document {
   @Prop({
     type: String,
     unique: true,
@@ -73,13 +73,13 @@ schema.pre("deleteOne", async function (next) {
   }
 });
 
-schema.pre(['find', 'findOne'], function (next) {
+schema.pre(["find", "findOne"], function (next) {
   try {
-    this.populate('createdBy' , 'name username avatarURL')
-    next()
+    this.populate("createdBy", "name username avatarURL");
+    next();
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
+});
 
 export const countrySchema = schema;

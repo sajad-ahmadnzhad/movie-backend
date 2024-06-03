@@ -8,6 +8,7 @@ import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiConsumes,
+  ApiCookieAuth,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
@@ -20,6 +21,7 @@ import { CountriesMessages } from "../enum/countriesMessages.enum";
 //* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   UseInterceptors(
     FileInterceptor("countryFlag", {
       fileFilter,
@@ -38,6 +40,7 @@ export const CreateCountryDecorator = applyDecorators(
 //* Update country decorator
 export const UpdateCountryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   UseInterceptors(
     FileInterceptor("countryFlag", {
       fileFilter,
@@ -60,6 +63,7 @@ export const UpdateCountryDecorator = applyDecorators(
 //* Remove country decorator
 export const RemoveCountryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   ApiNotFoundResponse({ description: CountriesMessages.NotFoundCountry }),
   ApiForbiddenResponse({
     description:
@@ -78,7 +82,7 @@ export const GetOneCountryDecorator = applyDecorators(
 
 //* Get all countries
 export const GetAllCountriesDecorator = applyDecorators(
-  ApiOperation({ summary: "get one country by id" }),
+  ApiOperation({ summary: "get all countries" }),
   ApiQuery({ name: "page", type: Number, required: false}),
   ApiQuery({ name: "limit", type: Number, required: false }),
   ApiOkResponse({ type: [Object] })
