@@ -8,6 +8,8 @@ import {
   ApiConflictResponse,
   ApiConsumes,
   ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
 } from "@nestjs/swagger";
@@ -27,6 +29,7 @@ export const CreateCountryDecorator = applyDecorators(
   ApiOperation({ summary: "create new country" }),
   ApiConflictResponse({ description: CountriesMessages.AlreadyExistsCountry }),
   ApiOkResponse({ description: CountriesMessages.CreatedCountrySuccess }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiForbiddenResponse({ description: "Forbidden resource" })
 );
 
@@ -40,9 +43,27 @@ export const UpdateCountryDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, files: 1 },
     })
   ),
-  ApiConsumes("multipart/form-data")
+  ApiConsumes("multipart/form-data"),
+  ApiNotFoundResponse({ description: CountriesMessages.NotFoundCountry }),
+  ApiForbiddenResponse({
+    description:
+      CountriesMessages.CannotUpdateCountry + " | Forbidden resource",
+  }),
+  ApiOkResponse({ description: CountriesMessages.UpdatedCountrySuccess }),
+  ApiConflictResponse({ description: CountriesMessages.AlreadyExistsCountry }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "update country" })
 );
 
+//* Remove country decorator
 export const RemoveCountryDecorator = applyDecorators(
-  UseGuards(AuthGuard , IsAdminGuard)
-)
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiNotFoundResponse({ description: CountriesMessages.NotFoundCountry }),
+  ApiForbiddenResponse({
+    description:
+      CountriesMessages.CannotRemoveCountry + " | Forbidden resource",
+  }),
+  ApiOkResponse({ description: CountriesMessages.RemoveCountrySuccess }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "remove country" })
+);

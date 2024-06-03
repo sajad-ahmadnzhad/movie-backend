@@ -56,7 +56,7 @@ export class CountriesService {
     user: User,
     file: Express.Multer.File
   ) {
-    const existingCountry = await (this as any).countryModel.findById(id);
+    const existingCountry = await this.countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
