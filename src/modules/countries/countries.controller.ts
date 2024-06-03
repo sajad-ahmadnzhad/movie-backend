@@ -21,6 +21,7 @@ import {
   GetAllCountriesDecorator,
   GetOneCountryDecorator,
   RemoveCountryDecorator,
+  SearchCountriesDecorator,
   UpdateCountryDecorator,
 } from "../../common/decorators/countries.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
@@ -55,6 +56,14 @@ export class CountriesController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ) {
     return this.countriesService.findAll(limit, page);
+  }
+
+  @Get("search")
+  @SearchCountriesDecorator
+  search(
+    @Query('country') country: string
+  ) {
+    return this.countriesService.search(country)
   }
 
   @Get(":id")

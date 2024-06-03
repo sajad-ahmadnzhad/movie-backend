@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -85,6 +86,17 @@ export class CountriesService {
     }
 
     return existingCountry;
+  }
+
+  async search(countryQuery: string) {
+
+    if (!countryQuery?.trim()) {
+      throw new BadRequestException(CountriesMessages.RequiredCountryQuery)
+    }
+
+    const countries = this.countryModel.find({ name: { $regex: countryQuery } })
+    
+    return countries
   }
 
   async update(

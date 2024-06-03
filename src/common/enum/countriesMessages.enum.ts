@@ -6,4 +6,5 @@ export enum CountriesMessages {
   CannotUpdateCountry = "You are not allowed to update this country",
   CannotRemoveCountry = "You are not allowed to remove this country",
   RemoveCountrySuccess = "Country removed successfully",
+  RequiredCountryQuery = 'Country query is required'
 }

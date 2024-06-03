@@ -5,6 +5,7 @@ import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { fileFilter } from "../../common/utils/upload-file.util";
 import { memoryStorage } from "multer";
 import {
+  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiConsumes,
   ApiForbiddenResponse,
@@ -82,3 +83,11 @@ export const GetAllCountriesDecorator = applyDecorators(
   ApiQuery({ name: "limit", type: Number, required: false }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Search Countries decorator
+export const SearchCountriesDecorator = applyDecorators(
+  ApiOperation({ summary: "search in countries" }),
+  ApiBadRequestResponse({description: CountriesMessages.RequiredCountryQuery}),
+  ApiQuery({ name: "country", type: String}),
+  ApiOkResponse({ type: [Object] }),
+)
