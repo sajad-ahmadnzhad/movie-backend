@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UploadedFile,
 } from "@nestjs/common";
 import { CountriesService } from "./countries.service";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { ApiCookieAuth, ApiTags } from "@nestjs/swagger";
+import { UserDecorator } from "../users/decorators/currentUser.decorator";
+import { User } from "../users/models/User.model";
+import { CreateCountryDecorator } from "src/common/decorators/countries.decorator";
 
 @Controller("countries")
 @ApiCookieAuth()
@@ -19,8 +23,13 @@ export class CountriesController {
   constructor(private readonly countriesService: CountriesService) {}
 
   @Post()
-  create(@Body() createCountryDto: CreateCountryDto) {
-    return this.countriesService.create(createCountryDto);
+  @CreateCountryDecorator
+  create(
+    @Body() createCountryDto: CreateCountryDto,
+    @UserDecorator() user: User,
+    @UploadedFile() file?: Express.Multer.File
+  ) {
+    return this.countriesService.create(createCountryDto, user, file);
   }
 
   @Get()

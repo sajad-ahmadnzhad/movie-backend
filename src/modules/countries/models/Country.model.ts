@@ -1,5 +1,7 @@
+import { ConflictException } from "@nestjs/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { ObjectId } from "mongoose";
+import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country {
@@ -15,4 +17,17 @@ export class Country {
 
 const schema = SchemaFactory.createForClass(Country);
 
-export const countrySchema = schema;
+schema.pre("save", async function (next) {
+  try {
+    const existingCountry = await this.model().findOne({ name: this.name });
+    if (existingCountry) {
+      throw new ConflictException(CountriesMessages.AlreadyExistsCountry);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const countrySchema = schema

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { ObjectId, Types } from "mongoose";
+import { Document, ObjectId, Types } from "mongoose";
 
 @Schema({ versionKey: false, timestamps: true })
-export class Token {
+export class Token extends Document {
   @Prop({ type: Types.ObjectId, ref: "User", required: true, unique: true })
   userId: ObjectId;
 

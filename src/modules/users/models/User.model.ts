@@ -2,10 +2,11 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { rimrafSync } from "rimraf";
 import * as path from "path";
 import * as bcrypt from "bcrypt";
-import { ObjectId } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 import { ConflictException } from "@nestjs/common";
+
 @Schema({ versionKey: false, timestamps: true })
-export class User {
+export class User extends Document {
   @Prop({ type: String, required: true })
   name: string;
 
@@ -33,6 +34,7 @@ export class User {
   @Prop({ type: Boolean, default: false })
   isVerifyEmail: boolean;
 }
+
 
 const schema = SchemaFactory.createForClass(User);
 
@@ -90,4 +92,4 @@ schema.pre("deleteOne", async function (next) {
   next();
 });
 
-export const UserSchema = schema;
+export const UserSchema = schema

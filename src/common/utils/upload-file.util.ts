@@ -8,7 +8,7 @@ export function fileFilter(
   req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
-) {
+): void {
   const exts = [".jpg", ".png"];
 
   const fileExt = path.extname(file.originalname);
@@ -18,7 +18,7 @@ export function fileFilter(
   cb(null, true);
 }
 
-export function saveFile(file: Express.Multer.File , pathName: string) {
+export function saveFile(file: Express.Multer.File, pathName: string): string {
   const extname = path.extname(file.originalname);
   const filename = file.originalname?.split(".")?.[0];
   const newFilename = `${Date.now()}${Math.random() * 9999}--${filename}${extname}`;
