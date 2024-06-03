@@ -6,7 +6,7 @@ import {
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { Country } from "./models/Country.model";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { User } from "../users/models/User.model";
 import { InjectModel } from "@nestjs/mongoose";
 import { saveFile } from "../../common/utils/upload-file.util";
@@ -46,8 +46,14 @@ export class CountriesService {
     return this.countryModel.find();
   }
 
-  findOne(id: number) {
-    return this.countryModel.findById(id);
+  async findOne(id: string): Promise<Document> {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    return existingCountry;
   }
 
   async update(
@@ -101,7 +107,7 @@ export class CountriesService {
 
     try {
       await existingCountry.deleteOne();
-      return CountriesMessages.RemoveCountrySuccess
+      return CountriesMessages.RemoveCountrySuccess;
     } catch (error) {
       throw sendError(error.message, error.status);
     }

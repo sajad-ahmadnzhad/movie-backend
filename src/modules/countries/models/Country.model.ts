@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { ObjectId } from "mongoose";
 import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
 import { removeFile } from "src/common/utils/functions.util";
+import { User } from "src/modules/users/models/User.model";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country {
@@ -18,7 +19,7 @@ export class Country {
   description: string;
   @Prop({ type: String, trim: true })
   flag_image_URL: string;
-  @Prop({ type: mongoose.Schema.ObjectId, ref: "users", required: true })
+  @Prop({ type: mongoose.Schema.ObjectId, ref: User.name, required: true })
   createdBy: ObjectId;
 }
 
@@ -71,5 +72,14 @@ schema.pre("deleteOne", async function (next) {
     next(error);
   }
 });
+
+schema.pre(['find', 'findOne'], function (next) {
+  try {
+    this.populate('createdBy' , 'name username avatarURL')
+    next()
+  } catch (error) {
+    next(error)
+  }
+})
 
 export const countrySchema = schema;

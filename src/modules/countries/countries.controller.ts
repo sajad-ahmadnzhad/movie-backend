@@ -16,6 +16,7 @@ import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 import {
   CreateCountryDecorator,
+  GetOneCountryDecorator,
   RemoveCountryDecorator,
   UpdateCountryDecorator,
 } from "../../common/decorators/countries.decorator";
@@ -49,8 +50,9 @@ export class CountriesController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.countriesService.findOne(+id);
+  @GetOneCountryDecorator
+  findOne(@Param("id", IsValidObjectIdPipe) id: string) {
+    return this.countriesService.findOne(id);
   }
 
   @Patch(":id")

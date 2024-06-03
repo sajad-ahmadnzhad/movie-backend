@@ -67,3 +67,9 @@ export const RemoveCountryDecorator = applyDecorators(
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "remove country" })
 );
+
+//* Get one country decorator
+export const GetOneCountryDecorator = applyDecorators(
+  ApiOperation({ summary: "get one country by id" }),
+  ApiOkResponse({type: Object})
+)
