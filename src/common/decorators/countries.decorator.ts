@@ -16,6 +16,7 @@ import {
   ApiOperation,
   ApiQuery,
 } from "@nestjs/swagger";
+import { PublicMessages } from "../enum/public.messages";
 
 //* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
@@ -74,6 +75,8 @@ export const RemoveCountryDecorator = applyDecorators(
 //* Get one country decorator
 export const GetOneCountryDecorator = applyDecorators(
   ApiOperation({ summary: "get one country by id" }),
+  ApiNotFoundResponse({ description: "country not found" }),
+  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: Object })
 );
 

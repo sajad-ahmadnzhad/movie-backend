@@ -5,7 +5,7 @@ import { User } from "../users/models/User.model";
 import { sendError } from "../../common/utils/functions.util";
 import { InjectModel } from "@nestjs/mongoose";
 import { Industry } from "./models/industry.model";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { Country } from "../countries/models/Country.model";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
@@ -71,8 +71,14 @@ export class IndustriesService {
     return mongoosePaginationResult;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} industry`;
+  async findOne(id: string): Promise<Document> {
+    const existingIndustry = await this.industryModel.findById(id);
+
+    if (!existingIndustry) {
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+    }
+
+    return existingIndustry;
   }
 
   update(id: number, updateIndustryDto: UpdateIndustryDto) {

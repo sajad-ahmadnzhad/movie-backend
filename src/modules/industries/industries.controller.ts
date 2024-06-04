@@ -13,9 +13,17 @@ import { IndustriesService } from "./industries.service";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
 import { ApiTags } from "@nestjs/swagger";
-import { CreateIndustryDecorator, GetAllIndustriesDecorator } from "../../common/decorators/industries.decorator";
+import {
+  CreateIndustryDecorator,
+  GetAllIndustriesDecorator,
+  GetOneIndustryDecorator,
+} from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
+import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { PaginatedList } from "../../common/interfaces/public.interface";
+import { Industry } from "./models/industry.model";
+import { Document } from "mongoose";
 
 @Controller("industries")
 @ApiTags("industries")
@@ -28,7 +36,10 @@ export class IndustriesController {
     @Body() createIndustryDto: CreateIndustryDto,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
-    const success = await this.industriesService.create(createIndustryDto , user);
+    const success = await this.industriesService.create(
+      createIndustryDto,
+      user
+    );
 
     return { message: success };
   }
@@ -36,15 +47,16 @@ export class IndustriesController {
   @Get()
   @GetAllIndustriesDecorator
   findAll(
-    @Query('page' , new ParseIntPipe({optional: true})) page: number,
-    @Query('limit' , new ParseIntPipe({optional: true})) limit: number
-  ) {
-    return this.industriesService.findAll(page , limit);
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+  ): Promise<PaginatedList<Industry>> {
+    return this.industriesService.findAll(page, limit);
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.industriesService.findOne(+id);
+  @GetOneIndustryDecorator
+  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+    return this.industriesService.findOne(id);
   }
 
   @Patch(":id")
