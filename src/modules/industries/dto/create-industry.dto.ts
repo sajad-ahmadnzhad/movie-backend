@@ -1,5 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from "class-validator";
 
 export class CreateIndustryDto {
   @IsString()
@@ -12,4 +18,10 @@ export class CreateIndustryDto {
   @Length(5, 150)
   @ApiProperty({ required: false })
   description?: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @Matches(/^[0-9a-fA-F]{24}$/, { message: "This countryId is not from mongodb" })
+  @ApiProperty()
+  countryId: string;
 }

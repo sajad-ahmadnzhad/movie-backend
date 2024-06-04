@@ -11,6 +11,9 @@ import { IndustriesService } from "./industries.service";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
 import { ApiTags } from "@nestjs/swagger";
+import { CreateIndustryDecorator } from "../../common/decorators/industries.decorator";
+import { UserDecorator } from "../users/decorators/currentUser.decorator";
+import { User } from "../users/models/User.model";
 
 @Controller("industries")
 @ApiTags("industries")
@@ -18,8 +21,12 @@ export class IndustriesController {
   constructor(private readonly industriesService: IndustriesService) {}
 
   @Post()
-  async create(@Body() createIndustryDto: CreateIndustryDto): Promise<{message: string}> {
-    const success = await this.industriesService.create(createIndustryDto);
+  @CreateIndustryDecorator
+  async create(
+    @Body() createIndustryDto: CreateIndustryDto,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.industriesService.create(createIndustryDto , user);
 
     return { message: success };
   }

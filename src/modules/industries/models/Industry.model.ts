@@ -1,7 +1,9 @@
+import { ConflictException } from "@nestjs/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, ObjectId } from "mongoose";
-import { Country } from "src/modules/countries/models/Country.model";
-import { User } from "src/modules/users/models/User.model";
+import { Country } from "../../countries/models/Country.model";
+import { User } from "../../users/models/User.model";
+import { IndustriesMessages } from "../../../common/enum/industriesMessages.enum";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Industry extends Document {
@@ -12,13 +14,26 @@ export class Industry extends Document {
   description?: string;
 
   @Prop({ type: mongoose.Schema.ObjectId, ref: Country.name, required: true })
-  country: ObjectId;
+  countryId: ObjectId;
 
   @Prop({ type: mongoose.Schema.ObjectId, ref: User.name, required: true })
   createdBy: ObjectId;
 }
 
-const schema = SchemaFactory.createForClass(Industry)
+const schema = SchemaFactory.createForClass(Industry);
 
+schema.pre("save", async function (next) {
+  try {
+    const existingIndustry = await this.model().findOne({ name: this.name });
 
-export const IndustrySchema = schema
+    if (existingIndustry) {
+      throw new ConflictException(IndustriesMessages.AlreadyExistsIndustry);
+    }
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const IndustrySchema = schema;

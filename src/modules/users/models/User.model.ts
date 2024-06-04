@@ -39,11 +39,11 @@ export class User extends Document {
 const schema = SchemaFactory.createForClass(User);
 
 schema.pre("updateOne", async function (next) {
-  const user: User & { _id: ObjectId } = await this.model.findOne(
+  const user: User = await this.model.findOne(
     this.getFilter()
   );
 
-  const updateData: any = this.getUpdate();
+  const updateData = this.getUpdate();
   const publicPath = path.join(process.cwd(), "public");
 
   const foundUser = await this.model.findOne({
