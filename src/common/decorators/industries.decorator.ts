@@ -70,3 +70,11 @@ export const RemoveIndustryDecorator = applyDecorators(
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "remove industry" })
 );
+
+//* Search industries decorator
+export const SearchIndustriesDecorator = applyDecorators(
+  ApiOperation({ summary: "search in industries" }),
+  ApiBadRequestResponse({ description: "Required industry query" }),
+  ApiQuery({ name: "industry", type: String }),
+  ApiOkResponse({ type: [Object] })
+);

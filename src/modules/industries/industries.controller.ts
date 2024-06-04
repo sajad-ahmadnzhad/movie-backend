@@ -19,6 +19,7 @@ import {
   GetOneIndustryDecorator,
   UpdateIndustryDecorator,
   RemoveIndustryDecorator,
+  SearchIndustriesDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
@@ -53,6 +54,12 @@ export class IndustriesController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit: number
   ): Promise<PaginatedList<Industry>> {
     return this.industriesService.findAll(page, limit);
+  }
+
+  @Get("search")
+  @SearchIndustriesDecorator
+  search(@Query("industry") industry: string) {
+    return this.industriesService.search(industry);
   }
 
   @Get(":id")

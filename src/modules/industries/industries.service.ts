@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -87,6 +88,18 @@ export class IndustriesService {
     }
 
     return existingIndustry;
+  }
+
+  search(industryQuery: string): Promise<Document[]> {
+    if (!industryQuery?.trim()) {
+      throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);
+    }
+
+    const industries = this.industryModel.find({
+      name: { $regex: industryQuery },
+    });
+
+    return industries;
   }
 
   async update(
