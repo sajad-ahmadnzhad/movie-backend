@@ -10,12 +10,14 @@ import {
   ApiNotFoundResponse,
   ApiQuery,
   ApiBadRequestResponse,
+  ApiCookieAuth,
 } from "@nestjs/swagger";
 import { PublicMessages } from "../enum/public.messages";
 
 //* Create industry decorator
 export const CreateIndustryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   ApiOperation({ summary: "create new industry" }),
   ApiConflictResponse({ description: "Already exists industry" }),
   ApiOkResponse({ description: "Created industry success" }),
@@ -43,6 +45,7 @@ export const GetOneIndustryDecorator = applyDecorators(
 //* Update industry decorator
 export const UpdateIndustryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Industry not found | Country not found",
   }),
@@ -53,4 +56,17 @@ export const UpdateIndustryDecorator = applyDecorators(
   ApiConflictResponse({ description: "Already exists industry" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "update industry" })
+);
+
+//* Remove industry decorator
+export const RemoveIndustryDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "Industry not found" }),
+  ApiForbiddenResponse({
+    description: "Cannot Remove Industry | Forbidden resource",
+  }),
+  ApiOkResponse({ description: "Remove industry success" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "remove industry" })
 );

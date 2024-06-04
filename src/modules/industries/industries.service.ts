@@ -129,7 +129,24 @@ export class IndustriesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} industry`;
+  async remove(id: string, user: User): Promise<string> {
+    const existingIndustry: ICreatedBy<Industry> =
+      await this.industryModel.findById(id);
+
+    if (!existingIndustry) {
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+    }
+
+    if (String(user._id) !== String(existingIndustry.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(IndustriesMessages.CannotRemoveIndustry);
+    }
+
+    try {
+      await existingIndustry.deleteOne();
+      return IndustriesMessages.RemoveIndustrySuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 }

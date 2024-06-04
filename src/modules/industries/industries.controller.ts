@@ -18,6 +18,7 @@ import {
   GetAllIndustriesDecorator,
   GetOneIndustryDecorator,
   UpdateIndustryDecorator,
+  RemoveIndustryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
@@ -66,7 +67,7 @@ export class IndustriesController {
     @Param("id") id: string,
     @Body() updateIndustryDto: UpdateIndustryDto,
     @UserDecorator() user: User
-  ) {
+  ): Promise<{ message: string }> {
     const success = await this.industriesService.update(
       id,
       updateIndustryDto,
@@ -76,7 +77,12 @@ export class IndustriesController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.industriesService.remove(+id);
+  @RemoveIndustryDecorator
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.industriesService.remove(id, user);
+    return { message: success };
   }
 }
