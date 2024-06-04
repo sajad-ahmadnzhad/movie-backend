@@ -6,12 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { IndustriesService } from "./industries.service";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
 import { ApiTags } from "@nestjs/swagger";
-import { CreateIndustryDecorator } from "../../common/decorators/industries.decorator";
+import { CreateIndustryDecorator, GetAllIndustriesDecorator } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 
@@ -32,8 +34,12 @@ export class IndustriesController {
   }
 
   @Get()
-  findAll() {
-    return this.industriesService.findAll();
+  @GetAllIndustriesDecorator
+  findAll(
+    @Query('page' , new ParseIntPipe({optional: true})) page: number,
+    @Query('limit' , new ParseIntPipe({optional: true})) limit: number
+  ) {
+    return this.industriesService.findAll(page , limit);
   }
 
   @Get(":id")

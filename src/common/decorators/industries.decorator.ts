@@ -8,6 +8,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
+  ApiQuery,
 } from "@nestjs/swagger";
 
 //* Create industry decorator
@@ -19,4 +20,12 @@ export const CreateIndustryDecorator = applyDecorators(
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiNotFoundResponse({ description: "Industry not found" })
+);
+
+//* Get all industries decorator
+export const GetAllIndustriesDecorator = applyDecorators(
+  ApiOperation({ summary: "get all industries" }),
+  ApiQuery({ name: "page", type: Number, required: false }),
+  ApiQuery({ name: "limit", type: Number, required: false }),
+  ApiOkResponse({ type: [Object] })
 );
