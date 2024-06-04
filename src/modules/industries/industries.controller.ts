@@ -20,6 +20,7 @@ import {
   UpdateIndustryDecorator,
   RemoveIndustryDecorator,
   SearchIndustriesDecorator,
+  GetIndustryByCountryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
@@ -60,6 +61,14 @@ export class IndustriesController {
   @SearchIndustriesDecorator
   search(@Query("industry") industry: string) {
     return this.industriesService.search(industry);
+  }
+
+  @Get('by-country/:id')
+  @GetIndustryByCountryDecorator
+  findByCountry(
+    @Param('id', IsValidObjectIdPipe) id: string
+  ): Promise<Document[]> {
+    return this.industriesService.findByCountry(id)
   }
 
   @Get(":id")

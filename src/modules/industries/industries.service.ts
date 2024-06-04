@@ -90,6 +90,16 @@ export class IndustriesService {
     return existingIndustry;
   }
 
+  async findByCountry(id: string): Promise<Document[]> {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    return this.industryModel.find({ country: id });
+  }
+
   search(industryQuery: string): Promise<Document[]> {
     if (!industryQuery?.trim()) {
       throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);

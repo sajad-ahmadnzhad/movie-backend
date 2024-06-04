@@ -11,6 +11,7 @@ import {
   ApiQuery,
   ApiBadRequestResponse,
   ApiCookieAuth,
+  ApiParam,
 } from "@nestjs/swagger";
 import { PublicMessages } from "../enum/public.messages";
 
@@ -76,5 +77,13 @@ export const SearchIndustriesDecorator = applyDecorators(
   ApiOperation({ summary: "search in industries" }),
   ApiBadRequestResponse({ description: "Required industry query" }),
   ApiQuery({ name: "industry", type: String }),
+  ApiOkResponse({ type: [Object] })
+);
+
+//* Get industry by country decorator
+export const GetIndustryByCountryDecorator = applyDecorators(
+  ApiOperation({ description: "get industry by country" }),
+  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiParam({ name: "id", description: "country id" }),
   ApiOkResponse({ type: [Object] })
 );
