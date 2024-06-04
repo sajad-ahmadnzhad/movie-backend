@@ -31,7 +31,7 @@ const schema = SchemaFactory.createForClass(Industry);
 schema.pre("save", async function (next) {
   try {
     const existingIndustry = await this.model().findOne({ name: this.name });
-    
+
     if (existingIndustry) {
       throw new ConflictException(IndustriesMessages.AlreadyExistsIndustry);
     }
@@ -49,7 +49,7 @@ schema.pre(["find", "findOne"], function (next) {
         path: "country",
         select: "name description flag_image_URL",
         transform(doc) {
-          doc.createdBy = undefined;
+         doc && (doc.createdBy = undefined);
           return doc;
         },
       },
@@ -64,5 +64,24 @@ schema.pre(["find", "findOne"], function (next) {
     next(error);
   }
 });
+
+schema.pre('updateOne', async function(next) {
+  try {
+    const industry = await this.model.findOne(this.getFilter());
+
+    const updateData = this.getUpdate();
+
+    const existingIndustry = await this.model.findOne({
+      name: updateData["$set"].name,
+      _id: { $ne: industry._id },
+    });
+
+    if (existingIndustry) {
+      throw new ConflictException(IndustriesMessages.AlreadyExistsIndustry);
+    }
+  } catch (error) {
+    next(error);
+  }
+})
 
 export const IndustrySchema = schema;

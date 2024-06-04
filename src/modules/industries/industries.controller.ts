@@ -17,6 +17,7 @@ import {
   CreateIndustryDecorator,
   GetAllIndustriesDecorator,
   GetOneIndustryDecorator,
+  UpdateIndustryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
@@ -60,11 +61,18 @@ export class IndustriesController {
   }
 
   @Patch(":id")
-  update(
+  @UpdateIndustryDecorator
+  async update(
     @Param("id") id: string,
-    @Body() updateIndustryDto: UpdateIndustryDto
+    @Body() updateIndustryDto: UpdateIndustryDto,
+    @UserDecorator() user: User
   ) {
-    return this.industriesService.update(+id, updateIndustryDto);
+    const success = await this.industriesService.update(
+      id,
+      updateIndustryDto,
+      user
+    );
+    return { message: success };
   }
 
   @Delete(":id")

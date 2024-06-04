@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
 import { User } from "../users/models/User.model";
@@ -15,7 +20,10 @@ import {
   cachePagination,
   mongoosePagination,
 } from "src/common/utils/pagination.util";
-import { PaginatedList } from "src/common/interfaces/public.interface";
+import {
+  ICreatedBy,
+  PaginatedList,
+} from "../../common/interfaces/public.interface";
 
 @Injectable()
 export class IndustriesService {
@@ -81,8 +89,44 @@ export class IndustriesService {
     return existingIndustry;
   }
 
-  update(id: number, updateIndustryDto: UpdateIndustryDto) {
-    return `This action updates a #${id} industry`;
+  async update(
+    id: string,
+    updateIndustryDto: UpdateIndustryDto,
+    user: User
+  ): Promise<string> {
+    const existingIndustry: ICreatedBy<Industry> =
+      await this.industryModel.findById(id);
+
+    if (!existingIndustry) {
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+    }
+
+    if (updateIndustryDto.countryId) {
+      const existingCountry = await this.countryModel.findById(
+        updateIndustryDto.countryId
+      );
+
+      if (!existingCountry)
+        throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    if (String(user._id) !== String(existingIndustry.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(IndustriesMessages.CannotUpdateIndustry);
+    }
+
+    try {
+      await this.industryModel.updateOne({
+        $set: {
+          name: updateIndustryDto.name,
+          description: updateIndustryDto.description,
+          country: updateIndustryDto.countryId,
+        },
+      });
+      return IndustriesMessages.UpdatedIndustrySuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 
   remove(id: number) {

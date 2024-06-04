@@ -39,3 +39,18 @@ export const GetOneIndustryDecorator = applyDecorators(
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: Object })
 );
+
+//* Update industry decorator
+export const UpdateIndustryDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiNotFoundResponse({
+    description: "Industry not found | Country not found",
+  }),
+  ApiForbiddenResponse({
+    description: "Cannot update country | Forbidden resource",
+  }),
+  ApiOkResponse({ description: "Updated industry success" }),
+  ApiConflictResponse({ description: "Already exists industry" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "update industry" })
+);
