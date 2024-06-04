@@ -6,6 +6,7 @@ import {
   Length,
   Matches,
 } from "class-validator";
+import { PublicMessages } from "../../../common/enum/public.messages";
 
 export class CreateIndustryDto {
   @IsString()
@@ -21,7 +22,7 @@ export class CreateIndustryDto {
 
   @IsNotEmpty()
   @IsString()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: "This countryId is not from mongodb" })
+  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
   @ApiProperty()
   countryId: string;
 }
