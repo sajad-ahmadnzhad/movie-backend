@@ -19,6 +19,7 @@ import { User } from "../users/models/User.model";
 import {
   CreateActorDecorator,
   GetActorsByCountry,
+  GetActorsByIndustry,
   GetAllActorsDecorator,
   GetOneActorDecorator,
 } from "../../common/decorators/actors.decorator";
@@ -58,8 +59,14 @@ export class ActorsController {
 
   @Get("by-country/:id")
   @GetActorsByCountry
-  getActorByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
+  getActorsByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
     return this.actorsService.findActorsByCountry(id);
+  }
+
+  @Get("by-industry/:id")
+  @GetActorsByIndustry
+  getActorsByIndustry(@Param("id", IsValidObjectIdPipe) id: string) {
+    return this.actorsService.findActorsByIndustry(id);
   }
 
   @Patch(":id")

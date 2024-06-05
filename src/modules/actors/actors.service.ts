@@ -112,6 +112,20 @@ export class ActorsService {
     return actors;
   }
 
+  async findActorsByIndustry(id: string): Promise<Document[]> {
+    const existingIndustry = await this.industryModel.findById(id);
+
+    if (!existingIndustry) {
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+    }
+
+    const actors = this.actorModel.find({
+      $or: [{ industry: id }, { industry: existingIndustry._id }],
+    });
+
+    return actors;
+  }
+
   update(id: number, updateActorDto: UpdateActorDto) {
     return `This action updates a #${id} actor`;
   }

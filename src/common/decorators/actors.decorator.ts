@@ -61,3 +61,11 @@ export const GetActorsByCountry = applyDecorators(
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Get actors by industry decorator
+export const GetActorsByIndustry = applyDecorators(
+  ApiOperation({ summary: "get actors by industry" }),
+  ApiNotFoundResponse({ description: "Industry not found" }),
+  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
+  ApiOkResponse({ type: [Object] })
+);
