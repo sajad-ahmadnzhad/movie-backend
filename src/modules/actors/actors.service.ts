@@ -20,12 +20,15 @@ import {
 } from "../../common/utils/pagination.util";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
+import { Country } from "../countries/models/Country.model";
+import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 
 @Injectable()
 export class ActorsService {
   constructor(
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
     @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
+    @InjectModel(Country.name) private readonly countryModel: Model<Industry>,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
 
@@ -93,6 +96,20 @@ export class ActorsService {
     }
 
     return existingActor;
+  }
+
+  async findActorsByCountry(id: string): Promise<Document[]> {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    const actors = this.actorModel.find({
+      $or: [{ country: id }, { country: existingCountry._id }],
+    });
+
+    return actors;
   }
 
   update(id: number, updateActorDto: UpdateActorDto) {

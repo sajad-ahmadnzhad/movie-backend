@@ -8,9 +8,15 @@ import { ActorsMessages } from "../../../common/enum/actorsMessages.enum";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Actor extends Document {
-  @Prop({ type: String, unique: true, lowercase: true, required: true })
+  @Prop({
+    type: String,
+    trim: true,
+    unique: true,
+    lowercase: true,
+    required: true,
+  })
   name: string;
-  @Prop({ type: String })
+  @Prop({ type: String, trim: true })
   bio: string;
   @Prop({ type: String })
   photo: string;

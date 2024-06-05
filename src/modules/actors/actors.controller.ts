@@ -18,6 +18,7 @@ import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/models/User.model";
 import {
   CreateActorDecorator,
+  GetActorsByCountry,
   GetAllActorsDecorator,
   GetOneActorDecorator,
 } from "../../common/decorators/actors.decorator";
@@ -53,6 +54,12 @@ export class ActorsController {
   @GetOneActorDecorator
   findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.actorsService.findOne(id);
+  }
+
+  @Get("by-country/:id")
+  @GetActorsByCountry
+  getActorByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
+    return this.actorsService.findActorsByCountry(id);
   }
 
   @Patch(":id")
