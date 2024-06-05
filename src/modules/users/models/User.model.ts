@@ -35,15 +35,12 @@ export class User extends Document {
   isVerifyEmail: boolean;
 }
 
-
 const schema = SchemaFactory.createForClass(User);
 
 schema.pre("updateOne", async function (next) {
-  const user: User = await this.model.findOne(
-    this.getFilter()
-  );
+  const user: User = (await this.model.findOne(this.getFilter())) as User;
 
-  const updateData = this.getUpdate();
+  const updateData: any = this.getUpdate();
   const publicPath = path.join(process.cwd(), "public");
 
   const foundUser = await this.model.findOne({
@@ -82,7 +79,7 @@ schema.pre("updateOne", async function (next) {
 });
 
 schema.pre("deleteOne", async function (next) {
-  const user: User = await this.model.findOne(this.getFilter());
+  const user: User = (await this.model.findOne(this.getFilter())) as User;
   const publicPath = path.join(process.cwd(), "public");
 
   if (!user.avatarURL.includes("custom-avatar.jpg")) {
@@ -92,4 +89,4 @@ schema.pre("deleteOne", async function (next) {
   next();
 });
 
-export const UserSchema = schema
+export const UserSchema = schema;

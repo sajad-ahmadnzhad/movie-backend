@@ -117,7 +117,7 @@ export class IndustriesService {
     updateIndustryDto: UpdateIndustryDto,
     user: User
   ): Promise<string> {
-    const existingIndustry: ICreatedBy<Industry> =
+    const existingIndustry: ICreatedBy<Industry> | null =
       await this.industryModel.findById(id);
 
     if (!existingIndustry) {
@@ -153,7 +153,7 @@ export class IndustriesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingIndustry: ICreatedBy<Industry> =
+    const existingIndustry: ICreatedBy<Industry> | null =
       await this.industryModel.findById(id);
 
     if (!existingIndustry) {

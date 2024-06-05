@@ -82,7 +82,7 @@ export const SearchIndustriesDecorator = applyDecorators(
 
 //* Get industry by country decorator
 export const GetIndustryByCountryDecorator = applyDecorators(
-  ApiOperation({ description: "get industry by country" }),
+  ApiOperation({ summary: "get industry by country" }),
   ApiNotFoundResponse({ description: "Country not found" }),
   ApiParam({ name: "id", description: "country id" }),
   ApiOkResponse({ type: [Object] })

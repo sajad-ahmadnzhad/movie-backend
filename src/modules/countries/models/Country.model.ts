@@ -4,6 +4,7 @@ import mongoose, { Document, ObjectId } from "mongoose";
 import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
 import { removeFile } from "src/common/utils/functions.util";
 import { User } from "src/modules/users/models/User.model";
+import { Industry } from '../../industries/models/Industry.model';
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country extends Document {
@@ -42,7 +43,7 @@ schema.pre("updateOne", async function (next) {
   try {
     const country = await this.model.findOne(this.getFilter());
 
-    const updateData = this.getUpdate();
+    const updateData: any = this.getUpdate();
 
     const existingCountry = await this.model.findOne({
       name: updateData["$set"].name,
@@ -66,6 +67,8 @@ schema.pre("deleteOne", async function (next) {
     const country = await this.model.findOne(this.getFilter());
 
     removeFile(country.flag_image_URL);
+
+    //* Removal of all industries in the country
 
     next();
   } catch (error) {

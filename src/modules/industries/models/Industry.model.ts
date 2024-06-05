@@ -69,7 +69,7 @@ schema.pre('updateOne', async function(next) {
   try {
     const industry = await this.model.findOne(this.getFilter());
 
-    const updateData = this.getUpdate();
+    const updateData = this.getUpdate() as any;
 
     const existingIndustry = await this.model.findOne({
       name: updateData["$set"].name,
