@@ -1,15 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { ActorsService } from './actors.service';
-import { CreateActorDto } from './dto/create-actor.dto';
-import { UpdateActorDto } from './dto/update-actor.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UploadedFile,
+} from "@nestjs/common";
+import { ActorsService } from "./actors.service";
+import { CreateActorDto } from "./dto/create-actor.dto";
+import { UpdateActorDto } from "./dto/update-actor.dto";
+import { ApiTags } from "@nestjs/swagger";
+import { UserDecorator } from "../users/decorators/currentUser.decorator";
+import { User } from "../users/models/User.model";
+import { CreateActorDecorator } from "src/common/decorators/actors.decorator";
 
-@Controller('actors')
+@Controller("actors")
+@ApiTags("actors")
 export class ActorsController {
   constructor(private readonly actorsService: ActorsService) {}
 
   @Post()
-  create(@Body() createActorDto: CreateActorDto) {
-    return this.actorsService.create(createActorDto);
+  @CreateActorDecorator
+ async create(
+    @Body() createActorDto: CreateActorDto, 
+   @UserDecorator() user: User,
+   @UploadedFile() file?: Express.Multer.File 
+  ): Promise<{message: string}> {
+    const success = await this.actorsService.create(createActorDto, user, file);
+    return {message: success}
   }
 
   @Get()
@@ -17,18 +37,18 @@ export class ActorsController {
     return this.actorsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  @Get(":id")
+  findOne(@Param("id") id: string) {
     return this.actorsService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateActorDto: UpdateActorDto) {
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() updateActorDto: UpdateActorDto) {
     return this.actorsService.update(+id, updateActorDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(":id")
+  remove(@Param("id") id: string) {
     return this.actorsService.remove(+id);
   }
 }

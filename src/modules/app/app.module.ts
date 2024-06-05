@@ -18,6 +18,7 @@ import { cacheConfig } from "../../config/cache.config";
 import { mongooseConfig } from "../../config/mongoose.config";
 import { CountriesModule } from "../countries/countries.module";
 import { IndustriesModule } from "../industries/industries.module";
+import { ActorsModule } from "../actors/actors.module";
 
 @Module({
   imports: [
@@ -32,7 +33,8 @@ import { IndustriesModule } from "../industries/industries.module";
     UsersModule,
     MailModule,
     CountriesModule,
-    IndustriesModule
+    IndustriesModule,
+    ActorsModule
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },

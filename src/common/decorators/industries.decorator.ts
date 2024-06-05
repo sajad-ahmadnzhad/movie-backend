@@ -24,7 +24,7 @@ export const CreateIndustryDecorator = applyDecorators(
   ApiOkResponse({ description: "Created industry success" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
-  ApiNotFoundResponse({ description: "Industry not found" })
+  ApiNotFoundResponse({ description: "Country not found" })
 );
 
 //* Get all industries decorator

@@ -16,3 +16,11 @@ export interface ICreatedBy<T> extends Document<T> {
     avatarURL: string;
   };
 }
+export interface IIndustry<T> extends Document<T> {
+  country: {
+    _id: ObjectId;
+    name: string;
+    description: string
+    flag_image_URL: string
+  };
+}
