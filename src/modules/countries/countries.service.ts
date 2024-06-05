@@ -20,7 +20,10 @@ import {
   cachePagination,
   mongoosePagination,
 } from "../../common/utils/pagination.util";
-import { ICreatedBy, PaginatedList } from "../../common/interfaces/public.interface";
+import {
+  ICreatedBy,
+  PaginatedList,
+} from "../../common/interfaces/public.interface";
 
 @Injectable()
 export class CountriesService {
@@ -104,9 +107,10 @@ export class CountriesService {
     id: string,
     updateCountryDto: UpdateCountryDto,
     user: User,
-    file: Express.Multer.File
+    file?: Express.Multer.File
   ): Promise<string> {
-    const existingCountry: ICreatedBy<Country> = await this.countryModel.findById(id);
+    const existingCountry: ICreatedBy<Country> | null =
+      await this.countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
@@ -138,7 +142,8 @@ export class CountriesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingCountry: ICreatedBy<Country> = await this.countryModel.findById(id);
+    const existingCountry: ICreatedBy<Country> | null =
+      await this.countryModel.findById(id);
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);

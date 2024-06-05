@@ -4,7 +4,7 @@ import mongoose, { Document, ObjectId } from "mongoose";
 import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
 import { removeFile } from "src/common/utils/functions.util";
 import { User } from "src/modules/users/models/User.model";
-import { Industry } from '../../industries/models/Industry.model';
+import { Industry } from "../../industries/models/Industry.model";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country extends Document {
@@ -24,9 +24,9 @@ export class Country extends Document {
   createdBy: ObjectId;
 }
 
-const schema = SchemaFactory.createForClass(Country);
+const CountrySchema = SchemaFactory.createForClass(Country);
 
-schema.pre("save", async function (next) {
+CountrySchema.pre("save", async function (next) {
   try {
     const existingCountry = await this.model().findOne({ name: this.name });
     if (existingCountry) {
@@ -39,7 +39,7 @@ schema.pre("save", async function (next) {
   }
 });
 
-schema.pre("updateOne", async function (next) {
+CountrySchema.pre("updateOne", async function (next) {
   try {
     const country = await this.model.findOne(this.getFilter());
 
@@ -62,13 +62,13 @@ schema.pre("updateOne", async function (next) {
   }
 });
 
-schema.pre("deleteOne", async function (next) {
+CountrySchema.pre("deleteOne", async function (next) {
   try {
     const country = await this.model.findOne(this.getFilter());
 
     removeFile(country.flag_image_URL);
 
-    //* Removal of all industries in the country
+    //*TODO Removal of all industries in the country
 
     next();
   } catch (error) {
@@ -76,7 +76,7 @@ schema.pre("deleteOne", async function (next) {
   }
 });
 
-schema.pre(["find", "findOne"], function (next) {
+CountrySchema.pre(["find", "findOne"], function (next) {
   try {
     this.populate("createdBy", "name username avatarURL");
     next();
@@ -85,4 +85,4 @@ schema.pre(["find", "findOne"], function (next) {
   }
 });
 
-export const countrySchema = schema;
+export { CountrySchema };

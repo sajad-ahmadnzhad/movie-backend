@@ -8,8 +8,8 @@ interface OutputPagination<T> {
 }
 
 export const mongoosePagination = async <T>(
-  limitQuery: number,
-  pageQuery: number,
+  limitQuery: number = 20,
+  pageQuery: number = 1,
   query: any,
   model: Model<T>
 ): Promise<OutputPagination<T>> => {
@@ -31,8 +31,8 @@ export const mongoosePagination = async <T>(
 };
 
 export const cachePagination = async <T>(
-  limitQuery: number,
-  pageQuery: number,
+  limitQuery: number = 20,
+  pageQuery: number = 1,
   cachedData: T[]
 ): Promise<OutputPagination<T>> => {
   const page = pageQuery || 1;

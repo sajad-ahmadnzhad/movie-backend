@@ -33,7 +33,7 @@ export class UsersService {
     page?: number,
     limit?: number
   ): Promise<PaginatedList<User>> {
-    const usersCache: User[] = await this.redisCache.get("users");
+    const usersCache: User[] | undefined = await this.redisCache.get("users");
 
     if (usersCache) {
       return cachePagination(limit, page, usersCache);
@@ -140,9 +140,9 @@ export class UsersService {
   }
 
   async deleteAccount(user: User, dto: DeleteAccountDto): Promise<string> {
-    const foundUser = await this.usersModel
+    const foundUser = (await this.usersModel
       .findOne({ email: user.email })
-      .select("password")!;
+      .select("password")) as User;
 
     if (foundUser.isSuperAdmin) {
       throw new BadRequestException(
@@ -173,9 +173,9 @@ export class UsersService {
 
     if (!existingUser) throw new NotFoundException(UsersMessages.NotFound);
 
-    const foundUser = await this.usersModel
-      .findOne({ email: user.email })
-      .select("password")!;
+    const foundUser = (await this.usersModel
+      .findById(user._id)
+      .select("password")) as User;
 
     if (existingUser.isSuperAdmin) {
       throw new BadRequestException(UsersMessages.EnteredIdIsSuperAdmin);

@@ -9,7 +9,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User } from "../users/models/User.model";
-import { Model } from "mongoose";
+import { Document, Model, ObjectId } from "mongoose";
 import { SignupUserDto } from "./dto/signupUser.dto";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
 import * as bcrypt from "bcrypt";
@@ -25,7 +25,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { ResetPasswordDto } from "./dto/resetPassword.dto";
 import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { ConfigService } from "@nestjs/config";
-import {hashData} from '../../common/utils/functions.util'
+import { hashData } from "../../common/utils/functions.util";
 
 @Injectable()
 export class AuthService {
@@ -36,8 +36,8 @@ export class AuthService {
     @InjectModel(Token.name) private tokenModel: Model<Token>,
     private mailerService: MailerService,
     private configService: ConfigService
-  ) { }
-  
+  ) {}
+
   private generateToken(
     payload: object,
     expireTime: number | string,
@@ -64,23 +64,23 @@ export class AuthService {
 
     const hashPassword = hashData(dto.password, 12);
 
-    const user = await this.userModel.create({
+    const user = (await this.userModel.create({
       ...dto,
       isAdmin: isFirstUser,
       isSuperAdmin: isFirstUser,
       password: hashPassword,
-    });
+    })) as User & { _id: ObjectId };
 
     const accessToken = this.generateToken(
       { id: user._id.toString() },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME"),
-      this.configService.get<string>("ACCESS_TOKEN_SECRET")
+      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
+      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
     );
 
     const refreshToken = this.generateToken(
       { id: user._id.toString() },
-      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME"),
-      this.configService.get<string>("REFRESH_TOKEN_SECRET")
+      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME") as string,
+      this.configService.get<string>("REFRESH_TOKEN_SECRET") as string
     );
 
     await this.redisCache.set(user._id.toString(), refreshToken);
@@ -91,7 +91,7 @@ export class AuthService {
   async signinUser(dto: SigninUserDto): Promise<SigninUser> {
     const { identifier, password } = dto;
 
-    const user = await this.userModel
+    const user: (User & { _id: ObjectId }) | null = await this.userModel
       .findOne({
         $or: [{ email: identifier }, { username: identifier }],
       })
@@ -108,14 +108,14 @@ export class AuthService {
     }
     const accessToken = this.generateToken(
       { id: user._id.toString() },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME"),
-      this.configService.get<string>("ACCESS_TOKEN_SECRET")
+      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
+      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
     );
 
     const refreshToken = this.generateToken(
       { id: user._id.toString() },
-      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME"),
-      this.configService.get<string>("REFRESH_TOKEN_SECRET")
+      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME") as string,
+      this.configService.get<string>("REFRESH_TOKEN_SECRET") as string
     );
 
     await this.redisCache.set(user._id.toString(), refreshToken);
@@ -146,8 +146,8 @@ export class AuthService {
 
     const newAccessToken = this.generateToken(
       { id: decodeToken.id },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME"),
-      this.configService.get<string>("ACCESS_TOKEN_SECRET")
+      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
+      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
     );
 
     return {

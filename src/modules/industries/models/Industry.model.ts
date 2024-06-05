@@ -26,9 +26,9 @@ export class Industry extends Document {
   createdBy: ObjectId;
 }
 
-const schema = SchemaFactory.createForClass(Industry);
+const IndustrySchema = SchemaFactory.createForClass(Industry);
 
-schema.pre("save", async function (next) {
+IndustrySchema.pre("save", async function (next) {
   try {
     const existingIndustry = await this.model().findOne({ name: this.name });
 
@@ -42,7 +42,7 @@ schema.pre("save", async function (next) {
   }
 });
 
-schema.pre(["find", "findOne"], function (next) {
+IndustrySchema.pre(["find", "findOne"], function (next) {
   try {
     this.populate([
       {
@@ -65,7 +65,7 @@ schema.pre(["find", "findOne"], function (next) {
   }
 });
 
-schema.pre('updateOne', async function(next) {
+IndustrySchema.pre('updateOne', async function(next) {
   try {
     const industry = await this.model.findOne(this.getFilter());
 
@@ -84,4 +84,4 @@ schema.pre('updateOne', async function(next) {
   }
 })
 
-export const IndustrySchema = schema;
+export { IndustrySchema};

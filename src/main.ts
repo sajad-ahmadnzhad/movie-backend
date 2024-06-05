@@ -10,7 +10,7 @@ async function bootstrap() {
   const logger = new Logger();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
-  const PORT = configService.get<string>("PORT");
+  const PORT = configService.get<string>("PORT") || 3000;
 
   //* Config and Init Swagger
   swaggerConfigInit(app);
