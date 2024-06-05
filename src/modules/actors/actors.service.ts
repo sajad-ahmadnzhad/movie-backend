@@ -1,24 +1,32 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { InjectModel } from "@nestjs/mongoose";
 import { Actor } from "./models/Actor.model";
 import { Model } from "mongoose";
-import { Country } from "../countries/models/Country.model";
 import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
 import { User } from "../users/models/User.model";
 import { Industry } from "../industries/models/Industry.model";
-import { IndustriesMessages } from "src/common/enum/industriesMessages.enum";
-import { IIndustry } from "src/common/interfaces/public.interface";
+import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
+import {
+  IIndustry,
+  PaginatedList,
+} from "../../common/interfaces/public.interface";
 import { saveFile } from "../../common/utils/upload-file.util";
+import {
+  cachePagination,
+  mongoosePagination,
+} from "../../common/utils/pagination.util";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { RedisCache } from "cache-manager-redis-yet";
 
 @Injectable()
 export class ActorsService {
   constructor(
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
-    @InjectModel(Country.name) private readonly countryModel: Model<Country>,
-    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>
+    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
 
   async create(
@@ -55,8 +63,26 @@ export class ActorsService {
     }
   }
 
-  findAll() {
-    return this.actorModel.find();
+  async findAll(page?: number, limit?: number): Promise<PaginatedList<Actor>> {
+    const actorsCache = await this.redisCache.get<Array<Actor>>("actors");
+
+    if (actorsCache) {
+      return cachePagination(limit, page, actorsCache);
+    }
+
+    const actors = await this.actorModel.find();
+    await this.redisCache.set("actors", actors, 30_000);
+
+    const query = this.actorModel.find();
+
+    const mongoosePaginationResult = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.actorModel
+    );
+
+    return mongoosePaginationResult;
   }
 
   findOne(id: number) {

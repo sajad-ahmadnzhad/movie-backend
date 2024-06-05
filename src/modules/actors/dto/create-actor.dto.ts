@@ -7,7 +7,7 @@ import {
   Matches,
 } from "class-validator";
 import { ObjectId } from "mongoose";
-import { PublicMessages } from "src/common/enum/public.messages";
+import { PublicMessages } from "../../../common/enum/public.messages";
 
 export class CreateActorDto {
   @IsString()
@@ -22,7 +22,7 @@ export class CreateActorDto {
   bio?: string;
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({type: String})
+  @ApiProperty({ type: String })
   @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
   industryId: ObjectId;
 
