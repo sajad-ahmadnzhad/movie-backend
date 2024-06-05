@@ -4,7 +4,7 @@ import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { InjectModel } from "@nestjs/mongoose";
 import { Actor } from "./models/Actor.model";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
 import { User } from "../users/models/User.model";
 import { Industry } from "../industries/models/Industry.model";
@@ -85,8 +85,14 @@ export class ActorsService {
     return mongoosePaginationResult;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} actor`;
+  async findOne(id: string): Promise<Document> {
+    const existingActor = await this.actorModel.findById(id);
+
+    if (!existingActor) {
+      throw new NotFoundException(ActorsMessages.NotFoundActor);
+    }
+
+    return existingActor;
   }
 
   update(id: number, updateActorDto: UpdateActorDto) {

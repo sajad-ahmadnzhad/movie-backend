@@ -19,7 +19,10 @@ import { User } from "../users/models/User.model";
 import {
   CreateActorDecorator,
   GetAllActorsDecorator,
-} from "src/common/decorators/actors.decorator";
+  GetOneActorDecorator,
+} from "../../common/decorators/actors.decorator";
+import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { Document } from "mongoose";
 
 @Controller("actors")
 @ApiTags("actors")
@@ -47,8 +50,9 @@ export class ActorsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.actorsService.findOne(+id);
+  @GetOneActorDecorator
+  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+    return this.actorsService.findOne(id);
   }
 
   @Patch(":id")

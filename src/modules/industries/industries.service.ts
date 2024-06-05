@@ -20,7 +20,7 @@ import { RedisCache } from "cache-manager-redis-yet";
 import {
   cachePagination,
   mongoosePagination,
-} from "src/common/utils/pagination.util";
+} from "../../common/utils/pagination.util";
 import {
   ICreatedBy,
   PaginatedList,
