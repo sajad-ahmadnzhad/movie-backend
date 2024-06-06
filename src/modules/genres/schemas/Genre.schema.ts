@@ -36,4 +36,14 @@ GenreSchema.pre("save", async function (next) {
   }
 });
 
+GenreSchema.pre(["find", "findOne"], function (next) {
+  try {
+    this.populate("createdBy", "name username avatarURL");
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export { GenreSchema };

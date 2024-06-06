@@ -27,6 +27,8 @@ import {
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
 import { Throttle } from "@nestjs/throttler";
+import { PaginatedList } from '../../common/interfaces/public.interface';
+import { Country } from "./schemas/Country.schema";
 
 @Controller("countries")
 @ApiTags("countries")
@@ -55,7 +57,7 @@ export class CountriesController {
   findAll(
     @Query("page", new ParseIntPipe({ optional: true })) page?: number,
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  ) {
+  ): Promise<PaginatedList<Country>> {
     return this.countriesService.findAll(limit, page);
   }
 

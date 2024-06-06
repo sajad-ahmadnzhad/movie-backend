@@ -65,9 +65,9 @@ export const GetOneCountryDecorator = applyDecorators(
   ApiOkResponse({ type: Object })
 );
 
-//* Get all countries
-export const GetAllCountriesDecorator = applyDecorators(
-  ApiOperation({ summary: "get all countries" }),
+//* Get all genres
+export const GetAllGenresDecorator = applyDecorators(
+  ApiOperation({ summary: "get all genres" }),
   ApiQuery({ name: "page", type: Number, required: false }),
   ApiQuery({ name: "limit", type: Number, required: false }),
   ApiOkResponse({ type: [Object] })

@@ -6,6 +6,8 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
+  Query,
 } from "@nestjs/common";
 import { GenresService } from "./genres.service";
 import { CreateGenreDto } from "./dto/create-genre.dto";
@@ -13,7 +15,12 @@ import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/schemas/User.schema";
 import { ApiTags } from "@nestjs/swagger";
-import { CreateGenreDecorator } from "src/common/decorators/genres.decorator";
+import {
+  CreateGenreDecorator,
+  GetAllGenresDecorator,
+} from "../../common/decorators/genres.decorator";
+import { PaginatedList } from "../../common/interfaces/public.interface";
+import { Genre } from "./schemas/Genre.schema";
 
 @Controller("genres")
 @ApiTags("genres")
@@ -31,8 +38,12 @@ export class GenresController {
   }
 
   @Get()
-  findAll() {
-    return this.genresService.findAll();
+  @GetAllGenresDecorator
+  findAll(
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Genre>> {
+    return this.genresService.findAll(limit, page);
   }
 
   @Get(":id")
