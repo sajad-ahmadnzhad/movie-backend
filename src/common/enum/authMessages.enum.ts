@@ -16,4 +16,5 @@ export enum AuthMessages {
   SendVerifyEmailSuccess = "Send verify email successfully",
   verifiedEmailSuccess = "verified email successfully",
   VerifyYourEmail = "Verify your email before accessing this site",
+  BannedAccount = 'Your account is banned by admins'
 }

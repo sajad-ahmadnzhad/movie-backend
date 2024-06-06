@@ -26,6 +26,7 @@ import { ResetPasswordDto } from "./dto/resetPassword.dto";
 import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
+import { BanUser } from "../users/schemas/BanUser.schema";
 
 @Injectable()
 export class AuthService {
@@ -34,6 +35,7 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(CACHE_MANAGER) private redisCache: RedisCache,
     @InjectModel(Token.name) private tokenModel: Model<Token>,
+    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
     private mailerService: MailerService,
     private configService: ConfigService
   ) {}
@@ -58,6 +60,12 @@ export class AuthService {
 
     if (existingUser) {
       throw new ConflictException(AuthMessages.AlreadyRegistered);
+    }
+
+    const isBanUser = !!(await this.banUserModel.findOne({ email: dto.email }));
+
+    if (isBanUser) {
+      throw new ForbiddenException(AuthMessages.BannedAccount);
     }
 
     const isFirstUser = (await this.userModel.countDocuments()) == 0;
@@ -99,6 +107,14 @@ export class AuthService {
 
     if (!user) {
       throw new NotFoundException(AuthMessages.NotFoundUser);
+    }
+
+    const isBanUser = !!(await this.banUserModel.findOne({
+      email: user.email,
+    }));
+
+    if (isBanUser) {
+      throw new ForbiddenException(AuthMessages.BannedAccount);
     }
 
     const comparePassword = bcrypt.compareSync(password, user.password);

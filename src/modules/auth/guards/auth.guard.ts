@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
     private jwtService: JwtService,
     private configService: ConfigService,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(BanUser.name) private readonly banUser: Model<BanUser>
+    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -54,9 +54,11 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const isBanUser = !!(await this.banUser.findOne({ email: user.email }));
+    const isBanUser = !!(await this.banUserModel.findOne({
+      email: user.email,
+    }));
 
-    if (!isBanUser) {
+    if (isBanUser) {
       throw new ForbiddenException("Your account is banned by admins");
     }
 
