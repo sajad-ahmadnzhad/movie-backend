@@ -2,9 +2,9 @@ import { Module } from "@nestjs/common";
 import { IndustriesService } from "./industries.service";
 import { IndustriesController } from "./industries.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Industry, IndustrySchema } from "./models/industry.model";
-import { User, UserSchema } from "../users/models/User.model";
-import { Country, CountrySchema } from "../countries/models/Country.model";
+import { Industry, IndustrySchema } from "./schemas/Industry.schema";
+import { User, UserSchema } from "../users/schemas/User.schema";
+import { Country, CountrySchema } from "../countries/schemas/Country.schema";
 
 @Module({
   imports: [

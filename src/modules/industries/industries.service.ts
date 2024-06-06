@@ -7,12 +7,12 @@ import {
 } from "@nestjs/common";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
-import { User } from "../users/models/User.model";
+import { User } from "../users/schemas/User.schema";
 import { sendError } from "../../common/utils/functions.util";
 import { InjectModel } from "@nestjs/mongoose";
-import { Industry } from "./models/industry.model";
+import { Industry } from "./schemas/Industry.schema";
 import { Document, Model } from "mongoose";
-import { Country } from "../countries/models/Country.model";
+import { Country } from "../countries/schemas/Country.schema";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";

@@ -2,9 +2,8 @@ import { ConflictException } from "@nestjs/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, ObjectId } from "mongoose";
 import { CountriesMessages } from "../../../common/enum/countriesMessages.enum";
-import { removeFile } from "src/common/utils/functions.util";
-import { User } from "src/modules/users/models/User.model";
-import { Industry } from "../../industries/models/Industry.model";
+import { removeFile } from "../../../common/utils/functions.util";
+import { User } from "../../../modules/users/schemas/User.schema";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Country extends Document {

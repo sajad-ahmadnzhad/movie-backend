@@ -7,9 +7,9 @@ import {
 } from "@nestjs/common";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
-import { Country } from "./models/Country.model";
+import { Country } from "./schemas/Country.schema";
 import { Document, Model } from "mongoose";
-import { User } from "../users/models/User.model";
+import { User } from "../users/schemas/User.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile, sendError } from "../../common/utils/functions.util";

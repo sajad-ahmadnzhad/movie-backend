@@ -15,7 +15,7 @@ import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/models/User.model";
+import { User } from "../users/schemas/User.schema";
 import {
   CreateActorDecorator,
   GetActorsByCountry,
@@ -83,7 +83,7 @@ export class ActorsController {
     @Param("id", IsValidObjectIdPipe) id: string,
     @Body() updateActorDto: UpdateActorDto,
     @UserDecorator() user: User,
-    @UploadedFile() file?: Express.Multer.File,
+    @UploadedFile() file?: Express.Multer.File
   ): Promise<{ message: string }> {
     const success = await this.actorsService.update(
       id,

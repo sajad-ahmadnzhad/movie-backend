@@ -15,7 +15,7 @@ import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/models/User.model";
+import { User } from "../users/schemas/User.schema";
 import {
   CreateCountryDecorator,
   GetAllCountriesDecorator,

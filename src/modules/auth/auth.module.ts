@@ -2,9 +2,9 @@ import { Module } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthController } from "./auth.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { User, UserSchema } from "../users/models/User.model";
+import { User, UserSchema } from "../users/schemas/User.schema";
 import { JwtModule } from "@nestjs/jwt";
-import { Token, TokenSchema } from "../users/models/Token.model";
+import { Token, TokenSchema } from "../users/schemas/Token.schema";
 import { MailModule } from "../mail/mail.module";
 
 @Module({

@@ -23,10 +23,10 @@ import {
   GetIndustryByCountryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/models/User.model";
+import { User } from "../users/schemas/User.schema";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Industry } from "./models/industry.model";
+import { Industry } from "./schemas/Industry.schema";
 import { Document } from "mongoose";
 
 @Controller("industries")
@@ -63,12 +63,12 @@ export class IndustriesController {
     return this.industriesService.search(industry);
   }
 
-  @Get('by-country/:id')
+  @Get("by-country/:id")
   @GetIndustryByCountryDecorator
   findByCountry(
-    @Param('id', IsValidObjectIdPipe) id: string
+    @Param("id", IsValidObjectIdPipe) id: string
   ): Promise<Document[]> {
-    return this.industriesService.findByCountry(id)
+    return this.industriesService.findByCountry(id);
   }
 
   @Get(":id")

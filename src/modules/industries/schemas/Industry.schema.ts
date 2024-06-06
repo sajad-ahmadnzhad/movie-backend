@@ -1,8 +1,8 @@
 import { ConflictException } from "@nestjs/common";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { Document, ObjectId } from "mongoose";
-import { Country } from "../../countries/models/Country.model";
-import { User } from "../../users/models/User.model";
+import { Country } from "../../countries/schemas/Country.schema";
+import { User } from "../../users/schemas/User.schema";
 import { IndustriesMessages } from "../../../common/enum/industriesMessages.enum";
 
 @Schema({ versionKey: false, timestamps: true })
@@ -49,7 +49,7 @@ IndustrySchema.pre(["find", "findOne"], function (next) {
         path: "country",
         select: "name description flag_image_URL",
         transform(doc) {
-         doc && (doc.createdBy = undefined);
+          doc && (doc.createdBy = undefined);
           return doc;
         },
       },
@@ -65,7 +65,7 @@ IndustrySchema.pre(["find", "findOne"], function (next) {
   }
 });
 
-IndustrySchema.pre('updateOne', async function(next) {
+IndustrySchema.pre("updateOne", async function (next) {
   try {
     const industry = await this.model.findOne(this.getFilter());
 
@@ -82,6 +82,6 @@ IndustrySchema.pre('updateOne', async function(next) {
   } catch (error) {
     next(error);
   }
-})
+});
 
-export { IndustrySchema};
+export { IndustrySchema };

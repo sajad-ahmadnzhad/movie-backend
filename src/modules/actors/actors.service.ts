@@ -9,11 +9,11 @@ import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { InjectModel } from "@nestjs/mongoose";
-import { Actor } from "./models/Actor.model";
+import { Actor } from "./schemas/Actor.schema";
 import { Document, Model } from "mongoose";
 import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
-import { User } from "../users/models/User.model";
-import { Industry } from "../industries/models/Industry.model";
+import { User } from "../users/schemas/User.schema";
+import { Industry } from "../industries/schemas/Industry.schema";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import {
   ICreatedBy,
@@ -27,7 +27,7 @@ import {
 } from "../../common/utils/pagination.util";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
-import { Country } from "../countries/models/Country.model";
+import { Country } from "../countries/schemas/Country.schema";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 
 @Injectable()

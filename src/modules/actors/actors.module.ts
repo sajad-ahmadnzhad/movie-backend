@@ -2,10 +2,13 @@ import { Module } from "@nestjs/common";
 import { ActorsService } from "./actors.service";
 import { ActorsController } from "./actors.controller";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Actor, ActorSchema } from "./models/Actor.model";
-import { Country, CountrySchema } from "../countries/models/Country.model";
-import { User, UserSchema } from "../users/models/User.model";
-import { Industry, IndustrySchema } from "../industries/models/Industry.model";
+import { Actor, ActorSchema } from "./schemas/Actor.schema";
+import { Country, CountrySchema } from "../countries/schemas/Country.schema";
+import { User, UserSchema } from "../users/schemas/User.schema";
+import {
+  Industry,
+  IndustrySchema,
+} from "../industries/schemas/Industry.schema";
 
 @Module({
   imports: [

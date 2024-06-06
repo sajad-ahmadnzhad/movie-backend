@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, ObjectId, Types } from "mongoose";
-import { Country } from "../../../modules/countries/models/Country.model";
-import { User } from "../../../modules/users/models/User.model";
-import { Industry } from "../../../modules/industries/models/Industry.model";
+import { Country } from "../../countries/schemas/Country.schema";
+import { User } from "../../users/schemas/User.schema";
+import { Industry } from "../../industries/schemas/Industry.schema";
 import { ConflictException } from "@nestjs/common";
 import { ActorsMessages } from "../../../common/enum/actorsMessages.enum";
-import { removeFile } from "src/common/utils/functions.util";
+import { removeFile } from "../../../common/utils/functions.util";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Actor extends Document {
