@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -63,6 +64,18 @@ export class GenresService {
     return mongoosePaginationResult;
   }
 
+  search(genreQuery: string): Promise<Array<Document>> {
+    if (!genreQuery?.trim()) {
+      throw new BadRequestException(GenresMessages.RequiredGenreQuery);
+    }
+
+    const genres = this.genreModel.find({
+      name: { $regex: genreQuery },
+    });
+
+    return genres;
+  }
+
   async findOne(id: string): Promise<Document> {
     const existingGenre = await this.genreModel.findById(id);
 
@@ -104,7 +117,24 @@ export class GenresService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} genre`;
+  async remove(id: string, user: User): Promise<string> {
+    const existingGenre: ICreatedBy<Genre> | null =
+      await this.genreModel.findById(id);
+
+    if (!existingGenre) {
+      throw new NotFoundException(GenresMessages.NotFoundGenre);
+    }
+
+    if (String(user._id) !== String(existingGenre.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(GenresMessages.CannotRemoveGenre);
+    }
+
+    try {
+      await existingGenre.deleteOne();
+      return GenresMessages.RemoveGenreSuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 }

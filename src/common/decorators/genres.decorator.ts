@@ -1,9 +1,6 @@
-import { UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { UseGuards, applyDecorators } from "@nestjs/common";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
-import { fileFilter } from "../../common/utils/upload-file.util";
-import { memoryStorage } from "multer";
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -44,17 +41,17 @@ export const UpdateGenreDecorator = applyDecorators(
   ApiOperation({ summary: "update genre" })
 );
 
-//* Remove country decorator
-export const RemoveCountryDecorator = applyDecorators(
+//* Remove genre decorator
+export const RemoveGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
-  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiNotFoundResponse({ description: "Genre not found" }),
   ApiForbiddenResponse({
-    description: "Cannot Remove Country | Forbidden resource",
+    description: "Cannot Remove genre | Forbidden resource",
   }),
-  ApiOkResponse({ description: "Remove country success" }),
+  ApiOkResponse({ description: "Remove genre success" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiOperation({ summary: "remove country" })
+  ApiOperation({ summary: "remove genre" })
 );
 
 //* Get one genre decorator
@@ -73,10 +70,10 @@ export const GetAllGenresDecorator = applyDecorators(
   ApiOkResponse({ type: [Object] })
 );
 
-//* Search Countries decorator
-export const SearchCountriesDecorator = applyDecorators(
-  ApiOperation({ summary: "search in countries" }),
-  ApiBadRequestResponse({ description: "Required country query" }),
-  ApiQuery({ name: "country", type: String }),
+//* Search Genres decorator
+export const SearchGenresDecorator = applyDecorators(
+  ApiOperation({ summary: "search in genres" }),
+  ApiBadRequestResponse({ description: "Required genre query" }),
+  ApiQuery({ name: "genre", type: String }),
   ApiOkResponse({ type: [Object] })
 );

@@ -19,6 +19,8 @@ import {
   CreateGenreDecorator,
   GetAllGenresDecorator,
   GetOneGenreDecorator,
+  RemoveGenreDecorator,
+  SearchGenresDecorator,
   UpdateGenreDecorator,
 } from "../../common/decorators/genres.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
@@ -50,30 +52,38 @@ export class GenresController {
     return this.genresService.findAll(limit, page);
   }
 
+  @Get("search")
+  @SearchGenresDecorator
+  search(@Query("genre") genre: string): Promise<Array<Document>> {
+    return this.genresService.search(genre);
+  }
+
   @Get(":id")
   @GetOneGenreDecorator
   findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.genresService.findOne(id);
   }
 
-
   @Patch(":id")
   @UpdateGenreDecorator
   async update(
     @Param("id", IsValidObjectIdPipe) id: string,
     @Body() updateCountryDto: UpdateGenreDto,
-    @UserDecorator() user: User,
+    @UserDecorator() user: User
   ): Promise<{ message: string }> {
-    const success = await this.genresService.update(
-      id,
-      updateCountryDto,
-      user,
-    );
+    const success = await this.genresService.update(id, updateCountryDto, user);
 
     return { message: success };
   }
+
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.genresService.remove(+id);
+  @RemoveGenreDecorator
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.genresService.remove(id, user);
+
+    return { message: success };
   }
 }
