@@ -216,10 +216,10 @@ export class UsersService {
       throw new ForbiddenException(UsersMessages.CannotBanAdmin);
     }
 
-    const alreadyBanUser = await this.banUserModel.findOne(banUserDto)
+    const alreadyBanUser = await this.banUserModel.findOne(banUserDto);
 
-    if(alreadyBanUser){
-      throw new ConflictException(UsersMessages.AlreadyBannedUser)
+    if (alreadyBanUser) {
+      throw new ConflictException(UsersMessages.AlreadyBannedUser);
     }
 
     await this.banUserModel.create({ ...banUserDto, createdBy: user._id });
@@ -227,7 +227,7 @@ export class UsersService {
     return UsersMessages.BanUserSuccess;
   }
 
-  async unbanUser(id:string, user: User): Promise<string> {
+  async unbanUser(id: string, user: User): Promise<string> {
     const existingBanUser = await this.banUserModel.findById(id);
 
     if (!existingBanUser) {
@@ -239,12 +239,12 @@ export class UsersService {
         throw new ForbiddenException(UsersMessages.CannotUnbanUser);
     }
 
-    await existingBanUser.deleteOne()
+    await existingBanUser.deleteOne();
 
     return UsersMessages.BanUserSuccess;
   }
 
   async findAllBan(): Promise<Document[]> {
-    return this.banUserModel.find()
+    return this.banUserModel.find();
   }
 }

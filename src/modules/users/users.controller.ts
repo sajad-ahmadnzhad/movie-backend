@@ -79,18 +79,17 @@ export class UsersController {
   @UnbanUserDecorator
   async unbanUser(
     @UserDecorator() user: User,
-    @Param('id' , IsValidObjectIdPipe) id: string,
+    @Param("id", IsValidObjectIdPipe) id: string
   ): Promise<{ message: string }> {
     const success = await this.usersService.unbanUser(id, user);
     return { message: success };
   }
 
-  @Get('ban')
+  @Get("ban")
   @GetAllBanUserDecorator
   getAllBans(): Promise<Document[]> {
-    return this.usersService.findAllBan()
-    }
-    
+    return this.usersService.findAllBan();
+  }
 
   @Get(":userId")
   @GetOneUserDecorator
