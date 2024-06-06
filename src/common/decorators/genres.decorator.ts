@@ -30,7 +30,6 @@ export const CreateGenreDecorator = applyDecorators(
 export const UpdateGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
-  ApiConsumes("multipart/form-data"),
   ApiNotFoundResponse({ description: "Genre not found" }),
   ApiForbiddenResponse({
     description: "Cannot update genre | Forbidden resource",

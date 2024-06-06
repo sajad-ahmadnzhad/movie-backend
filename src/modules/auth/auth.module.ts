@@ -6,12 +6,14 @@ import { User, UserSchema } from "../users/schemas/User.schema";
 import { JwtModule } from "@nestjs/jwt";
 import { Token, TokenSchema } from "../users/schemas/Token.schema";
 import { MailModule } from "../mail/mail.module";
+import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Token.name, schema: TokenSchema },
+      { name: BanUser.name, schema: BanUserSchema },
     ]),
     JwtModule.register({ global: true }),
     MailModule,

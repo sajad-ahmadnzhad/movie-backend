@@ -9,6 +9,7 @@ import {
   Industry,
   IndustrySchema,
 } from "../industries/schemas/Industry.schema";
+import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import {
       { name: Country.name, schema: CountrySchema },
       { name: User.name, schema: UserSchema },
       { name: Industry.name, schema: IndustrySchema },
+      { name: BanUser.name, schema: BanUserSchema },
     ]),
   ],
   controllers: [ActorsController],
