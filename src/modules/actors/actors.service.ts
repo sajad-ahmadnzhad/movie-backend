@@ -193,7 +193,24 @@ export class ActorsService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} actor`;
+  async remove(id: string, user: User): Promise<string> {
+    const existingActor: ICreatedBy<Actor> | null =
+      await this.actorModel.findById(id);
+
+    if (!existingActor) {
+      throw new NotFoundException(ActorsMessages.NotFoundActor);
+    }
+
+    if (String(user._id) !== String(existingActor.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(ActorsMessages.CannotRemoveActor);
+    }
+
+    try {
+      await existingActor.deleteOne();
+      return ActorsMessages.RemoveActorSuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 }

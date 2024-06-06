@@ -24,6 +24,7 @@ import {
   GetOneActorDecorator,
   SearchActorsDecorator,
   UpdateActorDecorator,
+  RemoveActorDecorator,
 } from "../../common/decorators/actors.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
@@ -95,7 +96,13 @@ export class ActorsController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.actorsService.remove(+id);
+  @RemoveActorDecorator
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.actorsService.remove(id, user);
+
+    return { message: success };
   }
 }

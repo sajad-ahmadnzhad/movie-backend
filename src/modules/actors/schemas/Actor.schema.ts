@@ -100,4 +100,18 @@ ActorSchema.pre("updateOne", async function (next) {
   }
 });
 
+
+ActorSchema.pre("deleteOne", async function (next) {
+  try {
+    const actor = await this.model.findOne(this.getFilter());
+
+    removeFile(actor.photo)
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+
 export { ActorSchema };

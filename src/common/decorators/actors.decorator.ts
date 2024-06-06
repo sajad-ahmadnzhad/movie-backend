@@ -99,3 +99,16 @@ export const UpdateActorDecorator = applyDecorators(
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "update actor" })
 );
+
+//* Remove actor decorator
+export const RemoveActorDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "actor not found" }),
+  ApiForbiddenResponse({
+    description: "Cannot remove actor | Forbidden resource",
+  }),
+  ApiOkResponse({ description: "Remove actor success" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "remove actor" })
+);
