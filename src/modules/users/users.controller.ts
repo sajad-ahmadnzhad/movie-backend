@@ -18,6 +18,7 @@ import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { UserDecorator } from "./decorators/currentUser.decorator";
 import { Express, Response } from "express";
 import {
+  BanUserDecorator,
   ChangeRoleUserDecorator,
   ChangeSuperAdminDecorator,
   DeleteAccountUserDecorator,
@@ -32,6 +33,7 @@ import { DeleteAccountDto } from "./dto/delete-account.dto";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
+import { BanUserDto } from "./dto/ban-user.dto";
 
 @Controller("users")
 @ApiTags("users")
@@ -59,6 +61,16 @@ export class UsersController {
   @SearchUserDecorator
   searchUser(@Query("user") user: string) {
     return this.usersService.searchUser(user);
+  }
+
+  @Patch("ban")
+  @BanUserDecorator
+  async banUser(
+    @UserDecorator() user: User,
+    @Body() banUserDto: BanUserDto
+  ): Promise<{ message: string }> {
+    const success = await this.usersService.banUser(banUserDto, user);
+    return { message: success };
   }
 
   @Get(":userId")

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   NotFoundException,
@@ -21,12 +22,15 @@ import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
+import { BanUserDto } from "./dto/ban-user.dto";
+import { BanUser } from "./schemas/BanUser.schema";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private usersModel: Model<User>,
-    @Inject(CACHE_MANAGER) private redisCache: RedisCache
+    @InjectModel(User.name) private readonly usersModel: Model<User>,
+    @InjectModel(BanUser.name) private readonly banUserMode: Model<BanUser>,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
 
   async findAllUsers(
@@ -196,7 +200,23 @@ export class UsersService {
     return UsersMessages.OwnershipTransferSuccess;
   }
 
-  async banUser(email: string) {
-    
+  async banUser(banUserDto: BanUserDto, user: User): Promise<string> {
+    const existingUser = await this.usersModel.findOne(banUserDto);
+
+    if (!existingUser) {
+      throw new NotFoundException(UsersMessages.NotFound);
+    }
+
+    if (existingUser.isSuperAdmin) {
+      throw new ForbiddenException(UsersMessages.CannotBanSuperAdmin);
+    }
+
+    if (!user.isSuperAdmin && existingUser.isAdmin) {
+      throw new ForbiddenException(UsersMessages.CannotBanAdmin);
+    }
+
+    await this.banUserMode.create({ ...banUserDto, createdBy: user._id });
+
+    return UsersMessages.BanUserSuccess;
   }
 }

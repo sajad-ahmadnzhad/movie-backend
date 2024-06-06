@@ -12,4 +12,8 @@ export enum UsersMessages {
   TransferOwnershipForDeleteAccount = "To delete your account, transfer ownership first",
   OwnershipTransferSuccess = "The ownership transfer was successful",
   EnteredIdIsSuperAdmin = "The entered ID is super admin",
+  BanUserSuccess = "User banned successfully",
+  UnBanUserSuccess = "User unbanned successfully",
+  CannotBanAdmin = "You cannot ban admin",
+  CannotBanSuperAdmin = "You cannot ban super admin",
 }

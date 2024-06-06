@@ -5,6 +5,7 @@ import {
   ApiConflictResponse,
   ApiConsumes,
   ApiForbiddenResponse,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -20,6 +21,7 @@ import { fileFilter } from "../utils/upload-file.util";
 //* Get me decorator
 export const GetMeDecorator = applyDecorators(
   UseGuards(AuthGuard),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "get my account" }),
   ApiOkResponse({ description: "get account", type: Object })
 );
@@ -28,6 +30,7 @@ export const GetMeDecorator = applyDecorators(
 export const GetAllUsersDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiOkResponse({ description: "Return all users for admins", type: Object }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiOperation({ summary: "get all users" }),
   ApiQuery({ name: "page", type: Number, required: false }),
@@ -38,6 +41,7 @@ export const GetAllUsersDecorator = applyDecorators(
 export const GetOneUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiBadRequestResponse({ description: "This id is not from mongodb" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiNotFoundResponse({ description: "User not found" }),
   ApiOkResponse({ description: "All users", type: Object }),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
@@ -46,6 +50,7 @@ export const GetOneUserDecorator = applyDecorators(
 
 //* Update user decorator
 export const UpdateUserDecorator = applyDecorators(
+  UseGuards(AuthGuard),
   UseInterceptors(
     FileInterceptor("avatar", {
       fileFilter,
@@ -53,7 +58,7 @@ export const UpdateUserDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, fields: 1, files: 1 },
     })
   ),
-  UseGuards(AuthGuard),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiConsumes("multipart/form-data"),
   ApiOperation({ summary: "update current user" }),
   ApiOkResponse({ description: "Updated user success" }),
@@ -67,6 +72,7 @@ export const RemoveUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiNotFoundResponse({ description: "User not found" }),
   ApiBadRequestResponse({ description: "Cannot remove admin" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOkResponse({ description: "Removed user success" }),
   ApiOperation({ summary: "remove user" })
 );
@@ -75,6 +81,7 @@ export const RemoveUserDecorator = applyDecorators(
 export const ChangeRoleUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard, IsSuperAdminGuard),
   ApiNotFoundResponse({ description: "User not found" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiBadRequestResponse({ description: "Cannot change role super admin" }),
   ApiOkResponse({ description: "Changed role success" }),
   ApiOperation({ summary: "change role to admin or user" })
@@ -84,6 +91,7 @@ export const ChangeRoleUserDecorator = applyDecorators(
 export const SearchUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiOperation({ summary: "search in users list" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiBadRequestResponse({ description: "User query is required" }),
   ApiOkResponse({ description: "Get matched users", type: Object })
 );
@@ -94,6 +102,7 @@ export const DeleteAccountUserDecorator = applyDecorators(
   ApiBadRequestResponse({
     description: "Invalid Password | cannot delete account super admin",
   }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiBadRequestResponse({
     description: "Transfer Ownership For Delete Account | Invalid password",
   }),
@@ -108,10 +117,21 @@ export const ChangeSuperAdminDecorator = applyDecorators(
     name: "userId",
     description: "ID of the person who becomes the owner",
   }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiNotFoundResponse({ description: "User not found" }),
   ApiBadRequestResponse({
     description: "Entered id is super admin | Invalid password",
   }),
   ApiOkResponse({ description: "Changed super admin success" }),
   ApiOperation({ summary: "possession transition" })
+);
+
+//* Ban User Decorator
+export const BanUserDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiForbiddenResponse({ description: "Cannot ban admin or super admin" }),
+  ApiNotFoundResponse({ description: "User not found" }),
+  ApiOkResponse({ description: "Banned user success" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "ban a user" })
 );
