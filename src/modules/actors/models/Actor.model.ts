@@ -5,6 +5,7 @@ import { User } from "../../../modules/users/models/User.model";
 import { Industry } from "../../../modules/industries/models/Industry.model";
 import { ConflictException } from "@nestjs/common";
 import { ActorsMessages } from "../../../common/enum/actorsMessages.enum";
+import { removeFile } from "src/common/utils/functions.util";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Actor extends Document {
@@ -70,6 +71,29 @@ ActorSchema.pre("save", async function (next) {
 
     if (existingIndustry) {
       throw new ConflictException(ActorsMessages.AlreadyExistsActor);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+ActorSchema.pre("updateOne", async function (next) {
+  try {
+    const actor = await this.model.findOne(this.getFilter());
+
+    const updateData: any = this.getUpdate();
+
+    const existingActor = await this.model.findOne({
+      name: updateData["$set"].name,
+      _id: { $ne: actor._id },
+    });
+
+    if (existingActor) {
+      throw new ConflictException(ActorsMessages.AlreadyExistsActor);
+    }
+
+    if (updateData["$set"].photo) {
+      removeFile(actor.photo);
     }
   } catch (error) {
     next(error);

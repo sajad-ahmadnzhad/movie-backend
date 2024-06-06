@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile, sendError } from "../../common/utils/functions.util";
@@ -10,6 +16,7 @@ import { User } from "../users/models/User.model";
 import { Industry } from "../industries/models/Industry.model";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import {
+  ICreatedBy,
   IIndustry,
   PaginatedList,
 } from "../../common/interfaces/public.interface";
@@ -138,8 +145,52 @@ export class ActorsService {
     return actors;
   }
 
-  update(id: number, updateActorDto: UpdateActorDto) {
-    return `This action updates a #${id} actor`;
+  async update(
+    id: string,
+    updateActorDto: UpdateActorDto,
+    user: User,
+    file?: Express.Multer.File
+  ) {
+    const existingActor: ICreatedBy<Actor> | null =
+      await this.actorModel.findById(id);
+
+    if (!existingActor) {
+      throw new NotFoundException(ActorsMessages.NotFoundActor);
+    }
+
+    const existingIndustry: IIndustry<Industry> | null | undefined =
+      updateActorDto.industryId &&
+      (await this.industryModel.findById(updateActorDto.industryId));
+
+    if (updateActorDto.industryId && !existingIndustry)
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+
+    if (String(user._id) !== String(existingActor.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(ActorsMessages.CannotUpdateActor);
+    }
+
+    let filePath = file && saveFile(file, "actor-photo");
+
+    if (file) filePath = `/uploads/actor-photo/${filePath}`;
+
+    try {
+      await existingActor.updateOne({
+        $set: {
+          name: updateActorDto.name,
+          bio: updateActorDto.bio,
+          industry: updateActorDto.industryId,
+          createdBy: user._id,
+          photo: filePath,
+          country: existingIndustry?.country._id,
+        },
+      });
+
+      return ActorsMessages.UpdatedActorSuccess;
+    } catch (error) {
+      removeFile(filePath);
+      throw sendError(error.message, error.status);
+    }
   }
 
   remove(id: number) {

@@ -77,3 +77,25 @@ export const SearchActorsDecorator = applyDecorators(
   ApiQuery({ name: "actor", type: String }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Update actor decorator
+export const UpdateActorDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  UseInterceptors(
+    FileInterceptor("photo", {
+      fileFilter,
+      storage: memoryStorage(),
+      limits: { fileSize: 2048 * 1024, files: 1 },
+    })
+  ),
+  ApiConsumes("multipart/form-data"),
+  ApiNotFoundResponse({ description: "Actor not found | Industry not found" }),
+  ApiForbiddenResponse({
+    description: "Cannot update actor | Forbidden resource",
+  }),
+  ApiOkResponse({ description: "Updated actor success" }),
+  ApiConflictResponse({ description: "Already exists actor" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "update actor" })
+);

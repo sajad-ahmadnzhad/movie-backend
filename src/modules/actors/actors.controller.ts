@@ -23,6 +23,7 @@ import {
   GetAllActorsDecorator,
   GetOneActorDecorator,
   SearchActorsDecorator,
+  UpdateActorDecorator,
 } from "../../common/decorators/actors.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
@@ -77,8 +78,20 @@ export class ActorsController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateActorDto: UpdateActorDto) {
-    return this.actorsService.update(+id, updateActorDto);
+  @UpdateActorDecorator
+  async update(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @Body() updateActorDto: UpdateActorDto,
+    @UserDecorator() user: User,
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<{ message: string }> {
+    const success = await this.actorsService.update(
+      id,
+      updateActorDto,
+      user,
+      file
+    );
+    return { message: success };
   }
 
   @Delete(":id")
