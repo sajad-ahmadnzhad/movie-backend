@@ -22,6 +22,7 @@ import {
   GetActorsByIndustry,
   GetAllActorsDecorator,
   GetOneActorDecorator,
+  SearchActorsDecorator,
 } from "../../common/decorators/actors.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
@@ -49,6 +50,12 @@ export class ActorsController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ) {
     return this.actorsService.findAll(page, limit);
+  }
+
+  @Get("search")
+  @SearchActorsDecorator
+  search(@Query("actor") actor: string): Promise<Array<Document>> {
+    return this.actorsService.search(actor);
   }
 
   @Get(":id")

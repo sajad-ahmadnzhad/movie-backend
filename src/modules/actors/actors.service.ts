@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile, sendError } from "../../common/utils/functions.util";
@@ -121,6 +121,18 @@ export class ActorsService {
 
     const actors = this.actorModel.find({
       $or: [{ industry: id }, { industry: existingIndustry._id }],
+    });
+
+    return actors;
+  }
+
+  search(actorQuery: string): Promise<Array<Document>> {
+    if (!actorQuery?.trim()) {
+      throw new BadRequestException(ActorsMessages.RequiredActorQuery);
+    }
+
+    const actors = this.actorModel.find({
+      name: { $regex: actorQuery },
     });
 
     return actors;

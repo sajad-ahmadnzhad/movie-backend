@@ -69,3 +69,11 @@ export const GetActorsByIndustry = applyDecorators(
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Search Actors decorator
+export const SearchActorsDecorator = applyDecorators(
+  ApiOperation({ summary: "search in actors" }),
+  ApiBadRequestResponse({ description: "Required actor query" }),
+  ApiQuery({ name: "actor", type: String }),
+  ApiOkResponse({ type: [Object] })
+);
