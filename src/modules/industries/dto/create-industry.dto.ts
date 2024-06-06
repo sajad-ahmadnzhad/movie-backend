@@ -7,13 +7,17 @@ import {
   Matches,
 } from "class-validator";
 import { PublicMessages } from "../../../common/enum/public.messages";
+import { Transform } from "class-transformer";
 
 export class CreateIndustryDto {
   @IsString()
+  @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @Length(3, 50)
   @ApiProperty()
   name: string;
+  @Transform(({ value }) => value?.trim())
+  @IsNotEmpty()
   @IsString()
   @IsOptional()
   @Length(5, 150)
