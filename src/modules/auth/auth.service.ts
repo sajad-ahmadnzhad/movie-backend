@@ -31,13 +31,13 @@ import { BanUser } from "../users/schemas/BanUser.schema";
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService,
-    @Inject(CACHE_MANAGER) private redisCache: RedisCache,
-    @InjectModel(Token.name) private tokenModel: Model<Token>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    private readonly jwtService: JwtService,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
+    @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
     @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
-    private mailerService: MailerService,
-    private configService: ConfigService
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService
   ) {}
 
   private generateToken(
@@ -103,7 +103,7 @@ export class AuthService {
       .findOne({
         $or: [{ email: identifier }, { username: identifier }],
       })
-      .select("password");
+      .select("password email");
 
     if (!user) {
       throw new NotFoundException(AuthMessages.NotFoundUser);
