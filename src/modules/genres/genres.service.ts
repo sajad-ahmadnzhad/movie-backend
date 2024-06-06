@@ -1,10 +1,10 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { User } from "../users/schemas/User.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Genre } from "./schemas/Genre.schema";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { GenresMessages } from "../../common/enum/genresMessages.enum";
 import { sendError } from "../../common/utils/functions.util";
 import { RedisCache } from "cache-manager-redis-yet";
@@ -55,10 +55,15 @@ export class GenresService {
     return mongoosePaginationResult;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} genre`;
-  }
+  async findOne(id: string): Promise<Document> {
+    const existingGenre = await this.genreModel.findById(id);
 
+    if (!existingGenre) {
+      throw new NotFoundException(GenresMessages.NotFoundGenre);
+    }
+
+    return existingGenre;
+  }
   update(id: number, updateGenreDto: UpdateGenreDto) {
     return `This action updates a #${id} genre`;
   }

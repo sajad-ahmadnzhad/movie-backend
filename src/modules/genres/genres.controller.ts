@@ -18,9 +18,12 @@ import { ApiTags } from "@nestjs/swagger";
 import {
   CreateGenreDecorator,
   GetAllGenresDecorator,
+  GetOneGenreDecorator,
 } from "../../common/decorators/genres.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Genre } from "./schemas/Genre.schema";
+import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { Document } from "mongoose";
 
 @Controller("genres")
 @ApiTags("genres")
@@ -47,8 +50,9 @@ export class GenresController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.genresService.findOne(+id);
+  @GetOneGenreDecorator
+  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+    return this.genresService.findOne(id);
   }
 
   @Patch(":id")

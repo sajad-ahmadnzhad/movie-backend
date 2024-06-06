@@ -57,10 +57,10 @@ export const RemoveCountryDecorator = applyDecorators(
   ApiOperation({ summary: "remove country" })
 );
 
-//* Get one country decorator
-export const GetOneCountryDecorator = applyDecorators(
-  ApiOperation({ summary: "get one country by id" }),
-  ApiNotFoundResponse({ description: "country not found" }),
+//* Get one genre decorator
+export const GetOneGenreDecorator = applyDecorators(
+  ApiOperation({ summary: "get one genre by id" }),
+  ApiNotFoundResponse({ description: "genre not found" }),
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: Object })
 );
