@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -29,7 +30,7 @@ import { BanUser } from "./schemas/BanUser.schema";
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly usersModel: Model<User>,
-    @InjectModel(BanUser.name) private readonly banUserMode: Model<BanUser>,
+    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
 
@@ -215,8 +216,35 @@ export class UsersService {
       throw new ForbiddenException(UsersMessages.CannotBanAdmin);
     }
 
-    await this.banUserMode.create({ ...banUserDto, createdBy: user._id });
+    const alreadyBanUser = await this.banUserModel.findOne(banUserDto)
+
+    if(alreadyBanUser){
+      throw new ConflictException(UsersMessages.AlreadyBannedUser)
+    }
+
+    await this.banUserModel.create({ ...banUserDto, createdBy: user._id });
 
     return UsersMessages.BanUserSuccess;
+  }
+
+  async unbanUser(id:string, user: User): Promise<string> {
+    const existingBanUser = await this.banUserModel.findById(id);
+
+    if (!existingBanUser) {
+      throw new NotFoundException(UsersMessages.NotFound);
+    }
+
+    if (String(user._id) !== String(existingBanUser.createdBy)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(UsersMessages.CannotUnbanUser);
+    }
+
+    await existingBanUser.deleteOne()
+
+    return UsersMessages.BanUserSuccess;
+  }
+
+  async findAllBan(): Promise<Document[]> {
+    return this.banUserModel.find()
   }
 }

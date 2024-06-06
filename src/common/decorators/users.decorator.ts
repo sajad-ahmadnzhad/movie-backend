@@ -131,7 +131,25 @@ export const BanUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiForbiddenResponse({ description: "Cannot ban admin or super admin" }),
   ApiNotFoundResponse({ description: "User not found" }),
+  ApiConflictResponse({ description: "Already banned user" }),
   ApiOkResponse({ description: "Banned user success" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "ban a user" })
+);
+
+//* Unban User Decorator
+export const UnbanUserDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiNotFoundResponse({ description: "User not found" }),
+  ApiOkResponse({ description: "Unbanned user success" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "unban a user" })
+);
+
+//* Get all ban user Decorator
+export const GetAllBanUserDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "get all ban users" }),
+  ApiOkResponse({type: [Object]})
 );

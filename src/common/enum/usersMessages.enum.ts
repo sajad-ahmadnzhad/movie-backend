@@ -16,4 +16,6 @@ export enum UsersMessages {
   UnBanUserSuccess = "User unbanned successfully",
   CannotBanAdmin = "You cannot ban admin",
   CannotBanSuperAdmin = "You cannot ban super admin",
+  CannotUnbanUser = "You cannot unban user",
+  AlreadyBannedUser = "This user already banned",
 }

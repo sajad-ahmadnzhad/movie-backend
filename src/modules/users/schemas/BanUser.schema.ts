@@ -12,5 +12,13 @@ export class BanUser extends Document {
 
 const BanUserSchema = SchemaFactory.createForClass(BanUser);
 
+BanUserSchema.pre(["find", "findOne"], function (next) {
+  try {
+    this.populate("createdBy", "name username avatarURL");
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
-export {BanUserSchema}
+export { BanUserSchema };

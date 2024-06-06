@@ -22,11 +22,13 @@ import {
   ChangeRoleUserDecorator,
   ChangeSuperAdminDecorator,
   DeleteAccountUserDecorator,
+  GetAllBanUserDecorator,
   GetAllUsersDecorator,
   GetMeDecorator,
   GetOneUserDecorator,
   RemoveUserDecorator,
   SearchUserDecorator,
+  UnbanUserDecorator,
   UpdateUserDecorator,
 } from "../../common/decorators/users.decorator";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
@@ -72,6 +74,23 @@ export class UsersController {
     const success = await this.usersService.banUser(banUserDto, user);
     return { message: success };
   }
+
+  @Patch("unban/:id")
+  @UnbanUserDecorator
+  async unbanUser(
+    @UserDecorator() user: User,
+    @Param('id' , IsValidObjectIdPipe) id: string,
+  ): Promise<{ message: string }> {
+    const success = await this.usersService.unbanUser(id, user);
+    return { message: success };
+  }
+
+  @Get('ban')
+  @GetAllBanUserDecorator
+  getAllBans(): Promise<Document[]> {
+    return this.usersService.findAllBan()
+    }
+    
 
   @Get(":userId")
   @GetOneUserDecorator
