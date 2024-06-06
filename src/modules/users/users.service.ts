@@ -195,4 +195,8 @@ export class UsersService {
 
     return UsersMessages.OwnershipTransferSuccess;
   }
+
+  async banUser(email: string) {
+    
+  }
 }
