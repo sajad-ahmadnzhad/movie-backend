@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { User } from "../users/schemas/User.schema";
@@ -9,7 +14,10 @@ import { GenresMessages } from "../../common/enum/genresMessages.enum";
 import { sendError } from "../../common/utils/functions.util";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { PaginatedList } from "../../common/interfaces/public.interface";
+import {
+  ICreatedBy,
+  PaginatedList,
+} from "../../common/interfaces/public.interface";
 import {
   cachePagination,
   mongoosePagination,
@@ -64,8 +72,36 @@ export class GenresService {
 
     return existingGenre;
   }
-  update(id: number, updateGenreDto: UpdateGenreDto) {
-    return `This action updates a #${id} genre`;
+
+  async update(
+    id: string,
+    updateGenreDto: UpdateGenreDto,
+    user: User
+  ): Promise<string> {
+    const existingGenre: ICreatedBy<Genre> | null =
+      await this.genreModel.findById(id);
+
+    if (!existingGenre) {
+      throw new NotFoundException(GenresMessages.NotFoundGenre);
+    }
+
+    if (String(user._id) !== String(existingGenre.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(GenresMessages.CannotUpdateGenre);
+    }
+
+    try {
+      await existingGenre.updateOne({
+        $set: {
+          ...updateGenreDto,
+          createdBy: user._id,
+        },
+      });
+
+      return GenresMessages.UpdatedGenreSuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
   }
 
   remove(id: number) {

@@ -30,18 +30,18 @@ export const CreateGenreDecorator = applyDecorators(
 );
 
 //* Update Genre decorator
-export const UpdateCountryDecorator = applyDecorators(
+export const UpdateGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
   ApiConsumes("multipart/form-data"),
-  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiNotFoundResponse({ description: "Genre not found" }),
   ApiForbiddenResponse({
-    description: "Cannot update country | Forbidden resource",
+    description: "Cannot update genre | Forbidden resource",
   }),
-  ApiOkResponse({ description: "Updated country success" }),
-  ApiConflictResponse({ description: "Already exists country" }),
+  ApiOkResponse({ description: "Updated genre success" }),
+  ApiConflictResponse({ description: "Already exists Genre" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiOperation({ summary: "update country" })
+  ApiOperation({ summary: "update genre" })
 );
 
 //* Remove country decorator

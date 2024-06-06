@@ -19,6 +19,7 @@ import {
   CreateGenreDecorator,
   GetAllGenresDecorator,
   GetOneGenreDecorator,
+  UpdateGenreDecorator,
 } from "../../common/decorators/genres.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Genre } from "./schemas/Genre.schema";
@@ -55,11 +56,22 @@ export class GenresController {
     return this.genresService.findOne(id);
   }
 
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateGenreDto: UpdateGenreDto) {
-    return this.genresService.update(+id, updateGenreDto);
-  }
 
+  @Patch(":id")
+  @UpdateGenreDecorator
+  async update(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @Body() updateCountryDto: UpdateGenreDto,
+    @UserDecorator() user: User,
+  ): Promise<{ message: string }> {
+    const success = await this.genresService.update(
+      id,
+      updateCountryDto,
+      user,
+    );
+
+    return { message: success };
+  }
   @Delete(":id")
   remove(@Param("id") id: string) {
     return this.genresService.remove(+id);

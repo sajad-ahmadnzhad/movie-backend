@@ -46,4 +46,23 @@ GenreSchema.pre(["find", "findOne"], function (next) {
   }
 });
 
+GenreSchema.pre("updateOne", async function (next) {
+  try {
+    const genre = await this.model.findOne(this.getFilter());
+
+    const updateData: any = this.getUpdate();
+
+    const existingGenre = await this.model.findOne({
+      name: updateData["$set"].name,
+      _id: { $ne: genre._id },
+    });
+
+    if (existingGenre) {
+      throw new ConflictException(GenresMessages.AlreadyExistsGenre);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 export { GenreSchema };
