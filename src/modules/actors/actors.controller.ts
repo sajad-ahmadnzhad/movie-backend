@@ -28,9 +28,11 @@ import {
 } from "../../common/decorators/actors.decorator";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
+import { Throttle } from "@nestjs/throttler";
 
 @Controller("actors")
 @ApiTags("actors")
+@Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class ActorsController {
   constructor(private readonly actorsService: ActorsService) {}
 

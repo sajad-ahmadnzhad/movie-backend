@@ -19,6 +19,7 @@ import { mongooseConfig } from "../../config/mongoose.config";
 import { CountriesModule } from "../countries/countries.module";
 import { IndustriesModule } from "../industries/industries.module";
 import { ActorsModule } from "../actors/actors.module";
+import { GenresModule } from "../genres/genres.module";
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { ActorsModule } from "../actors/actors.module";
     MailModule,
     CountriesModule,
     IndustriesModule,
-    ActorsModule
+    ActorsModule,
+    GenresModule
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },

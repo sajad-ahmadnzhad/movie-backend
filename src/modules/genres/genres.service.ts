@@ -1,15 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { CreateGenreDto } from './dto/create-genre.dto';
-import { UpdateGenreDto } from './dto/update-genre.dto';
+import { Injectable } from "@nestjs/common";
+import { CreateGenreDto } from "./dto/create-genre.dto";
+import { UpdateGenreDto } from "./dto/update-genre.dto";
+import { User } from "../users/schemas/User.schema";
+import { InjectModel } from "@nestjs/mongoose";
+import { Genre } from "./schemas/Genre.schema";
+import { Model } from "mongoose";
+import { GenresMessages } from "../../common/enum/genresMessages.enum";
+import { sendError } from "../../common/utils/functions.util";
 
 @Injectable()
 export class GenresService {
-  create(createGenreDto: CreateGenreDto) {
-    return 'This action adds a new genre';
-  }
+  constructor(
+    @InjectModel(Genre.name) private readonly genreModel: Model<Genre>
+  ) {}
+  async create(createGenreDto: CreateGenreDto, user: User): Promise<string> {
+    try {
+      await this.genreModel.create({
+        ...createGenreDto,
+        createdBy: user._id,
+      });
 
+      return GenresMessages.CreatedGenreSuccess;
+    } catch (error) {
+      throw sendError(error.message, error.status);
+    }
+  }
   findAll() {
-    return `This action returns all genres`;
+    return this.genreModel.find();
   }
 
   findOne(id: number) {
