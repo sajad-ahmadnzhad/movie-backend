@@ -20,6 +20,7 @@ import { CountriesModule } from "../countries/countries.module";
 import { IndustriesModule } from "../industries/industries.module";
 import { ActorsModule } from "../actors/actors.module";
 import { GenresModule } from "../genres/genres.module";
+import { MoviesModule } from "../movies/movies.module";
 
 @Module({
   imports: [
@@ -36,7 +37,8 @@ import { GenresModule } from "../genres/genres.module";
     CountriesModule,
     IndustriesModule,
     ActorsModule,
-    GenresModule
+    GenresModule,
+    MoviesModule,
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },

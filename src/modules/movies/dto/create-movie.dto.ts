@@ -9,6 +9,7 @@ import {
 } from "class-validator";
 import { PublicMessages } from "../../../common/enum/public.messages";
 import { ApiProperty } from "@nestjs/swagger";
+import { ObjectId } from "mongoose";
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
@@ -28,15 +29,15 @@ export class CreateMovieDto {
   @IsArray()
   @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
   @ApiProperty()
-  genres: [string];
+  genres: [ObjectId];
   @IsArray()
   @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
   @ApiProperty()
-  actors: [string];
+  actors: [ObjectId];
   @IsArray()
   @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
   @ApiProperty()
-  industries: [string];
+  industries: [ObjectId];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
   video: any;
