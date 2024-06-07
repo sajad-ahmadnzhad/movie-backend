@@ -27,9 +27,11 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Genre } from "./schemas/Genre.schema";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
+import { Throttle } from "@nestjs/throttler";
 
 @Controller("genres")
 @ApiTags("genres")
+@Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class GenresController {
   constructor(private readonly genresService: GenresService) {}
 
