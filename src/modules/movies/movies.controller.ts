@@ -17,12 +17,15 @@ import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
+  GetOneMoviesDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { User } from "../users/schemas/User.schema";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Movie } from "./schemas/Movie.schema";
+import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { Document } from "mongoose";
 
 @Controller("movies")
 @ApiTags("movies")
@@ -49,9 +52,11 @@ export class MoviesController {
   ): Promise<PaginatedList<Movie>> {
     return this.moviesService.findAll(limit, page);
   }
+
+  @GetOneMoviesDecorator
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.moviesService.findOne(+id);
+  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+    return this.moviesService.findOne(id);
   }
 
   @Patch(":id")

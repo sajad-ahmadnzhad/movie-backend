@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { User } from "../users/schemas/User.schema";
@@ -6,7 +6,7 @@ import { MoviesMessages } from "../../common/enum/moviesMessages.enum";
 import { saveMovieFile } from "../../common/utils/upload-file.util";
 import { InjectModel } from "@nestjs/mongoose";
 import { Actor } from "../actors/schemas/Actor.schema";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import {
   existingObjectIds,
   getMovieCountries,
@@ -82,8 +82,14 @@ export class MoviesService {
     return mongoosePaginationResult;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} movie`;
+  async findOne(id: string): Promise<Document> {
+    const existingMovie = await this.movieModel.findById(id);
+
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFOundMovie);
+    }
+
+    return existingMovie;
   }
 
   update(id: number, updateMovieDto: UpdateMovieDto) {
