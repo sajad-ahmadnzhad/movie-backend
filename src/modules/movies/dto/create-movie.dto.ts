@@ -1,15 +1,7 @@
 import { Transform } from "class-transformer";
-import {
-  IsArray,
-  IsNotEmpty,
-  IsNumber,
-  Length,
-  Matches,
-  Max,
-} from "class-validator";
-import { PublicMessages } from "../../../common/enum/public.messages";
+import { IsNotEmpty, IsNumber, Length, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ObjectId } from "mongoose";
+import { ValidateObjectIds } from "../../../common/utils/custom-decorators";
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
@@ -17,31 +9,36 @@ export class CreateMovieDto {
   @Length(5, 50)
   @ApiProperty()
   title: string;
+
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
-  @Length(5, 200)
+  @Length(5, 2000)
   @ApiProperty({ required: false })
   description?: string;
+
+  @Transform(({ value }) => +value)
   @Max(new Date().getFullYear())
   @IsNumber()
   @IsNotEmpty()
   release_year: number;
-  @IsArray()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
+
+  @ValidateObjectIds()
   @ApiProperty()
-  genres: [ObjectId];
-  @IsArray()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
+  genres: [string];
+
+  @ValidateObjectIds()
   @ApiProperty()
-  actors: [ObjectId];
-  @IsArray()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
+  actors: [string];
+
+  @ValidateObjectIds()
   @ApiProperty()
-  industries: [ObjectId];
+  industries: [string];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
+  // @IsNotEmpty()
   video: any;
 
   @ApiProperty({ type: "string", format: "binary", required: true })
+  // @IsNotEmpty()
   poster: any;
 }
