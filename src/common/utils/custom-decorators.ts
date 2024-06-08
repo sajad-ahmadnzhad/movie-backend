@@ -9,13 +9,15 @@ export function ValidateObjectIds() {
         defaultMessage() {
           return this.errorMessage;
         },
-        validate(value: string[], args: ValidationArguments) {
+        validate(value: string[] | string, args: ValidationArguments) {
           let hasError: boolean = false;
 
           if (!value) {
             this.errorMessage = `${args.property} should not be empty`;
             return false;
           }
+
+          if (typeof value == "string") value = value.split(",");
 
           if (!Array.isArray(value)) {
             this.errorMessage = `${args.property} must be an array`;

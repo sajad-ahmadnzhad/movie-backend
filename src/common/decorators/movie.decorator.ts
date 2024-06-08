@@ -2,13 +2,15 @@ import { UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import {
   ApiConsumes,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiQuery,
 } from "@nestjs/swagger";
-import { AuthGuard } from "src/modules/auth/guards/Auth.guard";
-import { IsAdminGuard } from "src/modules/auth/guards/isAdmin.guard";
-import multer, { memoryStorage } from "multer";
+import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
+import { memoryStorage } from "multer";
 import { movieFileFilter } from "../utils/upload-file.util";
 
 //* Create movie decorator
@@ -27,7 +29,13 @@ export const CreateMovieDecorator = applyDecorators(
         storage: memoryStorage(),
       }
     )
-  )
+  ),
+  ApiNotFoundResponse({
+    description: "industry | genre | actor not found",
+  }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "create a movie" }),
+  ApiOkResponse({ type: [Object] })
 );
 
 //* Get all movies

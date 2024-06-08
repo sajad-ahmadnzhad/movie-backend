@@ -20,18 +20,31 @@ export class CreateMovieDto {
   @Max(new Date().getFullYear())
   @IsNumber()
   @IsNotEmpty()
+  @ApiProperty()
   release_year: number;
 
   @ValidateObjectIds()
-  @ApiProperty()
+  @Transform(({ value }) => {
+    if (typeof value == "string") return value.split(",");
+    return value;
+  })
+  @ApiProperty({ isArray: true, type: String })
   genres: [string];
 
   @ValidateObjectIds()
-  @ApiProperty()
+  @Transform(({ value }) => {
+    if (typeof value == "string") return value.split(",");
+    return value;
+  })
+  @ApiProperty({ isArray: true, type: String })
   actors: [string];
 
   @ValidateObjectIds()
-  @ApiProperty()
+  @Transform(({ value }) => {
+    if (typeof value == "string") return value.split(",");
+    return value;
+  })
+  @ApiProperty({ isArray: true, type: String })
   industries: [string];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
