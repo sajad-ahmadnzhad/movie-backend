@@ -17,6 +17,7 @@ import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
+  GetMoviesByCountry,
   GetOneMovieDecorator,
   SearchMoviesDecorator,
 } from "../../common/decorators/movie.decorator";
@@ -67,10 +68,9 @@ export class MoviesController {
   }
 
   @Get("by-country/:id")
-  getMoviesByCountry(
-    @Param('id', IsValidObjectIdPipe) id: string
-  ) {
-    return this.moviesService.findByCountry(id)
+  @GetMoviesByCountry
+  getMoviesByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
+    return this.moviesService.findByCountry(id);
   }
 
   @Patch(":id")

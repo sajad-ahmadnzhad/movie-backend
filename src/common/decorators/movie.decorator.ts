@@ -7,6 +7,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
@@ -61,5 +62,14 @@ export const SearchMoviesDecorator = applyDecorators(
   ApiOperation({ summary: "search in movies" }),
   ApiBadRequestResponse({ description: "Required movie query" }),
   ApiQuery({ name: "movie", type: String }),
+  ApiOkResponse({ type: [Object] })
+);
+
+//* Get movies by country
+export const GetMoviesByCountry = applyDecorators(
+  ApiOperation({ summary: "get movies by country" }),
+  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiParam({ name: "id", description: "Country id" }),
+  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: [Object] })
 );
