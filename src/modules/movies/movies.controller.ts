@@ -66,6 +66,13 @@ export class MoviesController {
     return this.moviesService.findOne(id);
   }
 
+  @Get("by-country/:id")
+  getMoviesByCountry(
+    @Param('id', IsValidObjectIdPipe) id: string
+  ) {
+    return this.moviesService.findByCountry(id)
+  }
+
   @Patch(":id")
   update(@Param("id") id: string, @Body() updateMovieDto: UpdateMovieDto) {
     return this.moviesService.update(+id, updateMovieDto);

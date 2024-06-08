@@ -25,7 +25,9 @@ import {
   cachePagination,
   mongoosePagination,
 } from "../../common/utils/pagination.util";
-import { PaginatedList } from "src/common/interfaces/public.interface";
+import { PaginatedList } from "../../common/interfaces/public.interface";
+import { Country } from "../countries/schemas/Country.schema";
+import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 
 @Injectable()
 export class MoviesService {
@@ -34,6 +36,7 @@ export class MoviesService {
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
     @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
     @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
+    @InjectModel(Country.name) private readonly countryModel: Model<Industry>,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
   async create(
@@ -106,6 +109,19 @@ export class MoviesService {
       title: { $regex: movieQuery },
     });
 
+    return movies;
+  }
+
+  async findByCountry(id: string) {
+    const existingCountry = await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    const movies = this.movieModel.find({
+      countries: { $in: existingCountry._id },
+    });
     return movies;
   }
 
