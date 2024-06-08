@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateMovieDto } from "./dto/create-movie.dto";
 import { UpdateMovieDto } from "./dto/update-movie.dto";
 import { User } from "../users/schemas/User.schema";
@@ -90,6 +95,18 @@ export class MoviesService {
     }
 
     return existingMovie;
+  }
+
+  search(movieQuery: string): Promise<Array<Document>> {
+    if (!movieQuery?.trim()) {
+      throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
+    }
+
+    const movies = this.movieModel.find({
+      title: { $regex: movieQuery },
+    });
+
+    return movies;
   }
 
   update(id: number, updateMovieDto: UpdateMovieDto) {

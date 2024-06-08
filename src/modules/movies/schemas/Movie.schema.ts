@@ -8,7 +8,7 @@ import { User } from "../../users/schemas/User.schema";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Movie extends Document {
-  @Prop({ type: String, trim: true, required: true })
+  @Prop({ type: String, trim: true, lowercase: true, required: true })
   title: string;
   @Prop({ type: String, trim: true })
   description?: string;

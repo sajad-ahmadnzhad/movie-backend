@@ -17,7 +17,8 @@ import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
-  GetOneMoviesDecorator,
+  GetOneMovieDecorator,
+  SearchMoviesDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -53,7 +54,13 @@ export class MoviesController {
     return this.moviesService.findAll(limit, page);
   }
 
-  @GetOneMoviesDecorator
+  @Get("search")
+  @SearchMoviesDecorator
+  search(@Query("movie") movie: string): Promise<Array<Document>> {
+    return this.moviesService.search(movie);
+  }
+
+  @GetOneMovieDecorator
   @Get(":id")
   findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.moviesService.findOne(id);

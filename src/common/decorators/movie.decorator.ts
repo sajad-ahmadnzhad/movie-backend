@@ -42,15 +42,24 @@ export const CreateMovieDecorator = applyDecorators(
 
 //* Get all movies
 export const GetAllMoviesDecorator = applyDecorators(
-  ApiOperation({ summary: "get all countries" }),
+  ApiOperation({ summary: "get all movies" }),
   ApiQuery({ name: "page", type: Number, required: false }),
   ApiQuery({ name: "limit", type: Number, required: false }),
   ApiOkResponse({ type: [Object] })
 );
 
-export const GetOneMoviesDecorator = applyDecorators(
+//* Get one movie decorator
+export const GetOneMovieDecorator = applyDecorators(
   ApiOperation({ summary: "get one movie by id" }),
   ApiNotFoundResponse({ description: "Movie not found" }),
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: Object })
+);
+
+//* Search movies decorator
+export const SearchMoviesDecorator = applyDecorators(
+  ApiOperation({ summary: "search in movies" }),
+  ApiBadRequestResponse({ description: "Required movie query" }),
+  ApiQuery({ name: "movie", type: String }),
+  ApiOkResponse({ type: [Object] })
 );
