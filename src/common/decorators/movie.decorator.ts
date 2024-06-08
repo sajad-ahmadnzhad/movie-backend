@@ -1,6 +1,11 @@
 import { UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiOperation } from "@nestjs/swagger";
+import {
+  ApiConsumes,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+} from "@nestjs/swagger";
 import { AuthGuard } from "src/modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "src/modules/auth/guards/isAdmin.guard";
 import multer, { memoryStorage } from "multer";
@@ -23,4 +28,12 @@ export const CreateMovieDecorator = applyDecorators(
       }
     )
   )
+);
+
+//* Get all movies
+export const GetAllMoviesDecorator = applyDecorators(
+  ApiOperation({ summary: "get all countries" }),
+  ApiQuery({ name: "page", type: Number, required: false }),
+  ApiQuery({ name: "limit", type: Number, required: false }),
+  ApiOkResponse({ type: [Object] })
 );

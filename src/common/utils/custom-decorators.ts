@@ -17,6 +17,11 @@ export function ValidateObjectIds() {
             return false;
           }
 
+          if (!Array.isArray(value)) {
+            this.errorMessage = `${args.property} must be an array`;
+            return false;
+          }
+
           value = value.flat(Infinity);
 
           const duplicates: string[] = [];
@@ -33,11 +38,6 @@ export function ValidateObjectIds() {
 
           if (duplicates.length) {
             this.errorMessage = `duplicated keys in ${args.property} ${duplicates[0]}`;
-            return false;
-          }
-
-          if (!Array.isArray(value)) {
-            this.errorMessage = `${args.property} must be an array`;
             return false;
           }
 

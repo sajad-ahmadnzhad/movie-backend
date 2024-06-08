@@ -1,9 +1,8 @@
 import { HttpException, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { Document, Model } from "mongoose";
+import { Model } from "mongoose";
 import * as path from "path";
 import { rimrafSync } from "rimraf";
-import { IIndustry } from "../interfaces/public.interface";
 export const hashData = (data: string, salt: number): string => {
   return bcrypt.hashSync(data, salt);
 };
