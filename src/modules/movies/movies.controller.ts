@@ -19,6 +19,7 @@ import {
   GetAllMoviesDecorator,
   GetMoviesByActor,
   GetMoviesByCountry,
+  GetMoviesByGenre,
   GetMoviesByIndustry,
   GetOneMovieDecorator,
   SearchMoviesDecorator,
@@ -91,6 +92,14 @@ export class MoviesController {
     @Param("id", IsValidObjectIdPipe) id: string
   ): Promise<Document[]> {
     return this.moviesService.findByActor(id);
+  }
+
+  @Get("by-genre/:id")
+  @GetMoviesByGenre
+  getMoviesByGenre(
+    @Param("id", IsValidObjectIdPipe) id: string
+  ): Promise<Document[]> {
+    return this.moviesService.findByGenre(id);
   }
 
   @Patch(":id")

@@ -30,6 +30,7 @@ import { Country } from "../countries/schemas/Country.schema";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
+import { GenresMessages } from "src/common/enum/genresMessages.enum";
 
 @Injectable()
 export class MoviesService {
@@ -150,6 +151,20 @@ export class MoviesService {
 
     const movies = this.movieModel.find({
       actors: { $in: id },
+    });
+
+    return movies;
+  }
+
+  async findByGenre(id: string) {
+    const existingGenre = await this.genreModel.findById(id);
+
+    if (!existingGenre) {
+      throw new NotFoundException(GenresMessages.NotFoundGenre);
+    }
+
+    const movies = this.movieModel.find({
+      genres: { $in: id },
     });
 
     return movies;
