@@ -21,8 +21,6 @@ import {
   RemoveMovieDecorator,
   UpdateMovieDecorator,
   LikeMovieDecorator,
-  GetLikesDecorator,
-  UnlikeMovieDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -79,31 +77,17 @@ export class MoviesController {
 
   @Post("like/:id")
   @LikeMovieDecorator
-  async likeMovie(
+  async toggleLike(
     @Param("id", IsValidObjectIdPipe) id: string,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
-    const success = await this.moviesService.like(id, user);
+    const success = await this.moviesService.toggleLike(id, user);
 
     return { message: success };
   }
 
-  @Get("like/:id")
-  @GetLikesDecorator
-  getLikes(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document[]> {
-    return this.moviesService.findLikes(id);
-  }
-
-  @Post("unlike/:id")
-  @UnlikeMovieDecorator
-  async unlikeMovie(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.unlike(id, user);
-
-    return { message: success };
-  }
+  @Post("visit/:id")
+  visitMovie() {}
 
   @Patch(":id")
   @Throttle({ default: { ttl: 60_000, limit: 5 } })

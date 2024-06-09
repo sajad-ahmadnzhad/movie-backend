@@ -124,28 +124,8 @@ export const LikeMovieDecorator = applyDecorators(
   UseGuards(AuthGuard),
   ApiCookieAuth(),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
-  ApiConflictResponse({ description: "Already Liked Movie" }),
-  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
-  ApiOkResponse({ description: "Liked success" }),
-  ApiOperation({ summary: "like a movie" })
-);
-
-//* Get likes decorator
-export const GetLikesDecorator = applyDecorators(
-  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
-  ApiNotFoundResponse({ description: "Movie not found" }),
   ApiParam({ name: "id", description: "Movie id" }),
-  ApiOperation({ summary: "get likes a movie" }),
-  ApiOkResponse({ type: [Object] })
-);
-
-//* Unlike movie decorator
-export const UnlikeMovieDecorator = applyDecorators(
-  UseGuards(AuthGuard),
-  ApiCookieAuth(),
-  ApiForbiddenResponse({ description: "Forbidden resource" }),
-  ApiConflictResponse({ description: "Not liked movie" }),
   ApiBadRequestResponse({ description: "Invalid ObjectId" }),
-  ApiOkResponse({ description: "Unliked success" }),
-  ApiOperation({ summary: "Unlike a movie" })
+  ApiOkResponse({ description: "Liked success | Unliked success" }),
+  ApiOperation({ summary: "like a movie" })
 );
