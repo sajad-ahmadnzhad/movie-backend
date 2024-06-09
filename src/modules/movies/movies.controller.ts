@@ -18,6 +18,7 @@ import {
   GetAllMoviesDecorator,
   GetOneMovieDecorator,
   SearchMoviesDecorator,
+  RemoveMovieDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -36,6 +37,7 @@ export class MoviesController {
 
   @Post()
   @CreateMovieDecorator
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFiles()
@@ -77,7 +79,13 @@ export class MoviesController {
   }
 
   @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.moviesService.remove(+id);
+  @RemoveMovieDecorator
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.remove(id, user);
+
+    return { message: success };
   }
 }

@@ -5,6 +5,7 @@ import { Genre } from "../../genres/schemas/Genre.schema";
 import { Actor } from "../../actors/schemas/Actor.schema";
 import { Industry } from "../../industries/schemas/Industry.schema";
 import { User } from "../../users/schemas/User.schema";
+import { removeFile } from "src/common/utils/functions.util";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Movie extends Document {
@@ -75,6 +76,19 @@ MovieSchema.pre(["find", "findOne"], function (next) {
         },
       },
     ]);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+MovieSchema.pre("deleteOne", async function (next) {
+  try {
+    const movie = await this.model.findOne(this.getFilter());
+
+    removeFile(movie.poster_URL);
+    removeFile(movie.video_URL);
+
     next();
   } catch (error) {
     next(error);

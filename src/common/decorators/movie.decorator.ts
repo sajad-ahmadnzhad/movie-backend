@@ -3,6 +3,8 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
   ApiConsumes,
+  ApiCookieAuth,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -66,4 +68,17 @@ export const SearchMoviesDecorator = applyDecorators(
   ApiBadRequestResponse({ description: "Required movie query" }),
   ApiQuery({ name: "movie", type: String }),
   ApiOkResponse({ type: [Object] })
+);
+
+//* Remove movie decorator
+export const RemoveMovieDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "Movie not found" }),
+  ApiForbiddenResponse({
+    description: "Cannot Remove Movie | Forbidden resource",
+  }),
+  ApiOkResponse({ description: "Remove movie success" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOperation({ summary: "remove movie" })
 );

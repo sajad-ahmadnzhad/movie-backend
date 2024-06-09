@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -19,7 +20,10 @@ import { Genre } from "../genres/schemas/Genre.schema";
 import { Industry } from "../industries/schemas/Industry.schema";
 import { Movie } from "./schemas/Movie.schema";
 import { mongoosePagination } from "../../common/utils/pagination.util";
-import { PaginatedList } from "../../common/interfaces/public.interface";
+import {
+  ICreatedBy,
+  PaginatedList,
+} from "../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "./dto/filter-movies.dot";
 
 @Injectable()
@@ -108,7 +112,21 @@ export class MoviesService {
     return `This action updates a #${id} movie`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} movie`;
+  async remove(id: string, user: User): Promise<string> {
+    const existingMovie: ICreatedBy<Movie> | null =
+      await this.movieModel.findById(id);
+
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFOundMovie);
+    }
+
+    if (String(user._id) !== String(existingMovie.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(MoviesMessages.CannotRemoveMovie);
+    }
+
+    await existingMovie.deleteOne();
+
+    return MoviesMessages.RemovedMovieSuccess;
   }
 }
