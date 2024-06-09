@@ -10,4 +10,5 @@ export enum MoviesMessages {
   UnlikedMovieSuccess = "Movie unliked successfully",
   UnBookmarkMovieSuccess = "Movie unBookmarked successfully",
   BookmarkMovieSuccess = "Movie bookmarked successfully",
+  VisitMovieSuccess = "Movie was successfully visited",
 }

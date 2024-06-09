@@ -1,7 +1,7 @@
 import {
   BadRequestException,
-  ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -28,6 +28,8 @@ import {
 import { FilterMoviesDto } from "./dto/filter-movies.dot";
 import { Like } from "./schemas/Like.schema";
 import { Bookmark } from "./schemas/Bookmark.schema";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { RedisCache } from "cache-manager-redis-yet";
 
 @Injectable()
 export class MoviesService {
@@ -37,7 +39,8 @@ export class MoviesService {
     @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
     @InjectModel(Like.name) private readonly likeModel: Model<Like>,
     @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>,
-    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>
+    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
   async create(
     createMovieDto: CreateMovieDto,
@@ -124,12 +127,12 @@ export class MoviesService {
     if (likedMovie) {
       await likedMovie.deleteOne();
       return MoviesMessages.UnlikedMovieSuccess;
-    } else {
-      await this.likeModel.create({ movieId: id, userId: user._id });
-      return MoviesMessages.LikedMovieSuccess;
     }
+
+    await this.likeModel.create({ movieId: id, userId: user._id });
+    return MoviesMessages.LikedMovieSuccess;
   }
-  
+
   async bookmarkToggle(id: string, user: User): Promise<string> {
     await this.checkExistMovieById(id);
 
@@ -141,10 +144,24 @@ export class MoviesService {
     if (bookmarkedMovie) {
       await bookmarkedMovie.deleteOne();
       return MoviesMessages.UnBookmarkMovieSuccess;
-    } else {
-      await this.bookmarkModel.create({ movieId: id, userId: user._id });
-      return MoviesMessages.BookmarkMovieSuccess;
     }
+
+    await this.bookmarkModel.create({ movieId: id, userId: user._id });
+    return MoviesMessages.BookmarkMovieSuccess;
+  }
+
+  async recordVisit(id: string): Promise<string> {
+    await this.checkExistMovieById(id);
+
+    const existingMovieInCache = await this.redisCache.get(`visitMovie:${id}`);
+
+    if (!existingMovieInCache) {
+      await this.redisCache.set(`visitMovie:${id}`, 1);
+    } else {
+      await this.redisCache.set(`visitMovie:${id}`, +existingMovieInCache + 1);
+    }
+
+    return MoviesMessages.VisitMovieSuccess;
   }
 
   async update(

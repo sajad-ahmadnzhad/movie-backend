@@ -98,6 +98,13 @@ export class MoviesController {
     return { message: success };
   }
 
+  @Post("visits/:id")
+  async recordVisit(@Param("id") id: string): Promise<{ message: string }> {
+    const success = await this.moviesService.recordVisit(id);
+
+    return { message: success };
+  }
+
   @Patch(":id")
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   @UpdateMovieDecorator
