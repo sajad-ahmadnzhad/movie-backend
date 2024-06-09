@@ -129,3 +129,14 @@ export const LikeMovieDecorator = applyDecorators(
   ApiOkResponse({ description: "Liked success | Unliked success" }),
   ApiOperation({ summary: "like a movie" })
 );
+
+//* Bookmark movie decorator
+export const BookmarkMovieDecorator = applyDecorators(
+  UseGuards(AuthGuard),
+  ApiCookieAuth(),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiParam({ name: "id", description: "Movie id" }),
+  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
+  ApiOkResponse({ description: "Bookmark success | UnBookmark success" }),
+  ApiOperation({ summary: "bookmark a movie" })
+);

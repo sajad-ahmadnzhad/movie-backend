@@ -27,6 +27,7 @@ import {
 } from "../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "./dto/filter-movies.dot";
 import { Like } from "./schemas/Like.schema";
+import { Bookmark } from "./schemas/Bookmark.schema";
 
 @Injectable()
 export class MoviesService {
@@ -34,7 +35,8 @@ export class MoviesService {
     @InjectModel(Movie.name) private readonly movieModel: Model<Movie>,
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
     @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
-    @InjectModel(Like.name) private readonly likeModel: Model<Genre>,
+    @InjectModel(Like.name) private readonly likeModel: Model<Like>,
+    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>,
     @InjectModel(Industry.name) private readonly industryModel: Model<Industry>
   ) {}
   async create(
@@ -111,7 +113,7 @@ export class MoviesService {
     return movies;
   }
 
-  async toggleLike(id: string, user: User): Promise<string> {
+  async likeToggle(id: string, user: User): Promise<string> {
     await this.checkExistMovieById(id);
 
     const likedMovie = await this.likeModel.findOne({
@@ -125,6 +127,23 @@ export class MoviesService {
     } else {
       await this.likeModel.create({ movieId: id, userId: user._id });
       return MoviesMessages.LikedMovieSuccess;
+    }
+  }
+  
+  async bookmarkToggle(id: string, user: User): Promise<string> {
+    await this.checkExistMovieById(id);
+
+    const bookmarkedMovie = await this.bookmarkModel.findOne({
+      movieId: id,
+      userId: user._id,
+    });
+
+    if (bookmarkedMovie) {
+      await bookmarkedMovie.deleteOne();
+      return MoviesMessages.UnBookmarkMovieSuccess;
+    } else {
+      await this.bookmarkModel.create({ movieId: id, userId: user._id });
+      return MoviesMessages.BookmarkMovieSuccess;
     }
   }
 
