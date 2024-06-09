@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -25,6 +26,7 @@ import {
   PaginatedList,
 } from "../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "./dto/filter-movies.dot";
+import { Like } from "./schemas/Like.schema";
 
 @Injectable()
 export class MoviesService {
@@ -32,6 +34,7 @@ export class MoviesService {
     @InjectModel(Movie.name) private readonly movieModel: Model<Movie>,
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
     @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
+    @InjectModel(Like.name) private readonly likeModel: Model<Genre>,
     @InjectModel(Industry.name) private readonly industryModel: Model<Industry>
   ) {}
   async create(
@@ -96,7 +99,7 @@ export class MoviesService {
     const existingMovie = await this.movieModel.findById(id);
 
     if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFOundMovie);
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
     }
 
     return existingMovie;
@@ -114,6 +117,27 @@ export class MoviesService {
     return movies;
   }
 
+  async like(id: string, user: User): Promise<string> {
+    const existingMovie = await this.movieModel.findById(id);
+
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
+    }
+
+    const existingLiked = await this.likeModel.findOne({ movieId: id });
+
+    if (existingLiked) {
+      throw new ConflictException(MoviesMessages.AlreadyLikedMovie);
+    }
+
+    await this.likeModel.create({
+      userId: user._id,
+      movieId: id,
+    });
+
+    return MoviesMessages.LikedMovieSuccess;
+  }
+
   async update(
     id: string,
     updateMovieDto: UpdateMovieDto,
@@ -123,7 +147,7 @@ export class MoviesService {
     const existingMovie = await this.movieModel.findById(id);
 
     if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFOundMovie);
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
     }
 
     const { actors, genres, industries } = updateMovieDto;
@@ -158,7 +182,7 @@ export class MoviesService {
       await this.movieModel.findById(id);
 
     if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFOundMovie);
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
     }
 
     if (String(user._id) !== String(existingMovie.createdBy._id)) {

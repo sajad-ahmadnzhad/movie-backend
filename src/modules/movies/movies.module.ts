@@ -8,6 +8,7 @@ import { Actor, ActorSchema } from "../actors/schemas/Actor.schema";
 import { Industry, IndustrySchema } from "../industries/schemas/Industry.schema";
 import { Genre, GenreSchema } from "../genres/schemas/Genre.schema";
 import { Movie, MovieSchema } from "./schemas/Movie.schema";
+import { Like, LikeSchema } from "./schemas/Like.schema";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Movie, MovieSchema } from "./schemas/Movie.schema";
       { name: Industry.name, schema: IndustrySchema },
       { name: Genre.name, schema: GenreSchema },
       { name: Movie.name, schema: MovieSchema },
+      { name: Like.name, schema: LikeSchema },
     ]),
   ],
   controllers: [MoviesController],

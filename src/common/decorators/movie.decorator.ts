@@ -2,6 +2,7 @@ import { UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiConsumes,
   ApiCookieAuth,
   ApiForbiddenResponse,
@@ -40,6 +41,7 @@ export const CreateMovieDecorator = applyDecorators(
   }),
   ApiBadRequestResponse({ description: "Required poster and video" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiOperation({ summary: "create a movie" }),
   ApiOkResponse({ description: "Created movie success" })
 );
@@ -86,6 +88,7 @@ export const RemoveMovieDecorator = applyDecorators(
     description: "Cannot Remove Movie | Forbidden resource",
   }),
   ApiOkResponse({ description: "Remove movie success" }),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "remove movie" })
 );
@@ -111,5 +114,17 @@ export const UpdateMovieDecorator = applyDecorators(
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiNotFoundResponse({ description: "industry | genre | actor not found" }),
   ApiOkResponse({ description: "Updated success" }),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiOperation({ summary: "update a movie" })
+);
+
+//* Like movie decorator
+export const LikeMovieDecorator = applyDecorators(
+  UseGuards(AuthGuard),
+  ApiCookieAuth(),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiConflictResponse({ description: "Already Liked Movie" }),
+  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
+  ApiOkResponse({ description: "Liked success" }),
+  ApiOperation({ summary: "like a movie" })
 );

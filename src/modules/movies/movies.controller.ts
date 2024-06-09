@@ -20,6 +20,7 @@ import {
   SearchMoviesDecorator,
   RemoveMovieDecorator,
   UpdateMovieDecorator,
+  LikeMovieDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -72,6 +73,17 @@ export class MoviesController {
   @Get(":id")
   findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.moviesService.findOne(id);
+  }
+
+  @Post("like/:id")
+  @LikeMovieDecorator
+  async likeMovie(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.like(id, user);
+
+    return { message: success };
   }
 
   @Patch(":id")
