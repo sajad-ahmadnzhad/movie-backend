@@ -13,4 +13,31 @@ export class Like extends Document {
 
 const LikeSchema = SchemaFactory.createForClass(Like);
 
+LikeSchema.pre(["find", "findOne"], function (next) {
+  try {
+    this.populate([
+      {
+        path: "movieId",
+        select: "title release_year poster_URL video_URL",
+        transform(doc) {
+          doc.genres = undefined;
+          doc.countries = undefined;
+          doc.industries = undefined;
+          doc.actors = undefined;
+          doc.createdBy = undefined;
+          return doc;
+        },
+      },
+      {
+        path: "userId",
+        select: "name username avatarURL",
+      },
+    ]);
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 export { LikeSchema };

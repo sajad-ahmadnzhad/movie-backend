@@ -138,6 +138,16 @@ export class MoviesService {
     return MoviesMessages.LikedMovieSuccess;
   }
 
+  async findLikes(id: string): Promise<Document[]> {
+    const existingMovie = await this.movieModel.findById(id);
+
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
+    }
+
+    return this.likeModel.find({ movieId: id });
+  }
+
   async update(
     id: string,
     updateMovieDto: UpdateMovieDto,

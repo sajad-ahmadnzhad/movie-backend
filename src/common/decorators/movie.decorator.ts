@@ -10,6 +10,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
@@ -127,4 +128,13 @@ export const LikeMovieDecorator = applyDecorators(
   ApiBadRequestResponse({ description: "Invalid ObjectId" }),
   ApiOkResponse({ description: "Liked success" }),
   ApiOperation({ summary: "like a movie" })
+);
+
+//* Get likes decorator
+export const GetLikesDecorator = applyDecorators(
+  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
+  ApiNotFoundResponse({ description: "Movie not found" }),
+  ApiParam({ name: "id", description: "Movie id" }),
+  ApiOperation({ summary: "get likes a movie" }),
+  ApiOkResponse({ type: [Object] })
 );
