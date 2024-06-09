@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -19,18 +18,9 @@ import {
 import { Genre } from "../genres/schemas/Genre.schema";
 import { Industry } from "../industries/schemas/Industry.schema";
 import { Movie } from "./schemas/Movie.schema";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { RedisCache } from "cache-manager-redis-yet";
-import {
-  cachePagination,
-  mongoosePagination,
-} from "../../common/utils/pagination.util";
+import { mongoosePagination } from "../../common/utils/pagination.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Country } from "../countries/schemas/Country.schema";
-import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
-import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
-import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
-import { GenresMessages } from "src/common/enum/genresMessages.enum";
+import { FilterMoviesDto } from "./dto/filter-movies.dot";
 
 @Injectable()
 export class MoviesService {
@@ -38,9 +28,7 @@ export class MoviesService {
     @InjectModel(Movie.name) private readonly movieModel: Model<Movie>,
     @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
     @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
-    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
-    @InjectModel(Country.name) private readonly countryModel: Model<Industry>,
-    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
+    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>
   ) {}
   async create(
     createMovieDto: CreateMovieDto,
@@ -71,18 +59,19 @@ export class MoviesService {
     return MoviesMessages.CreatedMovieSuccess;
   }
 
-  async findAll(limit?: number, page?: number): Promise<PaginatedList<Movie>> {
-    const moviesCache = await this.redisCache.get<Array<Movie>>("movies");
+  async findAll(
+    filterMoviesDto: FilterMoviesDto
+  ): Promise<PaginatedList<Movie>> {
+    const { limit, page, genre, country, actor, industry } = filterMoviesDto;
 
-    if (moviesCache) {
-      return cachePagination(limit, page, moviesCache);
-    }
+    const filter: any = {};
 
-    const movies = await this.movieModel.find();
-    await this.redisCache.set("movies", movies, 30_000);
+    if (genre) filter.genres = { $in: genre };
+    if (country) filter.countries = { $in: country };
+    if (actor) filter.actors = { $in: actor };
+    if (industry) filter.industries = { $in: industry };
 
-    const query = this.movieModel.find();
-
+    const query = this.movieModel.find(filter);
     const mongoosePaginationResult = mongoosePagination(
       limit,
       page,
@@ -110,61 +99,6 @@ export class MoviesService {
 
     const movies = this.movieModel.find({
       title: { $regex: movieQuery },
-    });
-
-    return movies;
-  }
-
-  async findByCountry(id: string) {
-    const existingCountry = await this.countryModel.findById(id);
-
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
-
-    const movies = this.movieModel.find({
-      countries: { $in: existingCountry._id },
-    });
-    return movies;
-  }
-
-  async findByIndustry(id: string) {
-    const existingIndustry = await this.industryModel.findById(id);
-
-    if (!existingIndustry) {
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-    }
-
-    const movies = this.movieModel.find({
-      industries: { $in: id },
-    });
-
-    return movies;
-  }
-
-  async findByActor(id: string) {
-    const existingActor = await this.actorModel.findById(id);
-
-    if (!existingActor) {
-      throw new NotFoundException(ActorsMessages.NotFoundActor);
-    }
-
-    const movies = this.movieModel.find({
-      actors: { $in: id },
-    });
-
-    return movies;
-  }
-
-  async findByGenre(id: string) {
-    const existingGenre = await this.genreModel.findById(id);
-
-    if (!existingGenre) {
-      throw new NotFoundException(GenresMessages.NotFoundGenre);
-    }
-
-    const movies = this.movieModel.find({
-      genres: { $in: id },
     });
 
     return movies;

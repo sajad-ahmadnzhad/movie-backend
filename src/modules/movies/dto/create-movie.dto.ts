@@ -48,10 +48,8 @@ export class CreateMovieDto {
   industries: [string];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
-  // @IsNotEmpty()
   video: any;
 
   @ApiProperty({ type: "string", format: "binary", required: true })
-  // @IsNotEmpty()
   poster: any;
 }

@@ -7,7 +7,6 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
-  ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
@@ -44,8 +43,12 @@ export const CreateMovieDecorator = applyDecorators(
 //* Get all movies
 export const GetAllMoviesDecorator = applyDecorators(
   ApiOperation({ summary: "get all movies" }),
-  ApiQuery({ name: "page", type: Number, required: false }),
-  ApiQuery({ name: "limit", type: Number, required: false }),
+  ApiQuery({ name: "page", required: false, description: "count pages" }),
+  ApiQuery({ name: "limit", required: false, description: "count documents" }),
+  ApiQuery({ name: "country", required: false, description: "country id" }),
+  ApiQuery({ name: "actor", required: false, description: "actor id" }),
+  ApiQuery({ name: "industry", required: false, description: "industry id" }),
+  ApiQuery({ name: "genre", required: false, description: "genre id" }),
   ApiOkResponse({ type: [Object] })
 );
 
@@ -62,41 +65,5 @@ export const SearchMoviesDecorator = applyDecorators(
   ApiOperation({ summary: "search in movies" }),
   ApiBadRequestResponse({ description: "Required movie query" }),
   ApiQuery({ name: "movie", type: String }),
-  ApiOkResponse({ type: [Object] })
-);
-
-//* Get movies by country
-export const GetMoviesByCountry = applyDecorators(
-  ApiOperation({ summary: "get movies by country" }),
-  ApiNotFoundResponse({ description: "Country not found" }),
-  ApiParam({ name: "id", description: "Country id" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
-  ApiOkResponse({ type: [Object] })
-);
-
-//* Get movies by industry
-export const GetMoviesByIndustry = applyDecorators(
-  ApiOperation({ summary: "get movies by industry" }),
-  ApiNotFoundResponse({ description: "Industry not found" }),
-  ApiParam({ name: "id", description: "Industry id" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
-  ApiOkResponse({ type: [Object] })
-);
-
-//* Get movies by actor
-export const GetMoviesByActor = applyDecorators(
-  ApiOperation({ summary: "get movies by actor" }),
-  ApiNotFoundResponse({ description: "Actor not found" }),
-  ApiParam({ name: "id", description: "Actor id" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
-  ApiOkResponse({ type: [Object] })
-);
-
-//* Get movies by genre
-export const GetMoviesByGenre = applyDecorators(
-  ApiOperation({ summary: "get movies by genre" }),
-  ApiNotFoundResponse({ description: "Genre not found" }),
-  ApiParam({ name: "id", description: "Genre id" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: [Object] })
 );

@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UploadedFiles,
-  ParseIntPipe,
   Query,
 } from "@nestjs/common";
 import { MoviesService } from "./movies.service";
@@ -17,10 +16,6 @@ import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
-  GetMoviesByActor,
-  GetMoviesByCountry,
-  GetMoviesByGenre,
-  GetMoviesByIndustry,
   GetOneMovieDecorator,
   SearchMoviesDecorator,
 } from "../../common/decorators/movie.decorator";
@@ -31,6 +26,7 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Movie } from "./schemas/Movie.schema";
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
+import { FilterMoviesDto } from "./dto/filter-movies.dot";
 
 @Controller("movies")
 @ApiTags("movies")
@@ -40,22 +36,27 @@ export class MoviesController {
 
   @Post()
   @CreateMovieDecorator
-  create(
+  async create(
     @Body() createMovieDto: CreateMovieDto,
     @UploadedFiles()
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] },
     @UserDecorator() user: User
   ) {
-    return this.moviesService.create(createMovieDto, user, files);
+    const success = await this.moviesService.create(
+      createMovieDto,
+      user,
+      files
+    );
+
+    return { message: success };
   }
 
   @Get()
   @GetAllMoviesDecorator
   findAll(
-    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+    @Query() filterMoviesDto: FilterMoviesDto
   ): Promise<PaginatedList<Movie>> {
-    return this.moviesService.findAll(limit, page);
+    return this.moviesService.findAll(filterMoviesDto);
   }
 
   @Get("search")
@@ -68,38 +69,6 @@ export class MoviesController {
   @Get(":id")
   findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
     return this.moviesService.findOne(id);
-  }
-
-  @Get("by-country/:id")
-  @GetMoviesByCountry
-  getMoviesByCountry(
-    @Param("id", IsValidObjectIdPipe) id: string
-  ): Promise<Document[]> {
-    return this.moviesService.findByCountry(id);
-  }
-
-  @Get("by-industry/:id")
-  @GetMoviesByIndustry
-  getMoviesByIndustry(
-    @Param("id", IsValidObjectIdPipe) id: string
-  ): Promise<Document[]> {
-    return this.moviesService.findByIndustry(id);
-  }
-
-  @Get("by-actor/:id")
-  @GetMoviesByActor
-  getMoviesByActor(
-    @Param("id", IsValidObjectIdPipe) id: string
-  ): Promise<Document[]> {
-    return this.moviesService.findByActor(id);
-  }
-
-  @Get("by-genre/:id")
-  @GetMoviesByGenre
-  getMoviesByGenre(
-    @Param("id", IsValidObjectIdPipe) id: string
-  ): Promise<Document[]> {
-    return this.moviesService.findByGenre(id);
   }
 
   @Patch(":id")
