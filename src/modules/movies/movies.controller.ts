@@ -19,6 +19,7 @@ import {
   GetOneMovieDecorator,
   SearchMoviesDecorator,
   RemoveMovieDecorator,
+  UpdateMovieDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -74,12 +75,27 @@ export class MoviesController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() updateMovieDto: UpdateMovieDto) {
-    return this.moviesService.update(+id, updateMovieDto);
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @UpdateMovieDecorator
+  async update(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @Body() updateMovieDto: UpdateMovieDto,
+    @UserDecorator() user: User,
+    @UploadedFiles()
+    files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.update(
+      id,
+      updateMovieDto,
+      user,
+      files
+    );
+    return { message: success };
   }
 
   @Delete(":id")
   @RemoveMovieDecorator
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
   async remove(
     @Param("id", IsValidObjectIdPipe) id: string,
     @UserDecorator() user: User

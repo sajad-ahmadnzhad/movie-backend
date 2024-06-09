@@ -20,6 +20,7 @@ import { PublicMessages } from "../enum/public.messages";
 //* Create movie decorator
 export const CreateMovieDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
   ApiConsumes("multipart/form-data"),
   UseInterceptors(
     FileFieldsInterceptor(
@@ -37,9 +38,10 @@ export const CreateMovieDecorator = applyDecorators(
   ApiNotFoundResponse({
     description: "industry | genre | actor not found",
   }),
+  ApiBadRequestResponse({ description: "Required poster and video" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "create a movie" }),
-  ApiOkResponse({ type: [Object] })
+  ApiOkResponse({ description: "Created movie success" })
 );
 
 //* Get all movies
@@ -86,4 +88,28 @@ export const RemoveMovieDecorator = applyDecorators(
   ApiOkResponse({ description: "Remove movie success" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "remove movie" })
+);
+
+//* Update movie decorator
+export const UpdateMovieDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiConsumes("multipart/form-data"),
+  UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: "poster", maxCount: 1 },
+        { name: "video", maxCount: 1 },
+      ],
+      {
+        fileFilter: movieFileFilter,
+        limits: { fileSize: 30 * 1024 * 1024, files: 2 },
+        storage: memoryStorage(),
+      }
+    )
+  ),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiNotFoundResponse({ description: "industry | genre | actor not found" }),
+  ApiOkResponse({ description: "Updated success" }),
+  ApiOperation({ summary: "update a movie" })
 );

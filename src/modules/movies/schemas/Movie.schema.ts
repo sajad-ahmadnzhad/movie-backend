@@ -5,7 +5,7 @@ import { Genre } from "../../genres/schemas/Genre.schema";
 import { Actor } from "../../actors/schemas/Actor.schema";
 import { Industry } from "../../industries/schemas/Industry.schema";
 import { User } from "../../users/schemas/User.schema";
-import { removeFile } from "src/common/utils/functions.util";
+import { removeFile } from "../../../common/utils/functions.util";
 
 @Schema({ versionKey: false, timestamps: true })
 export class Movie extends Document {
@@ -88,6 +88,20 @@ MovieSchema.pre("deleteOne", async function (next) {
 
     removeFile(movie.poster_URL);
     removeFile(movie.video_URL);
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+MovieSchema.pre("updateOne", async function (next) {
+  try {
+    const movie = await this.model.findOne(this.getFilter());
+    const newData: any = this.getUpdate();
+
+    if (newData["$set"].poster_URL) removeFile(movie.poster_URL);
+    if (newData["$set"].video_URL) removeFile(movie.video_URL);
 
     next();
   } catch (error) {
