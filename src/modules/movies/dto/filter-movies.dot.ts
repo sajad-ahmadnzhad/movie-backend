@@ -22,4 +22,8 @@ export class FilterMoviesDto {
   @IsOptional()
   @IsNumber()
   page?: number;
+  @Transform(({ value }) => +value)
+  @IsOptional()
+  @IsNumber()
+  release_year?: number;
 }

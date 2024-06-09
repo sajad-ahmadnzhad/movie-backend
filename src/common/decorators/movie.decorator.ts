@@ -47,6 +47,11 @@ export const GetAllMoviesDecorator = applyDecorators(
   ApiOperation({ summary: "get all movies" }),
   ApiQuery({ name: "page", required: false, description: "count pages" }),
   ApiQuery({ name: "limit", required: false, description: "count documents" }),
+  ApiQuery({
+    name: "release_year",
+    required: false,
+    description: "release year movie",
+  }),
   ApiQuery({ name: "country", required: false, description: "country id" }),
   ApiQuery({ name: "actor", required: false, description: "actor id" }),
   ApiQuery({ name: "industry", required: false, description: "industry id" }),

@@ -66,7 +66,8 @@ export class MoviesService {
   async findAll(
     filterMoviesDto: FilterMoviesDto
   ): Promise<PaginatedList<Movie>> {
-    const { limit, page, genre, country, actor, industry } = filterMoviesDto;
+    const { limit, page, genre, country, actor, industry, release_year } =
+      filterMoviesDto;
 
     const filter: any = {};
 
@@ -74,6 +75,7 @@ export class MoviesService {
     if (country) filter.countries = { $in: country };
     if (actor) filter.actors = { $in: actor };
     if (industry) filter.industries = { $in: industry };
+    if (release_year) filter.release_year = release_year;
 
     const query = this.movieModel.find(filter);
     const mongoosePaginationResult = mongoosePagination(
