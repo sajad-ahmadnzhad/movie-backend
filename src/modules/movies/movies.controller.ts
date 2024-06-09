@@ -17,6 +17,7 @@ import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
+  GetMoviesByActor,
   GetMoviesByCountry,
   GetMoviesByIndustry,
   GetOneMovieDecorator,
@@ -70,14 +71,26 @@ export class MoviesController {
 
   @Get("by-country/:id")
   @GetMoviesByCountry
-  getMoviesByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
+  getMoviesByCountry(
+    @Param("id", IsValidObjectIdPipe) id: string
+  ): Promise<Document[]> {
     return this.moviesService.findByCountry(id);
   }
 
   @Get("by-industry/:id")
   @GetMoviesByIndustry
-  getMoviesByIndustry(@Param("id", IsValidObjectIdPipe) id: string) {
+  getMoviesByIndustry(
+    @Param("id", IsValidObjectIdPipe) id: string
+  ): Promise<Document[]> {
     return this.moviesService.findByIndustry(id);
+  }
+
+  @Get("by-actor/:id")
+  @GetMoviesByActor
+  getMoviesByActor(
+    @Param("id", IsValidObjectIdPipe) id: string
+  ): Promise<Document[]> {
+    return this.moviesService.findByActor(id);
   }
 
   @Patch(":id")

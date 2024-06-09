@@ -28,7 +28,8 @@ import {
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Country } from "../countries/schemas/Country.schema";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
-import { IndustriesMessages } from "src/common/enum/industriesMessages.enum";
+import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
+import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
 
 @Injectable()
 export class MoviesService {
@@ -135,6 +136,20 @@ export class MoviesService {
 
     const movies = this.movieModel.find({
       industries: { $in: id },
+    });
+
+    return movies;
+  }
+
+  async findByActor(id: string) {
+    const existingActor = await this.actorModel.findById(id);
+
+    if (!existingActor) {
+      throw new NotFoundException(ActorsMessages.NotFoundActor);
+    }
+
+    const movies = this.movieModel.find({
+      actors: { $in: id },
     });
 
     return movies;
