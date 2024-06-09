@@ -8,4 +8,6 @@ export enum MoviesMessages {
   RequiredPosterAndVideo = "Poster and video is required",
   AlreadyLikedMovie = "This movie already liked",
   LikedMovieSuccess = "Movie liked successfully",
+  UnlikedMovieSuccess = "Movie unliked successfully",
+  NotLikedMovie = "This movie not liked",
 }

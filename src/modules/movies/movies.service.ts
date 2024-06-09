@@ -124,7 +124,10 @@ export class MoviesService {
       throw new NotFoundException(MoviesMessages.NotFoundMovie);
     }
 
-    const existingLiked = await this.likeModel.findOne({ movieId: id });
+    const existingLiked = await this.likeModel.findOne({
+      movieId: id,
+      userId: user._id,
+    });
 
     if (existingLiked) {
       throw new ConflictException(MoviesMessages.AlreadyLikedMovie);
@@ -136,6 +139,27 @@ export class MoviesService {
     });
 
     return MoviesMessages.LikedMovieSuccess;
+  }
+
+  async unlike(id: string, user: User): Promise<string> {
+    const existingMovie = await this.movieModel.findById(id);
+
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
+    }
+
+    const existingLiked = await this.likeModel.findOne({
+      movieId: id,
+      userId: user._id,
+    });
+
+    if (!existingLiked) {
+      throw new ConflictException(MoviesMessages.NotLikedMovie);
+    }
+
+    await existingLiked.deleteOne();
+
+    return MoviesMessages.UnlikedMovieSuccess;
   }
 
   async findLikes(id: string): Promise<Document[]> {

@@ -138,3 +138,14 @@ export const GetLikesDecorator = applyDecorators(
   ApiOperation({ summary: "get likes a movie" }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Unlike movie decorator
+export const UnlikeMovieDecorator = applyDecorators(
+  UseGuards(AuthGuard),
+  ApiCookieAuth(),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiConflictResponse({ description: "Not liked movie" }),
+  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
+  ApiOkResponse({ description: "Unliked success" }),
+  ApiOperation({ summary: "Unlike a movie" })
+);
