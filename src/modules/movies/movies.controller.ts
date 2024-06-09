@@ -86,8 +86,6 @@ export class MoviesController {
     return { message: success };
   }
 
-  @Post("visit/:id")
-  visitMovie() {}
 
   @Patch(":id")
   @Throttle({ default: { ttl: 60_000, limit: 5 } })

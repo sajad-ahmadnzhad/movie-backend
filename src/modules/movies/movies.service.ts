@@ -95,14 +95,8 @@ export class MoviesService {
     return mongoosePaginationResult;
   }
 
-  async findOne(id: string): Promise<Document> {
-    const existingMovie = await this.movieModel.findById(id);
-
-    if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFoundMovie);
-    }
-
-    return existingMovie;
+  findOne(id: string): Promise<Document> {
+    return this.checkExistMovieById(id);
   }
 
   search(movieQuery: string): Promise<Array<Document>> {
@@ -140,11 +134,7 @@ export class MoviesService {
     user: User,
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
   ): Promise<string> {
-    const existingMovie = await this.movieModel.findById(id);
-
-    if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFoundMovie);
-    }
+    const existingMovie = await this.checkExistMovieById(id);
 
     const { actors, genres, industries } = updateMovieDto;
     let countries: null | string[] = null;
@@ -174,12 +164,7 @@ export class MoviesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingMovie: ICreatedBy<Movie> | null =
-      await this.movieModel.findById(id);
-
-    if (!existingMovie) {
-      throw new NotFoundException(MoviesMessages.NotFoundMovie);
-    }
+    const existingMovie = await this.checkExistMovieById(id);
 
     if (String(user._id) !== String(existingMovie.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -191,8 +176,9 @@ export class MoviesService {
     return MoviesMessages.RemovedMovieSuccess;
   }
 
-  private async checkExistMovieById(id: string): Promise<Document> {
-    const existingMovie = await this.movieModel.findById(id);
+  private async checkExistMovieById(id: string): Promise<ICreatedBy<Movie>> {
+    const existingMovie: ICreatedBy<Movie> | null =
+      await this.movieModel.findById(id);
 
     if (!existingMovie) {
       throw new NotFoundException(MoviesMessages.NotFoundMovie);
