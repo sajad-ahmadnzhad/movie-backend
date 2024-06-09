@@ -52,8 +52,10 @@ export const getMovieCountries = async <T>(
     return model
       .findById(id)
       .select("country")
-      .then((result: any) => result.country._id);
+      .then((result: any) => result.country._id.toString());
   });
 
-  return await Promise.all(countriesPromises);
+  const ids = await Promise.all(countriesPromises);
+
+  return [...new Set(ids)];
 };

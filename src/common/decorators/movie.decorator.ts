@@ -73,3 +73,12 @@ export const GetMoviesByCountry = applyDecorators(
   ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
   ApiOkResponse({ type: [Object] })
 );
+
+//* Get movies by industry
+export const GetMoviesByIndustry = applyDecorators(
+  ApiOperation({ summary: "get movies by industry" }),
+  ApiNotFoundResponse({ description: "Industry not found" }),
+  ApiParam({ name: "id", description: "Industry id" }),
+  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
+  ApiOkResponse({ type: [Object] })
+);

@@ -18,6 +18,7 @@ import {
   CreateMovieDecorator,
   GetAllMoviesDecorator,
   GetMoviesByCountry,
+  GetMoviesByIndustry,
   GetOneMovieDecorator,
   SearchMoviesDecorator,
 } from "../../common/decorators/movie.decorator";
@@ -71,6 +72,12 @@ export class MoviesController {
   @GetMoviesByCountry
   getMoviesByCountry(@Param("id", IsValidObjectIdPipe) id: string) {
     return this.moviesService.findByCountry(id);
+  }
+
+  @Get("by-industry/:id")
+  @GetMoviesByIndustry
+  getMoviesByIndustry(@Param("id", IsValidObjectIdPipe) id: string) {
+    return this.moviesService.findByIndustry(id);
   }
 
   @Patch(":id")
