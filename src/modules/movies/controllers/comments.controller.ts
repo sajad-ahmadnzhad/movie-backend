@@ -1,10 +1,11 @@
-import { Body, Controller, Param, Post } from "@nestjs/common";
+import { Body, Controller, Param, Post, Put } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { UserDecorator } from "../../../modules/users/decorators/currentUser.decorator";
 import { User } from "../../../modules/users/schemas/User.schema";
 import { CommentsService } from "../services/comments.service";
 import {
+  AcceptCommentDecorator,
   CreateCommentDecorator,
   ReplyCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
@@ -34,6 +35,17 @@ export class CommentsController {
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
     const success = await this.commentsService.reply(id, replyCommentDto, user);
+
+    return { message: success };
+  }
+
+  @Put("accept/:id")
+  @AcceptCommentDecorator
+  async accept(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.accept(id, user);
 
     return { message: success };
   }

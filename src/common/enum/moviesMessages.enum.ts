@@ -18,4 +18,7 @@ export enum CommentsMessages {
   NotFoundComment = "Comment not found",
   ReplyCommentSuccess = "Comment replied successfully",
   NotAcceptedComment = "This comment is not accepted",
+  AlreadyAcceptedComment = "This comment already accepted",
+  AcceptedCommentSuccess = "Comment accepted successfully",
+  CannotAcceptComment = "You cannot accept this comment",
 }

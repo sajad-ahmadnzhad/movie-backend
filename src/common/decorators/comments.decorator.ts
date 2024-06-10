@@ -7,8 +7,10 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
 } from "@nestjs/swagger";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 
 //* Create comment decorator
 export const CreateCommentDecorator = applyDecorators(
@@ -29,5 +31,21 @@ export const ReplyCommentDecorator = applyDecorators(
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOkResponse({ description: "Replied comment success" }),
+  ApiParam({ name: "id", description: "Comment id" }),
   ApiOperation({ summary: "reply to comment" })
+);
+
+//* Accept comment decorator
+export const AcceptCommentDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "Comment not Found" }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource | Cannot accept comment",
+  }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiConflictResponse({ description: "Already accepted comment" }),
+  ApiOkResponse({ description: "Accepted comment success" }),
+  ApiParam({ name: "id", description: "Comment id" }),
+  ApiOperation({ summary: "accept a comment" })
 );
