@@ -90,30 +90,47 @@ export class MoviesService {
     if (release_year) filter.release_year = release_year;
 
     const query = this.movieModel.find(filter);
-    const mongoosePaginationResult = mongoosePagination(
+    let paginationResult = await mongoosePagination(
       limit,
       page,
       query,
       this.movieModel
     );
 
-    return mongoosePaginationResult;
+    const movieStatsPromises = paginationResult.data.map((movie: any) => {
+      //* likes , visits , bookmarks in this method
+      return this.calculateMovieStats(movie);
+    });
+
+    await Promise.all(movieStatsPromises);
+
+    return paginationResult;
   }
 
-  findOne(id: string): Promise<Document> {
-    return this.checkExistMovieById(id);
+  async findOne(id: string): Promise<Document> {
+    const existingMovie = await this.checkExistMovieById(id);
+
+    //* likes , visits , bookmarks in this method
+    return this.calculateMovieStats(existingMovie);
   }
 
-  search(movieQuery: string): Promise<Array<Document>> {
+  async search(movieQuery: string): Promise<Array<Document>> {
     if (!movieQuery?.trim()) {
       throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
     }
 
-    const movies = this.movieModel.find({
-      title: { $regex: movieQuery },
+    const movies = await this.movieModel
+      .find({
+        title: { $regex: movieQuery },
+      })
+      .lean();
+
+    const movieStatsPromises = movies.map((movie: any) => {
+      //* likes , visits , bookmarks in this method
+      return this.calculateMovieStats(movie);
     });
 
-    return movies;
+    return Promise.all(movieStatsPromises);
   }
 
   async likeToggle(id: string, user: User): Promise<string> {
@@ -213,13 +230,34 @@ export class MoviesService {
   }
 
   private async checkExistMovieById(id: string): Promise<ICreatedBy<Movie>> {
-    const existingMovie: ICreatedBy<Movie> | null =
-      await this.movieModel.findById(id);
+    const existingMovie: ICreatedBy<Movie> | null = await this.movieModel
+      .findById(id)
+      .lean();
 
     if (!existingMovie) {
       throw new NotFoundException(MoviesMessages.NotFoundMovie);
     }
 
     return existingMovie;
+  }
+
+  private async calculateMovieStats(
+    movie: Document<Movie>
+  ): Promise<Document<Movie>> {
+    const visitMovie = await this.redisCache.get<number>(
+      `visitMovie:${movie._id}`
+    );
+    const likes = await this.likeModel.find({ movieId: `${movie._id}` }).lean();
+    const countBookmarks = await this.bookmarkModel
+      .find({ movieId: `${movie._id}` })
+      .countDocuments();
+
+    (movie as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
+
+    (movie as any).countBookmarks = countBookmarks;
+
+    (movie as any).likes = likes;
+
+    return movie;
   }
 }

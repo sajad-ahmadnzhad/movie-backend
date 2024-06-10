@@ -7,7 +7,12 @@ import { Movie } from "./Movie.schema";
 export class Like extends Document {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   userId: ObjectId;
-  @Prop({ type: Types.ObjectId, ref: Movie.name, required: true })
+  @Prop({
+    type: Types.ObjectId,
+    ref: Movie.name,
+    required: true,
+    select: false,
+  })
   movieId: ObjectId;
 }
 
@@ -15,24 +20,10 @@ const LikeSchema = SchemaFactory.createForClass(Like);
 
 LikeSchema.pre(["find", "findOne"], function (next) {
   try {
-    this.populate([
-      {
-        path: "movieId",
-        select: "title release_year poster_URL video_URL",
-        transform(doc) {
-          doc.genres = undefined;
-          doc.countries = undefined;
-          doc.industries = undefined;
-          doc.actors = undefined;
-          doc.createdBy = undefined;
-          return doc;
-        },
-      },
-      {
-        path: "userId",
-        select: "name username avatarURL",
-      },
-    ]);
+    this.populate({
+      path: "userId",
+      select: "name username avatarURL",
+    });
 
     next();
   } catch (error) {

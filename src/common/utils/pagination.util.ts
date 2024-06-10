@@ -18,7 +18,7 @@ export const mongoosePagination = async <T>(
   const skip = (page - 1) * pageSize;
   const total = await model.countDocuments();
   const pages = Math.ceil(total / pageSize);
-  query = query.skip(skip).limit(pageSize);
+  query = query.skip(skip).limit(pageSize).lean();
 
   const result: T[] = await query;
 
