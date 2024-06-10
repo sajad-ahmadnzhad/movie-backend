@@ -1,7 +1,7 @@
 import { Transform } from "class-transformer";
 import { IsNotEmpty, IsNumber, Length, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ValidateObjectIds } from "../../../common/utils/custom-decorators";
+import { ValidateObjectIds } from "../../../../common/utils/custom-decorators";
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())

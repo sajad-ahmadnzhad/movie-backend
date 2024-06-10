@@ -19,7 +19,7 @@ export class Comment extends Document {
   isAccept: boolean;
   @Prop({ type: Boolean, default: false })
   isReject: boolean;
-  @Prop({ type: Number, max: 5, min: 1, default: 4.5 })
+  @Prop({ type: Number, max: 5, min: 1, default: 5 })
   rating: number;
   @Prop({ type: Boolean, default: false })
   isEdit: boolean;

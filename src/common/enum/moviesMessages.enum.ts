@@ -12,3 +12,8 @@ export enum MoviesMessages {
   BookmarkMovieSuccess = "Movie bookmarked successfully",
   VisitMovieSuccess = "Movie was successfully visited",
 }
+
+export enum CommentsMessages {
+  CreatedCommentSuccess = "Comment created successfully",
+  NotFoundComment = "Comment not found",
+}

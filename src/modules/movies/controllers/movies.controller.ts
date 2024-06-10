@@ -9,9 +9,9 @@ import {
   UploadedFiles,
   Query,
 } from "@nestjs/common";
-import { MoviesService } from "./movies.service";
-import { CreateMovieDto } from "./dto/create-movie.dto";
-import { UpdateMovieDto } from "./dto/update-movie.dto";
+import { MoviesService } from "../services/movies.service";
+import { CreateMovieDto } from "../dto/movies/create-movie.dto";
+import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
 import { Throttle } from "@nestjs/throttler";
 import {
   CreateMovieDecorator,
@@ -23,15 +23,15 @@ import {
   LikeMovieDecorator,
   BookmarkMovieDecorator,
   RenderVisitsDecorator,
-} from "../../common/decorators/movie.decorator";
+} from "../../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
-import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/schemas/User.schema";
-import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Movie } from "./schemas/Movie.schema";
-import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
+import { UserDecorator } from "../../users/decorators/currentUser.decorator";
+import { User } from "../../users/schemas/User.schema";
+import { PaginatedList } from "../../../common/interfaces/public.interface";
+import { Movie } from "../schemas/Movie.schema";
+import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
-import { FilterMoviesDto } from "./dto/filter-movies.dot";
+import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 
 @Controller("movies")
 @ApiTags("movies")

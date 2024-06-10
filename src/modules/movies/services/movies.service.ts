@@ -5,29 +5,32 @@ import {
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
-import { CreateMovieDto } from "./dto/create-movie.dto";
-import { UpdateMovieDto } from "./dto/update-movie.dto";
-import { User } from "../users/schemas/User.schema";
-import { MoviesMessages } from "../../common/enum/moviesMessages.enum";
-import { saveFile, saveMovieFile } from "../../common/utils/upload-file.util";
+import { CreateMovieDto } from "../dto/movies/create-movie.dto";
+import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
+import { User } from "../../users/schemas/User.schema";
+import { MoviesMessages } from "../../../common/enum/moviesMessages.enum";
+import {
+  saveFile,
+  saveMovieFile,
+} from "../../../common/utils/upload-file.util";
 import { InjectModel } from "@nestjs/mongoose";
-import { Actor } from "../actors/schemas/Actor.schema";
+import { Actor } from "../../actors/schemas/Actor.schema";
 import { Document, Model } from "mongoose";
 import {
   existingObjectIds,
   getMovieCountries,
-} from "../../common/utils/functions.util";
-import { Genre } from "../genres/schemas/Genre.schema";
-import { Industry } from "../industries/schemas/Industry.schema";
-import { Movie } from "./schemas/Movie.schema";
-import { mongoosePagination } from "../../common/utils/pagination.util";
+} from "../../../common/utils/functions.util";
+import { Genre } from "../../genres/schemas/Genre.schema";
+import { Industry } from "../../industries/schemas/Industry.schema";
+import { Movie } from "../schemas/Movie.schema";
+import { mongoosePagination } from "../../../common/utils/pagination.util";
 import {
   ICreatedBy,
   PaginatedList,
-} from "../../common/interfaces/public.interface";
-import { FilterMoviesDto } from "./dto/filter-movies.dot";
-import { Like } from "./schemas/Like.schema";
-import { Bookmark } from "./schemas/Bookmark.schema";
+} from "../../../common/interfaces/public.interface";
+import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
+import { Like } from "../schemas/Like.schema";
+import { Bookmark } from "../schemas/Bookmark.schema";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 
@@ -229,7 +232,7 @@ export class MoviesService {
     return MoviesMessages.RemovedMovieSuccess;
   }
 
-  private async checkExistMovieById(id: string): Promise<ICreatedBy<Movie>> {
+  async checkExistMovieById(id: string): Promise<ICreatedBy<Movie>> {
     const existingMovie: ICreatedBy<Movie> | null = await this.movieModel
       .findById(id)
       .lean();
