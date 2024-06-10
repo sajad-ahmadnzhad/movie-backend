@@ -80,14 +80,8 @@ export class IndustriesService {
     return mongoosePaginationResult;
   }
 
-  async findOne(id: string): Promise<Document> {
-    const existingIndustry = await this.industryModel.findById(id);
-
-    if (!existingIndustry) {
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-    }
-
-    return existingIndustry;
+  findOne(id: string): Promise<Document> {
+    return this.checkExistIndustry(id);
   }
 
   async findByCountry(id: string): Promise<Document[]> {
@@ -117,12 +111,7 @@ export class IndustriesService {
     updateIndustryDto: UpdateIndustryDto,
     user: User
   ): Promise<string> {
-    const existingIndustry: ICreatedBy<Industry> | null =
-      await this.industryModel.findById(id);
-
-    if (!existingIndustry) {
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-    }
+    const existingIndustry = await this.checkExistIndustry(id);
 
     if (updateIndustryDto.countryId) {
       const existingCountry = await this.countryModel.findById(
@@ -153,12 +142,7 @@ export class IndustriesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingIndustry: ICreatedBy<Industry> | null =
-      await this.industryModel.findById(id);
-
-    if (!existingIndustry) {
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-    }
+    const existingIndustry = await this.checkExistIndustry(id);
 
     if (String(user._id) !== String(existingIndustry.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -171,5 +155,16 @@ export class IndustriesService {
     } catch (error) {
       throw sendError(error.message, error.status);
     }
+  }
+
+  private async checkExistIndustry(id: string): Promise<ICreatedBy<Industry>> {
+    const existingIndustry: ICreatedBy<Industry> | null =
+      await this.industryModel.findById(id);
+
+    if (!existingIndustry) {
+      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
+    }
+
+    return existingIndustry;
   }
 }

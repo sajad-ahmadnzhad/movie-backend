@@ -95,14 +95,8 @@ export class ActorsService {
     return mongoosePaginationResult;
   }
 
-  async findOne(id: string): Promise<Document> {
-    const existingActor = await this.actorModel.findById(id);
-
-    if (!existingActor) {
-      throw new NotFoundException(ActorsMessages.NotFoundActor);
-    }
-
-    return existingActor;
+  findOne(id: string): Promise<Document> {
+    return this.checkExistActor(id);
   }
 
   async findActorsByCountry(id: string): Promise<Document[]> {
@@ -151,12 +145,7 @@ export class ActorsService {
     user: User,
     file?: Express.Multer.File
   ) {
-    const existingActor: ICreatedBy<Actor> | null =
-      await this.actorModel.findById(id);
-
-    if (!existingActor) {
-      throw new NotFoundException(ActorsMessages.NotFoundActor);
-    }
+    const existingActor = await this.checkExistActor(id);
 
     const existingIndustry: IIndustry<Industry> | null | undefined =
       updateActorDto.industryId &&
@@ -194,12 +183,7 @@ export class ActorsService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingActor: ICreatedBy<Actor> | null =
-      await this.actorModel.findById(id);
-
-    if (!existingActor) {
-      throw new NotFoundException(ActorsMessages.NotFoundActor);
-    }
+    const existingActor = await this.checkExistActor(id);
 
     if (String(user._id) !== String(existingActor.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -212,5 +196,16 @@ export class ActorsService {
     } catch (error) {
       throw sendError(error.message, error.status);
     }
+  }
+
+  private async checkExistActor(id: string): Promise<ICreatedBy<Actor>> {
+    const existingActor: ICreatedBy<Actor> | null =
+      await this.industryModel.findById(id);
+
+    if (!existingActor) {
+      throw new NotFoundException(ActorsMessages.NotFoundActor);
+    }
+
+    return existingActor;
   }
 }

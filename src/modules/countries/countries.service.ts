@@ -81,14 +81,8 @@ export class CountriesService {
     return mongoosePaginationResult;
   }
 
-  async findOne(id: string): Promise<Document> {
-    const existingCountry = await this.countryModel.findById(id);
-
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
-
-    return existingCountry;
+  findOne(id: string): Promise<Document> {
+    return this.checkExistCountry(id);
   }
 
   search(countryQuery: string): Promise<Array<Document>> {
@@ -109,12 +103,7 @@ export class CountriesService {
     user: User,
     file?: Express.Multer.File
   ): Promise<string> {
-    const existingCountry: ICreatedBy<Country> | null =
-      await this.countryModel.findById(id);
-
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
+    const existingCountry = await this.checkExistCountry(id);
 
     if (String(user._id) !== String(existingCountry.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -142,12 +131,7 @@ export class CountriesService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingCountry: ICreatedBy<Country> | null =
-      await this.countryModel.findById(id);
-
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
+    const existingCountry = await this.checkExistCountry(id);
 
     if (String(user._id) !== String(existingCountry.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -160,5 +144,16 @@ export class CountriesService {
     } catch (error) {
       throw sendError(error.message, error.status);
     }
+  }
+
+  private async checkExistCountry(id: string): Promise<ICreatedBy<Country>> {
+    const existingCountry: ICreatedBy<Country> | null =
+      await this.countryModel.findById(id);
+
+    if (!existingCountry) {
+      throw new NotFoundException(CountriesMessages.NotFoundCountry);
+    }
+
+    return existingCountry;
   }
 }

@@ -76,14 +76,8 @@ export class GenresService {
     return genres;
   }
 
-  async findOne(id: string): Promise<Document> {
-    const existingGenre = await this.genreModel.findById(id);
-
-    if (!existingGenre) {
-      throw new NotFoundException(GenresMessages.NotFoundGenre);
-    }
-
-    return existingGenre;
+  findOne(id: string): Promise<Document> {
+    return this.checkExistGenre(id);
   }
 
   async update(
@@ -91,12 +85,7 @@ export class GenresService {
     updateGenreDto: UpdateGenreDto,
     user: User
   ): Promise<string> {
-    const existingGenre: ICreatedBy<Genre> | null =
-      await this.genreModel.findById(id);
-
-    if (!existingGenre) {
-      throw new NotFoundException(GenresMessages.NotFoundGenre);
-    }
+    const existingGenre = await this.checkExistGenre(id);
 
     if (String(user._id) !== String(existingGenre.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -118,12 +107,7 @@ export class GenresService {
   }
 
   async remove(id: string, user: User): Promise<string> {
-    const existingGenre: ICreatedBy<Genre> | null =
-      await this.genreModel.findById(id);
-
-    if (!existingGenre) {
-      throw new NotFoundException(GenresMessages.NotFoundGenre);
-    }
+    const existingGenre = await this.checkExistGenre(id);
 
     if (String(user._id) !== String(existingGenre.createdBy._id)) {
       if (!user.isSuperAdmin)
@@ -136,5 +120,16 @@ export class GenresService {
     } catch (error) {
       throw sendError(error.message, error.status);
     }
+  }
+
+  private async checkExistGenre(id: string): Promise<ICreatedBy<Genre>> {
+    const existingGenre: ICreatedBy<Genre> | null =
+      await this.genreModel.findById(id);
+
+    if (!existingGenre) {
+      throw new NotFoundException(GenresMessages.NotFoundGenre);
+    }
+
+    return existingGenre;
   }
 }
