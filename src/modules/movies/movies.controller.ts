@@ -22,6 +22,7 @@ import {
   UpdateMovieDecorator,
   LikeMovieDecorator,
   BookmarkMovieDecorator,
+  RenderVisitsDecorator,
 } from "../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
@@ -99,7 +100,10 @@ export class MoviesController {
   }
 
   @Post("visits/:id")
-  async recordVisit(@Param("id") id: string): Promise<{ message: string }> {
+  @RenderVisitsDecorator
+  async recordVisit(
+    @Param("id", IsValidObjectIdPipe) id: string
+  ): Promise<{ message: string }> {
     const success = await this.moviesService.recordVisit(id);
 
     return { message: success };

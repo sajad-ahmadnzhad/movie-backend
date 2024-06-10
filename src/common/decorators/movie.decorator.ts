@@ -125,7 +125,7 @@ export const LikeMovieDecorator = applyDecorators(
   ApiCookieAuth(),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiParam({ name: "id", description: "Movie id" }),
-  ApiBadRequestResponse({ description: "Invalid ObjectId" }),
+
   ApiOkResponse({ description: "Liked success | Unliked success" }),
   ApiOperation({ summary: "like a movie" })
 );
@@ -139,4 +139,13 @@ export const BookmarkMovieDecorator = applyDecorators(
   ApiBadRequestResponse({ description: "Invalid ObjectId" }),
   ApiOkResponse({ description: "Bookmark success | UnBookmark success" }),
   ApiOperation({ summary: "bookmark a movie" })
+);
+
+//* Render Visits decorator
+export const RenderVisitsDecorator = applyDecorators(
+  ApiOkResponse({ description: "visited movie success" }),
+  ApiOperation({ summary: "visit a movie" }),
+  ApiNotFoundResponse({ description: "Movie not found" }),
+  ApiParam({ name: "id", description: "Movie id" }),
+  ApiBadRequestResponse({ description: "Invalid ObjectId" })
 );
