@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { User } from "../../../modules/users/schemas/User.schema";
 import { InjectModel } from "@nestjs/mongoose";
@@ -7,6 +11,7 @@ import { Movie } from "../schemas/Movie.schema";
 import { MoviesService } from "./movies.service";
 import { Comment } from "../schemas/Comment.schema";
 import { CommentsMessages } from "../../../common/enum/moviesMessages.enum";
+import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 
 @Injectable()
 export class CommentsService {
@@ -27,6 +32,31 @@ export class CommentsService {
     });
 
     return CommentsMessages.CreatedCommentSuccess;
+  }
+
+  async reply(
+    id: string,
+    replyCommentDto: ReplyCommentDto,
+    user: User
+  ): Promise<string> {
+    const existingComment = await this.checkExistComment(id);
+
+    if (!existingComment.isAccept) {
+      throw new ConflictException(CommentsMessages.NotAcceptedComment);
+    }
+
+    const reply = await this.commentModel.create({
+      ...replyCommentDto,
+      parentId: id,
+      userId: user._id,
+      movieId: existingComment.movieId,
+    });
+
+    await existingComment.updateOne({
+      $push: { replies: reply._id },
+    });
+
+    return CommentsMessages.ReplyCommentSuccess;
   }
 
   private async checkExistComment(id: string): Promise<Comment> {

@@ -16,4 +16,6 @@ export enum MoviesMessages {
 export enum CommentsMessages {
   CreatedCommentSuccess = "Comment created successfully",
   NotFoundComment = "Comment not found",
+  ReplyCommentSuccess = "Comment replied successfully",
+  NotAcceptedComment = "This comment is not accepted",
 }

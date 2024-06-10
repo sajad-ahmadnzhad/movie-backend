@@ -19,3 +19,8 @@ export const CreateCommentDecorator = applyDecorators(
   ApiOperation({ summary: "create a comment" }),
   ApiOkResponse({ description: "Created comment success" })
 );
+
+//* Reply comment decorator
+export const ReplyCommentDecorator = applyDecorators(
+    UseGuards(AuthGuard)
+)
