@@ -1,5 +1,6 @@
 import { UseGuards, applyDecorators } from "@nestjs/common";
 import {
+  ApiConflictResponse,
   ApiCookieAuth,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
@@ -12,8 +13,7 @@ import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 //* Create comment decorator
 export const CreateCommentDecorator = applyDecorators(
   UseGuards(AuthGuard),
-  ApiCookieAuth(),
-  ApiNotFoundResponse({ description: "Movie not Found" }),
+
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "create a comment" }),
@@ -22,5 +22,12 @@ export const CreateCommentDecorator = applyDecorators(
 
 //* Reply comment decorator
 export const ReplyCommentDecorator = applyDecorators(
-    UseGuards(AuthGuard)
-)
+  UseGuards(AuthGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "Comment not Found" }),
+  ApiConflictResponse({ description: "Not Accepted comment" }),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOkResponse({ description: "Replied comment success" }),
+  ApiOperation({ summary: "reply to comment" })
+);
