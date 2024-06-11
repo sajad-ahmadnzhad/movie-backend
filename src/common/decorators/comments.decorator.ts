@@ -49,3 +49,18 @@ export const AcceptCommentDecorator = applyDecorators(
   ApiParam({ name: "id", description: "Comment id" }),
   ApiOperation({ summary: "accept a comment" })
 );
+
+//* Reject comment decorator
+export const RejectCommentDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({ description: "Comment not Found" }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource | Cannot reject comment",
+  }),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiConflictResponse({ description: "Already Rejected comment" }),
+  ApiOkResponse({ description: "Rejected comment success" }),
+  ApiParam({ name: "id", description: "Comment id" }),
+  ApiOperation({ summary: "reject a comment" })
+);

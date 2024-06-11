@@ -85,6 +85,30 @@ export class CommentsService {
     return CommentsMessages.AcceptedCommentSuccess;
   }
 
+  async reject(id: string, user: User): Promise<string> {
+    const existingComment = await this.checkExistComment(id);
+
+    if (existingComment.isReject) {
+      throw new ConflictException(CommentsMessages.AlreadyRejectedComment);
+    }
+
+    const movie = (await this.movieModel.findById(
+      existingComment.movieId
+    )) as ICreatedBy<Movie>;
+
+    if (String(user._id) !== String(movie?.createdBy._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(CommentsMessages.CannotRejectComment);
+    }
+
+    await existingComment.updateOne({
+      isReject: true,
+      isAccept: false,
+    });
+
+    return CommentsMessages.RejectedCommentSuccess;
+  }
+
   private async checkExistComment(id: string): Promise<Comment> {
     const existingComment = await this.commentModel.findById(id);
     if (!existingComment) {

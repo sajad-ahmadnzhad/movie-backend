@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Param, Patch, Post, Put } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { UserDecorator } from "../../../modules/users/decorators/currentUser.decorator";
@@ -8,12 +8,13 @@ import {
   AcceptCommentDecorator,
   CreateCommentDecorator,
   ReplyCommentDecorator,
+  RejectCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
 import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 
 @Controller("comments")
-@ApiTags("movies")
+@ApiTags("comments")
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
   @Post()
@@ -49,4 +50,16 @@ export class CommentsController {
 
     return { message: success };
   }
+
+  @Put("reject/:id")
+  @RejectCommentDecorator
+  async reject(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.reject(id, user);
+
+    return { message: success };
+  }
+    
 }

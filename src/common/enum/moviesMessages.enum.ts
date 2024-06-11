@@ -21,4 +21,7 @@ export enum CommentsMessages {
   AlreadyAcceptedComment = "This comment already accepted",
   AcceptedCommentSuccess = "Comment accepted successfully",
   CannotAcceptComment = "You cannot accept this comment",
+  CannotRejectComment = "You cannot reject this comment",
+  RejectedCommentSuccess = "Comment rejected successfully",
+  AlreadyRejectedComment = "This comment already rejected",
 }
