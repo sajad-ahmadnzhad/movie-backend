@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Patch, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Param, Patch, Post, Put } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { UserDecorator } from "../../../modules/users/decorators/currentUser.decorator";
@@ -11,7 +11,7 @@ import {
   RejectCommentDecorator,
   UpdateCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
-import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
+import { IsValidObjectIdPipe } from '../../../common/pipes/isValidObjectId.pipe';
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 
@@ -78,5 +78,5 @@ export class CommentsController {
     );
 
     return { message: success };
-  }
+    }
 }
