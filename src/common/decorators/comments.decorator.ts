@@ -64,3 +64,14 @@ export const RejectCommentDecorator = applyDecorators(
   ApiParam({ name: "id", description: "Comment id" }),
   ApiOperation({ summary: "reject a comment" })
 );
+
+//* Update comment decorator
+export const UpdateCommentDecorator = applyDecorators(
+  UseGuards(AuthGuard),
+  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiParam({ name: "id", description: "Comment id" }),
+  ApiNotFoundResponse({ description: "Comment not Found | Movie not found" }),
+  ApiOperation({ summary: "update a comment" }),
+  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiOkResponse({ description: "Updated comment success" })
+);

@@ -14,6 +14,7 @@ import { Comment } from "../schemas/Comment.schema";
 import { CommentsMessages } from "../../../common/enum/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { ICreatedBy } from "src/common/interfaces/public.interface";
+import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 
 @Injectable()
 export class CommentsService {
@@ -41,7 +42,7 @@ export class CommentsService {
     replyCommentDto: ReplyCommentDto,
     user: User
   ): Promise<string> {
-    const existingComment = await this.checkExistComment(id);
+    const existingComment = await this.checkExistCommentById(id);
 
     if (!existingComment.isAccept) {
       throw new ConflictException(CommentsMessages.NotAcceptedComment);
@@ -62,7 +63,7 @@ export class CommentsService {
   }
 
   async accept(id: string, user: User): Promise<string> {
-    const existingComment = await this.checkExistComment(id);
+    const existingComment = await this.checkExistCommentById(id);
 
     if (existingComment.isAccept) {
       throw new ConflictException(CommentsMessages.AlreadyAcceptedComment);
@@ -86,7 +87,7 @@ export class CommentsService {
   }
 
   async reject(id: string, user: User): Promise<string> {
-    const existingComment = await this.checkExistComment(id);
+    const existingComment = await this.checkExistCommentById(id);
 
     if (existingComment.isReject) {
       throw new ConflictException(CommentsMessages.AlreadyRejectedComment);
@@ -109,7 +110,33 @@ export class CommentsService {
     return CommentsMessages.RejectedCommentSuccess;
   }
 
-  private async checkExistComment(id: string): Promise<Comment> {
+  async update(
+    id: string,
+    updateCommentDto: UpdateCommentDto,
+    user: User
+  ): Promise<string> {
+    if (updateCommentDto.movieId)
+      await this.moviesService.checkExistMovieById(updateCommentDto.movieId);
+
+    const existingComment = await this.commentModel.findOne({
+      _id: id,
+      userId: user._id,
+    });
+
+    if (!existingComment) {
+      throw new NotFoundException(CommentsMessages.NotFoundComment);
+    }
+
+    await existingComment.updateOne({
+      ...updateCommentDto,
+      isAccept: false,
+      isEdit: true,
+    });
+
+    return CommentsMessages.UpdatedCommentSuccess;
+  }
+
+  private async checkExistCommentById(id: string): Promise<Comment> {
     const existingComment = await this.commentModel.findById(id);
     if (!existingComment) {
       throw new NotFoundException(CommentsMessages.NotFoundComment);

@@ -9,9 +9,11 @@ import {
   CreateCommentDecorator,
   ReplyCommentDecorator,
   RejectCommentDecorator,
+  UpdateCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
 import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
+import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 
 @Controller("comments")
 @ApiTags("comments")
@@ -61,5 +63,20 @@ export class CommentsController {
 
     return { message: success };
   }
-    
+
+  @Patch(":id")
+  @UpdateCommentDecorator
+  async update(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User,
+    @Body() updateCommentDto: UpdateCommentDto
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.update(
+      id,
+      updateCommentDto,
+      user
+    );
+
+    return { message: success };
+  }
 }
