@@ -1,8 +1,10 @@
 import {
   ConflictException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from "@nestjs/common";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { User } from "../../../modules/users/schemas/User.schema";
@@ -21,6 +23,7 @@ export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private readonly commentModel: Model<Comment>,
     @InjectModel(Movie.name) private readonly movieModel: Model<Movie>,
+    @Inject(forwardRef(() => MoviesService))
     private readonly moviesService: MoviesService
   ) {}
   async create(

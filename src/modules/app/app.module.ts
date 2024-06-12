@@ -2,6 +2,7 @@ import {
   MiddlewareConsumer,
   Module,
   NestModule,
+  RequestMethod,
   ValidationPipe,
 } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module";
@@ -21,6 +22,7 @@ import { IndustriesModule } from "../industries/industries.module";
 import { ActorsModule } from "../actors/actors.module";
 import { GenresModule } from "../genres/genres.module";
 import { MoviesModule } from "../movies/movies.module";
+import { LoggerMiddleware } from "../../common/middlewares/application.log";
 
 @Module({
   imports: [
@@ -47,6 +49,8 @@ import { MoviesModule } from "../movies/movies.module";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(helmet(), cookieParser()).forRoutes("*");
+    consumer
+      .apply(helmet(), cookieParser(), LoggerMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL });
   }
 }

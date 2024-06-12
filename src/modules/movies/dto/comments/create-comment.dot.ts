@@ -24,7 +24,7 @@ export class CreateCommentDto {
   @Length(5, 300)
   body: string;
   @IsOptional()
-  @Transform(({ value }) => +value)
+  @Transform(({ value }) => Math.round(+value))
   @ApiProperty({
     type: Number,
     required: false,
