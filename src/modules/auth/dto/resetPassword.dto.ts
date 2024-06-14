@@ -6,8 +6,12 @@ export class ResetPasswordDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @IsString()
-  @MaxLength(40)
+  @MaxLength(30)
   @MinLength(8)
-  @ApiProperty()
+  @ApiProperty({
+    type: "string",
+    maxLength: 40,
+    minLength: 8,
+  })
   password: string;
 }
