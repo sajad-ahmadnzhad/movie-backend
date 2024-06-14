@@ -7,14 +7,27 @@ export class CreateGenreDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @Length(3, 50)
-  @ApiProperty()
+  @ApiProperty({
+    description: "The name of the genre",
+    maxLength: 50,
+    minimum: 3,
+    example: "Action",
+    type: "string",
+  })
   name: string;
 
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @IsString()
   @IsOptional()
-  @Length(5, 150)
-  @ApiProperty({ required: false })
+  @Length(5, 500)
+  @ApiProperty({
+    required: false,
+    description: "The description of the genre",
+    maxLength: 500,
+    minLength: 5,
+    type: "string",
+    uniqueItems: true,
+  })
   description?: string;
 }

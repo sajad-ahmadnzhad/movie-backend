@@ -4,16 +4,24 @@ import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
-  ApiConsumes,
   ApiCookieAuth,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
 } from "@nestjs/swagger";
 import { PublicMessages } from "../enum/public.messages";
+import {
+  GetOneGenreSchema,
+  NotFoundGenre,
+} from "../swagger/schemas/genre.schema";
+import {
+  BadRequestBodySchema,
+  BadRequestParamSchema,
+} from "../swagger/schemas/public.schema";
 
 //* Create Genre decorator
 export const CreateGenreDecorator = applyDecorators(
@@ -56,9 +64,13 @@ export const RemoveGenreDecorator = applyDecorators(
 //* Get one genre decorator
 export const GetOneGenreDecorator = applyDecorators(
   ApiOperation({ summary: "get one genre by id" }),
-  ApiNotFoundResponse({ description: "genre not found" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
-  ApiOkResponse({ type: Object })
+  ApiNotFoundResponse({ schema: NotFoundGenre }),
+  ApiBadRequestResponse({
+    description: PublicMessages.InvalidObjectId,
+    schema: BadRequestParamSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiOkResponse({ schema: GetOneGenreSchema })
 );
 
 //* Get all genres
