@@ -64,16 +64,27 @@ export class GenresService {
     return mongoosePaginationResult;
   }
 
-  search(genreQuery: string): Promise<Array<Document>> {
+  search(
+    genreQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Genre>> {
     if (!genreQuery?.trim()) {
       throw new BadRequestException(GenresMessages.RequiredGenreQuery);
     }
 
-    const genres = this.genreModel.find({
+    const query = this.genreModel.find({
       name: { $regex: genreQuery },
     });
 
-    return genres;
+    const paginatedGenres = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.genreModel
+    );
+
+    return paginatedGenres;
   }
 
   findOne(id: string): Promise<Document> {

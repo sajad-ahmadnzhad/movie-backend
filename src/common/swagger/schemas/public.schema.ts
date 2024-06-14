@@ -26,7 +26,7 @@ export const BadRequestParamSchema: SchemaObject = {
   properties: {
     message: {
       type: "string",
-      example: "This id is not from mongodb",
+      example: "validation error",
     },
     error: {
       type: "string",
@@ -53,6 +53,83 @@ export const JwtExpiredSchema: SchemaObject = {
     statusCode: {
       type: "number",
       example: 500,
+    },
+  },
+};
+
+export const ForbiddenSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "This path is protected !!",
+    },
+    error: {
+      type: "string",
+      example: "Forbidden resource",
+    },
+    statusCode: {
+      type: "number",
+      example: 403,
+    },
+  },
+};
+
+export const ConflictSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+    },
+    error: {
+      type: "string",
+      example: "CONFLICT",
+    },
+    statusCode: {
+      type: "number",
+      example: 409,
+    },
+  },
+};
+
+export const SuccessSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "Created success",
+    },
+  },
+};
+
+export const NotFoundSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "User not found",
+    },
+    error: {
+      type: "string",
+      example: "Not Found",
+    },
+    statusCode: {
+      type: "number",
+      example: 404,
+    },
+  },
+};
+
+export const TooManyRequests: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "ThrottlerException: Too Many Requests",
+    },
+    statusCode: {
+      type: "number",
+      example: 429,
     },
   },
 };

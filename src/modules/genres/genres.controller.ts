@@ -56,8 +56,12 @@ export class GenresController {
 
   @Get("search")
   @SearchGenresDecorator
-  search(@Query("genre") genre: string): Promise<Array<Document>> {
-    return this.genresService.search(genre);
+  search(
+    @Query("genre") genre: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Genre>> {
+    return this.genresService.search(genre , limit , page);
   }
 
   @Get(":id")

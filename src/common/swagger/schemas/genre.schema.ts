@@ -57,20 +57,25 @@ export const GetOneGenreSchema: SchemaObject = {
     },
   },
 };
-export const NotFoundGenre: SchemaObject = {
+
+export const GetAllGenresSchema: SchemaObject = {
   type: "object",
   properties: {
-    message: {
-      type: "string",
-      example: "Genre not found",
-    },
-    error: {
-      type: "string",
-      example: "Not Found",
-    },
-    statusCode: {
+    count: {
       type: "number",
-      example: 404,
+      example: 1,
+    },
+    page: {
+      type: "number",
+      example: 1,
+    },
+    pages: {
+      type: "number",
+      example: 2,
+    },
+    data: {
+      type: "array",
+      items: GetOneGenreSchema,
     },
   },
 };

@@ -1,4 +1,4 @@
-import { HttpException, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
 import { Model } from "mongoose";
 import * as path from "path";
@@ -13,7 +13,15 @@ export const sendError = (
 ): HttpException => {
   if (statusCode > 500 || !statusCode) statusCode = 500;
 
-  return new HttpException(message, statusCode);
+  return new HttpException(
+    {
+      message,
+      error: HttpStatus[statusCode],
+      statusCode,
+    },
+    statusCode
+  );
+  
 };
 
 export const removeFile = (filePath: string | undefined): void => {

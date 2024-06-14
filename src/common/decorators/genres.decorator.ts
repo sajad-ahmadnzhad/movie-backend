@@ -12,39 +12,88 @@ import {
   ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
 import { PublicMessages } from "../enum/public.messages";
 import {
+  GetAllGenresSchema,
   GetOneGenreSchema,
-  NotFoundGenre,
 } from "../swagger/schemas/genre.schema";
 import {
   BadRequestBodySchema,
   BadRequestParamSchema,
+  ConflictSchema,
+  ForbiddenSchema,
+  JwtExpiredSchema,
+  SuccessSchema,
+  NotFoundSchema,
+  TooManyRequests,
 } from "../swagger/schemas/public.schema";
 
 //* Create Genre decorator
 export const CreateGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiOperation({ summary: "create new genre" }),
-  ApiConflictResponse({ description: "Already exists genre" }),
-  ApiOkResponse({ description: "Created genre success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiForbiddenResponse({ description: "Forbidden resource" })
+  ApiConflictResponse({
+    description: "Already exists genre",
+    schema: ConflictSchema,
+  }),
+  ApiOkResponse({
+    description: "Created genre success",
+    schema: SuccessSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Invalid body",
+    schema: BadRequestBodySchema,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  })
 );
 
 //* Update Genre decorator
 export const UpdateGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
-  ApiNotFoundResponse({ description: "Genre not found" }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiNotFoundResponse({
+    description: "Genre not found",
+    schema: NotFoundSchema,
+  }),
   ApiForbiddenResponse({
     description: "Cannot update genre | Forbidden resource",
+    schema: ForbiddenSchema,
   }),
-  ApiOkResponse({ description: "Updated genre success" }),
-  ApiConflictResponse({ description: "Already exists Genre" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOkResponse({
+    description: "Updated genre success",
+    schema: SuccessSchema,
+  }),
+  ApiConflictResponse({
+    description: "Already exists Genre",
+    schema: ConflictSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiBadRequestResponse({
+    description: "Body validation error",
+    schema: BadRequestBodySchema,
+  }),
   ApiOperation({ summary: "update genre" })
 );
 
@@ -52,19 +101,42 @@ export const UpdateGenreDecorator = applyDecorators(
 export const RemoveGenreDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
-  ApiNotFoundResponse({ description: "Genre not found" }),
+  ApiNotFoundResponse({
+    description: "Genre not found",
+    schema: NotFoundSchema,
+  }),
   ApiForbiddenResponse({
     description: "Cannot Remove genre | Forbidden resource",
+    schema: ForbiddenSchema,
   }),
-  ApiOkResponse({ description: "Remove genre success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiBadRequestResponse({
+    description: "Param validation error",
+    schema: BadRequestParamSchema,
+  }),
+  ApiOkResponse({
+    description: "Remove genre success",
+    schema: SuccessSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiOperation({ summary: "remove genre" })
 );
 
 //* Get one genre decorator
 export const GetOneGenreDecorator = applyDecorators(
   ApiOperation({ summary: "get one genre by id" }),
-  ApiNotFoundResponse({ schema: NotFoundGenre }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiNotFoundResponse({ schema: NotFoundSchema }),
   ApiBadRequestResponse({
     description: PublicMessages.InvalidObjectId,
     schema: BadRequestParamSchema,
@@ -76,15 +148,54 @@ export const GetOneGenreDecorator = applyDecorators(
 //* Get all genres
 export const GetAllGenresDecorator = applyDecorators(
   ApiOperation({ summary: "get all genres" }),
-  ApiQuery({ name: "page", type: Number, required: false }),
-  ApiQuery({ name: "limit", type: Number, required: false }),
-  ApiOkResponse({ type: [Object] })
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the genres",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the genre",
+    example: 10,
+  }),
+  ApiOkResponse({ schema: GetAllGenresSchema })
 );
 
 //* Search Genres decorator
 export const SearchGenresDecorator = applyDecorators(
   ApiOperation({ summary: "search in genres" }),
-  ApiBadRequestResponse({ description: "Required genre query" }),
-  ApiQuery({ name: "genre", type: String }),
-  ApiOkResponse({ type: [Object] })
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiBadRequestResponse({
+    description: "Required genre query",
+    schema: BadRequestParamSchema,
+  }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the genres",
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the genre",
+  }),
+  ApiQuery({
+    name: "genre",
+    type: String,
+    description: "the name of the genre",
+  }),
+  ApiOkResponse({ schema: GetAllGenresSchema })
 );
