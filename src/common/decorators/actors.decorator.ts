@@ -173,6 +173,18 @@ export const SearchActorsDecorator = applyDecorators(
     type: String,
     description: "The name of the actor",
   }),
+  ApiQuery({
+    name: "limit",
+    type: String,
+    description: "The count of the actors",
+    required: false,
+  }),
+  ApiQuery({
+    name: "page",
+    type: String,
+    description: "The page of the actors",
+    required: false,
+  }),
   ApiOkResponse({ schema: GetAllActorsSchema })
 );
 

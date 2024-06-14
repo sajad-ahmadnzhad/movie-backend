@@ -29,6 +29,8 @@ import {
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
 import { Throttle } from "@nestjs/throttler";
+import { PaginatedList } from "src/common/interfaces/public.interface";
+import { Actor } from "./schemas/Actor.schema";
 
 @Controller("actors")
 @ApiTags("actors")
@@ -58,8 +60,12 @@ export class ActorsController {
 
   @Get("search")
   @SearchActorsDecorator
-  search(@Query("actor") actor: string): Promise<Array<Document>> {
-    return this.actorsService.search(actor);
+  search(
+    @Query("actor") actor: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Actor>> {
+    return this.actorsService.search(actor, limit, page);
   }
 
   @Get(":id")

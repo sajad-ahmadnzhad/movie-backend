@@ -127,16 +127,26 @@ export class ActorsService {
     return actors;
   }
 
-  search(actorQuery: string): Promise<Array<Document>> {
+  search(
+    actorQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Actor>> {
     if (!actorQuery?.trim()) {
       throw new BadRequestException(ActorsMessages.RequiredActorQuery);
     }
 
-    const actors = this.actorModel.find({
+    const query = this.actorModel.find({
       name: { $regex: actorQuery },
     });
+    const paginatedActors = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.actorModel
+    );
 
-    return actors;
+    return paginatedActors;
   }
 
   async update(
