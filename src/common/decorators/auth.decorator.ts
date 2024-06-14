@@ -15,6 +15,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import {
@@ -25,10 +26,15 @@ import {
   JwtExpiredSchema,
   NotFoundSchema,
   SuccessSchema,
+  TooManyRequests,
 } from "../swagger/schemas/public.schema";
 
 //* Signup user decorator
 export const SignUpUserDecorator = applyDecorators(
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiConflictResponse({
     description: "Already registered user",
     schema: ConflictSchema,
@@ -47,6 +53,10 @@ export const SignUpUserDecorator = applyDecorators(
 //* Signin user decorator
 export const SignInUserDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiNotFoundResponse({
     description: "Not found user",
     schema: NotFoundSchema,
@@ -66,6 +76,10 @@ export const SignInUserDecorator = applyDecorators(
 //* Signout user decorator
 export const SignoutUserDecorator = applyDecorators(
   ApiCookieAuth(),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiBadRequestResponse({
     description: "Invalid access token",
     schema: BadRequestParamSchema,
@@ -86,6 +100,10 @@ export const SignoutUserDecorator = applyDecorators(
 //* Refresh token decorator
 export const RefreshTokenDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -104,6 +122,10 @@ export const RefreshTokenDecorator = applyDecorators(
 //* Forgot password Decorator
 export const ForgotPasswordDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -125,12 +147,16 @@ export const ResetPasswordDecorator = applyDecorators(
     description: "Token not found",
     schema: NotFoundSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiOkResponse({
     description: "Reset password success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: "userId" , description: "The userId of the token"}),
-  ApiParam({ name: "token" , description: "The token"}),
+  ApiParam({ name: "userId", description: "The userId of the token" }),
+  ApiParam({ name: "token", description: "The token" }),
   ApiOperation({ summary: "User reset password" }),
   HttpCode(HttpStatus.OK)
 );
@@ -140,6 +166,10 @@ export const SendVerifyEmailDecorator = applyDecorators(
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiConflictResponse({
     description: "Already verify email",
@@ -159,6 +189,10 @@ export const VerifyEmailDecorator = applyDecorators(
     description: "Token not found",
     schema: NotFoundSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiConflictResponse({
     description: "Already verify email",
     schema: ConflictSchema,
@@ -167,7 +201,7 @@ export const VerifyEmailDecorator = applyDecorators(
     description: "Verified email success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: 'userId', description: 'The userId of the token'}),
-  ApiParam({ name: 'token', description: 'The token'}),
+  ApiParam({ name: "userId", description: "The userId of the token" }),
+  ApiParam({ name: "token", description: "The token" }),
   ApiOperation({ summary: "Verified user by token" })
 );

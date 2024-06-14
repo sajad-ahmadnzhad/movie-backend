@@ -133,3 +133,34 @@ export const TooManyRequests: SchemaObject = {
     },
   },
 };
+
+export const CreatedBySchema: SchemaObject = {
+  type: "object",
+  required: ["_id", "name", "username", "avatarURL", "createdAt", "updatedAt"],
+  properties: {
+    _id: {
+      type: "string",
+      example: "6664317a74eb5d975e91560d",
+    },
+    name: {
+      type: "string",
+      example: "ali",
+    },
+    username: {
+      type: "string",
+      example: "ali_22",
+    },
+    avatarURL: {
+      type: "string",
+      example: "/uploads/user-avatar/171890.2938233496407--71iPN1z3PXL.png",
+    },
+    createdAt: {
+      type: "string",
+      example: "2024-06-08T10:24:58.129Z",
+    },
+    updatedAt: {
+      type: "string",
+      example: "2024-06-08T10:24:58.129Z",
+    },
+  },
+};
