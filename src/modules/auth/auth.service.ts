@@ -27,6 +27,7 @@ import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
 import { BanUser } from "../users/schemas/BanUser.schema";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 @Injectable()
 export class AuthService {
@@ -311,5 +312,18 @@ export class AuthService {
     await existingToken.deleteOne();
 
     return AuthMessages.verifiedEmailSuccess;
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  private async removeUnverifiedUsers() {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    await this.userModel
+      .deleteMany({
+        isVerifyEmail: false,
+        createdAt: { $lt: oneMonthAgo },
+      })
+      .exec();
   }
 }

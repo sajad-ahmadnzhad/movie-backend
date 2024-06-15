@@ -7,6 +7,7 @@ import { JwtModule } from "@nestjs/jwt";
 import { Token, TokenSchema } from "../users/schemas/Token.schema";
 import { MailModule } from "../mail/mail.module";
 import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
       { name: BanUser.name, schema: BanUserSchema },
     ]),
     JwtModule.register({ global: true }),
+    ScheduleModule.forRoot(),
     MailModule,
   ],
   controllers: [AuthController],
