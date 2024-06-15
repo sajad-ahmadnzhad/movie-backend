@@ -11,6 +11,7 @@ import {
   ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
 import { memoryStorage } from "multer";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
@@ -30,6 +31,7 @@ import {
   ConflictSchema,
   SuccessSchema,
   BadRequestBodySchema,
+  TooManyRequests,
 } from "../swagger/schemas/public.schema";
 
 //* Get me decorator
@@ -44,6 +46,10 @@ export const GetMeDecorator = applyDecorators(
   ApiForbiddenResponse({
     description: "This path is protected !!",
     schema: ForbiddenSchema,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   })
 );
 
@@ -53,6 +59,10 @@ export const GetAllUsersDecorator = applyDecorators(
   ApiOkResponse({
     description: "Return all users for admins",
     schema: GetAllUsersSchema,
+  }),
+   ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
@@ -84,6 +94,10 @@ export const GetOneUserDecorator = applyDecorators(
     description: "This id is not from mongodb",
     schema: BadRequestParamSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiParam({ name: "userId", description: "The id of the user" }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
@@ -111,6 +125,10 @@ export const UpdateUserDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, fields: 1, files: 1 },
     })
   ),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -134,6 +152,10 @@ export const RemoveUserDecorator = applyDecorators(
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiBadRequestResponse({
     description: "Cannot remove admin",
@@ -163,6 +185,10 @@ export const ChangeRoleUserDecorator = applyDecorators(
     description: "User not found",
     schema: NotFoundSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -186,6 +212,10 @@ export const SearchUserDecorator = applyDecorators(
     type: Number,
     required: false,
     description: "The page of the users",
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiQuery({
     name: "limit",
@@ -215,6 +245,10 @@ export const DeleteAccountUserDecorator = applyDecorators(
     description: "Invalid Password | cannot delete account super admin",
     schema: BadRequestParamSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -236,6 +270,10 @@ export const ChangeSuperAdminDecorator = applyDecorators(
   ApiParam({
     name: "userId",
     description: "ID of the person who becomes the owner",
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
@@ -267,6 +305,10 @@ export const BanUserDecorator = applyDecorators(
     description: "Cannot ban admin or super admin",
     schema: ForbiddenSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -294,6 +336,10 @@ export const UnbanUserDecorator = applyDecorators(
     description: "User not found",
     schema: NotFoundSchema,
   }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiOkResponse({
     description: "Unbanned user success",
     schema: SuccessSchema,
@@ -320,6 +366,10 @@ export const GetAllBanUserDecorator = applyDecorators(
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
   }),
   ApiQuery({
     name: "page",
