@@ -141,11 +141,4 @@ export const BookmarkMovieDecorator = applyDecorators(
   ApiOperation({ summary: "bookmark a movie" })
 );
 
-//* Render Visits decorator
-export const RenderVisitsDecorator = applyDecorators(
-  ApiOkResponse({ description: "visited movie success" }),
-  ApiOperation({ summary: "visit a movie" }),
-  ApiNotFoundResponse({ description: "Movie not found" }),
-  ApiParam({ name: "id", description: "Movie id" }),
-  ApiBadRequestResponse({ description: "Invalid ObjectId" })
-);
+

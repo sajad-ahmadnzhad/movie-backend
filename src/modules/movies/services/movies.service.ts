@@ -113,6 +113,12 @@ export class MoviesService {
   async findOne(id: string): Promise<Document> {
     const existingMovie = await this.checkExistMovieById(id);
 
+    const existingMovieInCache = (await this.redisCache.get(
+      `visitMovie:${id}`
+    )) as number;
+
+    await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
+
     //* likes , visits , bookmarks in this method
     return this.calculateMovieStats(existingMovie);
   }
@@ -168,20 +174,6 @@ export class MoviesService {
 
     await this.bookmarkModel.create({ movieId: id, userId: user._id });
     return MoviesMessages.BookmarkMovieSuccess;
-  }
-
-  async recordVisit(id: string): Promise<string> {
-    await this.checkExistMovieById(id);
-
-    const existingMovieInCache = await this.redisCache.get(`visitMovie:${id}`);
-
-    if (!existingMovieInCache) {
-      await this.redisCache.set(`visitMovie:${id}`, 1);
-    } else {
-      await this.redisCache.set(`visitMovie:${id}`, +existingMovieInCache + 1);
-    }
-
-    return MoviesMessages.VisitMovieSuccess;
   }
 
   async update(
