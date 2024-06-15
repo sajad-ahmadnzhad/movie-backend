@@ -69,7 +69,7 @@ MovieSchema.pre(["find", "findOne"], function (next) {
       },
       {
         path: "countries",
-        select: "name",
+        select: "name flag_image_URL",
         transform(docs) {
           docs && (docs.createdBy = undefined);
           return docs;

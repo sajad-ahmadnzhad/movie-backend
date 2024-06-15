@@ -60,7 +60,7 @@ export const GetAllUsersDecorator = applyDecorators(
     description: "Return all users for admins",
     schema: GetAllUsersSchema,
   }),
-   ApiTooManyRequestsResponse({
+  ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
   }),

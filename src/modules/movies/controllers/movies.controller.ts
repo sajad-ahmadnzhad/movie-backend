@@ -8,6 +8,7 @@ import {
   Delete,
   UploadedFiles,
   Query,
+  ParseIntPipe,
 } from "@nestjs/common";
 import { MoviesService } from "../services/movies.service";
 import { CreateMovieDto } from "../dto/movies/create-movie.dto";
@@ -66,8 +67,12 @@ export class MoviesController {
 
   @Get("search")
   @SearchMoviesDecorator
-  search(@Query("movie") movie: string): Promise<Array<Document>> {
-    return this.moviesService.search(movie);
+  search(
+    @Query("movie") movie: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Movie>> {
+    return this.moviesService.search(movie, limit, page);
   }
 
   @GetOneMovieDecorator

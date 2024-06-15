@@ -123,23 +123,36 @@ export class MoviesService {
     return this.calculateMovieStats(existingMovie);
   }
 
-  async search(movieQuery: string): Promise<Array<Document>> {
+  async search(
+    movieQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Movie>> {
     if (!movieQuery?.trim()) {
       throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
     }
 
-    const movies = await this.movieModel
+    const query = this.movieModel
       .find({
         title: { $regex: movieQuery },
       })
       .lean();
 
-    const movieStatsPromises = movies.map((movie: any) => {
+    const paginatedMovies = await mongoosePagination(
+      limit,
+      page,
+      query,
+      this.movieModel
+    );
+
+    const moviesStatsPromises = paginatedMovies.data.map((movie: any) => {
       //* likes , visits , bookmarks in this method
       return this.calculateMovieStats(movie);
     });
 
-    return Promise.all(movieStatsPromises);
+    await Promise.all(moviesStatsPromises);
+
+    return paginatedMovies;
   }
 
   async likeToggle(id: string, user: User): Promise<string> {
