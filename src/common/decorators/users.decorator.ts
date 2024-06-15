@@ -33,6 +33,7 @@ import {
   BadRequestBodySchema,
   TooManyRequests,
 } from "../swagger/schemas/public.schema";
+import { GetMyBookmarksSchema } from "../swagger/schemas/movie.schema";
 
 //* Get me decorator
 export const GetMeDecorator = applyDecorators(
@@ -385,4 +386,31 @@ export const GetAllBanUserDecorator = applyDecorators(
   }),
   ApiOperation({ summary: "get all ban users" }),
   ApiOkResponse({ schema: GetAllBannedUsers })
+);
+
+//* Get my bookmarks decorator
+export const GetMyBookmarksDecorator = applyDecorators(
+  UseGuards(AuthGuard),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the users",
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the user",
+  }),
+  ApiOperation({ summary: "get my bookmarks" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiOkResponse({ schema: GetMyBookmarksSchema })
 );

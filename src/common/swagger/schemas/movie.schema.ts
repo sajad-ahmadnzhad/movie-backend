@@ -7,7 +7,7 @@ export const GetOneMovie: SchemaObject = {
       type: "string",
       example: "666584b9d23d3362e1560500",
     },
-    name: {
+    title: {
       type: "string",
       example: "Boos 2013",
     },
@@ -153,6 +153,71 @@ export const GetAllMoviesSchema: SchemaObject = {
     data: {
       type: "array",
       items: GetOneMovie,
+    },
+  },
+};
+
+export const GetMyBookmarksSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    count: {
+      type: "number",
+      example: 1,
+    },
+    page: {
+      type: "number",
+      example: 1,
+    },
+    pages: {
+      type: "number",
+      example: 2,
+    },
+    data: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          userId: CreatedBySchema,
+          movieId: {
+            type: "object",
+            properties: {
+              _id: {
+                type: "string",
+                example: "666584b9d23d3362e1560500",
+              },
+              title: {
+                type: "string",
+                example: "Boos 2013",
+              },
+              description: {
+                type: "string",
+              },
+              release_year: {
+                type: "number",
+                example: 2013,
+              },
+              poster_URL: {
+                type: "string",
+                example:
+                  "/uploads/posters/24555.51533071671--photo-09-22_22-58.jpg",
+              },
+              video_URL: {
+                type: "string",
+                example:
+                  "/uploads/movies/1717433950785T68ci0AlwaymCxwCkjB2.mp4",
+              },
+            },
+          },
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+        },
+      },
     },
   },
 };

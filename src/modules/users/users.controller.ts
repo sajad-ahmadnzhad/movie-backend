@@ -25,6 +25,7 @@ import {
   GetAllBanUserDecorator,
   GetAllUsersDecorator,
   GetMeDecorator,
+  GetMyBookmarksDecorator,
   GetOneUserDecorator,
   RemoveUserDecorator,
   SearchUserDecorator,
@@ -37,6 +38,7 @@ import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { BanUser } from "./schemas/BanUser.schema";
+import { Bookmark } from "../movies/schemas/Bookmark.schema";
 
 @Controller("users")
 @ApiTags("users")
@@ -97,6 +99,16 @@ export class UsersController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ): Promise<PaginatedList<BanUser>> {
     return this.usersService.findAllBan(limit, page);
+  }
+
+  @Get("bookmark")
+  @GetMyBookmarksDecorator
+  getMyBookmarks(
+    @UserDecorator() user: User,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Bookmark>> {
+    return this.usersService.getMyBookmarks(user, limit, page);
   }
 
   @Get(":userId")

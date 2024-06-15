@@ -25,13 +25,15 @@ import { removeFile, sendError } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { BanUser } from "./schemas/BanUser.schema";
+import { Bookmark } from "../movies/schemas/Bookmark.schema";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly usersModel: Model<User>,
     @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
-    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
+    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>
   ) {}
 
   async findAllUsers(
@@ -261,5 +263,22 @@ export class UsersService {
   ): Promise<PaginatedList<BanUser>> {
     const query = this.banUserModel.find();
     return mongoosePagination(limit, page, query, this.banUserModel);
+  }
+
+  getMyBookmarks(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Bookmark>> {
+    const query = this.bookmarkModel.find({ userId: user._id });
+
+    const paginatedBookmarks = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.bookmarkModel
+    );
+
+    return paginatedBookmarks;
   }
 }

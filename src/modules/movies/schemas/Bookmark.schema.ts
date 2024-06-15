@@ -13,5 +13,30 @@ export class Bookmark extends Document {
 
 const BookmarkSchema = SchemaFactory.createForClass(Bookmark);
 
+BookmarkSchema.pre(["find", "findOne"], function (next) {
+  try {
+    this.populate([
+      {
+        path: "userId",
+        select: "name username avatarURL",
+      },
+      {
+        path: "movieId",
+        select: "title description release_year poster_URL video_URL",
+        transform(doc) {
+          doc.createdBy = undefined
+          doc.genres = undefined
+          doc.countries = undefined
+          doc.actors = undefined
+          doc.industries = undefined
+          return doc
+        }
+      },
+    ]);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 export { BookmarkSchema };
