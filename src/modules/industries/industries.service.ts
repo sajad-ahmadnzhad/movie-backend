@@ -94,16 +94,27 @@ export class IndustriesService {
     return this.industryModel.find({ country: id });
   }
 
-  search(industryQuery: string): Promise<Document[]> {
+  search(
+    industryQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Industry>> {
     if (!industryQuery?.trim()) {
       throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);
     }
 
-    const industries = this.industryModel.find({
+    const query = this.industryModel.find({
       name: { $regex: industryQuery },
     });
 
-    return industries;
+    const paginatedIndustries = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.industryModel
+    );
+
+    return paginatedIndustries;
   }
 
   async update(

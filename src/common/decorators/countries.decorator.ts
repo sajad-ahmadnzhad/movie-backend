@@ -143,7 +143,11 @@ export const RemoveCountryDecorator = applyDecorators(
     schema: JwtExpiredSchema,
   }),
   ApiParam({ name: "id", description: "The id of the country" }),
-  ApiOperation({ summary: "remove country" })
+  ApiOperation({ summary: "remove country" }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
 );
 
 //* Get one country decorator
@@ -158,7 +162,11 @@ export const GetOneCountryDecorator = applyDecorators(
     description: PublicMessages.InvalidObjectId,
     schema: BadRequestParamSchema,
   }),
-  ApiOkResponse({ schema: GetOneCountrySchema })
+  ApiOkResponse({ schema: GetOneCountrySchema }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
 );
 
 //* Get all countries
@@ -178,7 +186,11 @@ export const GetAllCountriesDecorator = applyDecorators(
     description: "The count of the country",
     example: 10,
   }),
-  ApiOkResponse({ schema: GetAllCountriesSchema })
+  ApiOkResponse({ schema: GetAllCountriesSchema }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
 );
 
 //* Search Countries decorator
@@ -207,5 +219,9 @@ export const SearchCountriesDecorator = applyDecorators(
     description: "The count of the genre",
     example: 10,
   }),
-  ApiOkResponse({ schema: GetAllCountriesSchema })
+  ApiOkResponse({ schema: GetAllCountriesSchema }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
 );

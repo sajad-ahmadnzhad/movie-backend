@@ -14,14 +14,17 @@ export class CreateIndustryDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @Length(3, 50)
-  @ApiProperty()
+  @ApiProperty({
+    maxLength: 50,
+    minLength: 3,
+  })
   name: string;
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @IsString()
   @IsOptional()
   @Length(5, 150)
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, maxLength: 150, minLength: 5 })
   description?: string;
 
   @IsNotEmpty()

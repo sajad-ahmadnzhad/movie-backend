@@ -15,6 +15,10 @@ export const GetOneCountrySchema: SchemaObject = {
     description: {
       type: "string",
     },
+    flag_image_URL: {
+      type: "string",
+      example: "/uploads/country-flag/171742.1145530829754--movie-backend.png",
+    },
     createdBy: CreatedBySchema,
     createdAt: {
       type: "string",

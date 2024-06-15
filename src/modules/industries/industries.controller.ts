@@ -59,8 +59,12 @@ export class IndustriesController {
 
   @Get("search")
   @SearchIndustriesDecorator
-  search(@Query("industry") industry: string) {
-    return this.industriesService.search(industry);
+  search(
+    @Query("industry") industry: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+  ): Promise<PaginatedList<Industry>> {
+    return this.industriesService.search(industry, limit, page);
   }
 
   @Get("by-country/:id")
