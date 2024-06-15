@@ -17,34 +17,87 @@ import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { IsSuperAdminGuard } from "../../modules/auth/guards/isSuperAdmin.guard";
 import { fileFilter } from "../utils/upload-file.util";
+import {
+  GetAllBannedUsers,
+  GetAllUsersSchema,
+  GetOneUserSchema,
+} from "../swagger/schemas/user.schema";
+import {
+  BadRequestParamSchema,
+  ForbiddenSchema,
+  JwtExpiredSchema,
+  NotFoundSchema,
+  ConflictSchema,
+  SuccessSchema,
+  BadRequestBodySchema,
+} from "../swagger/schemas/public.schema";
 
 //* Get me decorator
 export const GetMeDecorator = applyDecorators(
   UseGuards(AuthGuard),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
   ApiOperation({ summary: "get my account" }),
-  ApiOkResponse({ description: "get account", type: Object })
+  ApiOkResponse({ description: "get account", schema: GetOneUserSchema }),
+  ApiForbiddenResponse({
+    description: "This path is protected !!",
+    schema: ForbiddenSchema,
+  })
 );
 
 //* Get all users decorator
 export const GetAllUsersDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiOkResponse({ description: "Return all users for admins", type: Object }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiOkResponse({
+    description: "Return all users for admins",
+    schema: GetAllUsersSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  }),
   ApiOperation({ summary: "get all users" }),
-  ApiQuery({ name: "page", type: Number, required: false }),
-  ApiQuery({ name: "limit", type: Number, required: false })
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the users",
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the user",
+  })
 );
 
 //* Get one user decorator
 export const GetOneUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiBadRequestResponse({ description: "This id is not from mongodb" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiNotFoundResponse({ description: "User not found" }),
-  ApiOkResponse({ description: "All users", type: Object }),
-  ApiForbiddenResponse({ description: "Forbidden resource" }),
+  ApiBadRequestResponse({
+    description: "This id is not from mongodb",
+    schema: BadRequestParamSchema,
+  }),
+  ApiParam({ name: "userId", description: "The id of the user" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
+  ApiOkResponse({ schema: GetOneUserSchema }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  }),
   ApiOperation({ summary: "get one user" })
 );
 
@@ -58,32 +111,68 @@ export const UpdateUserDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, fields: 1, files: 1 },
     })
   ),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
   ApiConsumes("multipart/form-data"),
   ApiOperation({ summary: "update current user" }),
-  ApiOkResponse({ description: "Updated user success" }),
+  ApiOkResponse({ description: "Updated user success", schema: SuccessSchema }),
   ApiConflictResponse({
     description: "already registered with username or email",
+    schema: ConflictSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "User validation error",
+    schema: BadRequestBodySchema,
   })
 );
 
 //* Remove user decorator
 export const RemoveUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiNotFoundResponse({ description: "User not found" }),
-  ApiBadRequestResponse({ description: "Cannot remove admin" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiOkResponse({ description: "Removed user success" }),
-  ApiOperation({ summary: "remove user" })
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Cannot remove admin",
+    schema: BadRequestParamSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiParam({ name: "userId", description: "The id of the user" }),
+  ApiBadRequestResponse({
+    description: "This id is not from mongodb",
+    schema: BadRequestParamSchema,
+  }),
+  ApiOkResponse({ description: "Removed user success", schema: SuccessSchema }),
+  ApiOperation({ summary: "remove user" }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  })
 );
 
 //* Change role user decorator
 export const ChangeRoleUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard, IsSuperAdminGuard),
-  ApiNotFoundResponse({ description: "User not found" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiBadRequestResponse({ description: "Cannot change role super admin" }),
-  ApiOkResponse({ description: "Changed role success" }),
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Cannot change role super admin",
+    schema: BadRequestParamSchema,
+  }),
+  ApiOkResponse({ description: "Changed role success", schema: SuccessSchema }),
+  ApiParam({ name: "userId", description: "The id of the user" }),
   ApiOperation({ summary: "change role to admin or user" })
 );
 
@@ -91,9 +180,32 @@ export const ChangeRoleUserDecorator = applyDecorators(
 export const SearchUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiOperation({ summary: "search in users list" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiBadRequestResponse({ description: "User query is required" }),
-  ApiOkResponse({ description: "Get matched users", type: Object })
+  ApiQuery({ name: "user", description: "The query of the user" }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the users",
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the user",
+  }),
+  ApiForbiddenResponse({
+    schema: ForbiddenSchema,
+    description: "This path is protected !!",
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "User query is required",
+    schema: BadRequestParamSchema,
+  }),
+  ApiOkResponse({ description: "Get matched users", schema: GetAllUsersSchema })
 );
 
 //* Delete account user decorator
@@ -101,12 +213,20 @@ export const DeleteAccountUserDecorator = applyDecorators(
   UseGuards(AuthGuard),
   ApiBadRequestResponse({
     description: "Invalid Password | cannot delete account super admin",
+    schema: BadRequestParamSchema,
   }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiBadRequestResponse({
-    description: "Transfer Ownership For Delete Account | Invalid password",
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
   }),
-  ApiOkResponse({ description: "Deleted account success" }),
+  ApiOkResponse({
+    description: "Deleted account success",
+    schema: SuccessSchema,
+  }),
+  ApiForbiddenResponse({
+    description: "This path is protected !!",
+    schema: ForbiddenSchema,
+  }),
   ApiOperation({ summary: "delete account user" })
 );
 
@@ -117,39 +237,102 @@ export const ChangeSuperAdminDecorator = applyDecorators(
     name: "userId",
     description: "ID of the person who becomes the owner",
   }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiNotFoundResponse({ description: "User not found" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
   ApiBadRequestResponse({
     description: "Entered id is super admin | Invalid password",
+    schema: BadRequestParamSchema,
   }),
-  ApiOkResponse({ description: "Changed super admin success" }),
+  ApiOkResponse({
+    description: "Changed super admin success",
+    schema: SuccessSchema,
+  }),
+  ApiForbiddenResponse({
+    description: "This path is protected !!",
+    schema: ForbiddenSchema,
+  }),
   ApiOperation({ summary: "possession transition" })
 );
 
 //* Ban User Decorator
 export const BanUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiForbiddenResponse({ description: "Cannot ban admin or super admin" }),
-  ApiNotFoundResponse({ description: "User not found" }),
-  ApiConflictResponse({ description: "Already banned user" }),
-  ApiOkResponse({ description: "Banned user success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiForbiddenResponse({
+    description: "Cannot ban admin or super admin",
+    schema: ForbiddenSchema,
+  }),
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
+  ApiConflictResponse({
+    description: "Already banned user",
+    schema: ConflictSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Ban Validation error",
+    schema: BadRequestBodySchema,
+  }),
+  ApiOkResponse({ description: "Banned user success", schema: SuccessSchema }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
   ApiOperation({ summary: "ban a user" })
 );
 
 //* Unban User Decorator
 export const UnbanUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiNotFoundResponse({ description: "User not found" }),
-  ApiOkResponse({ description: "Unbanned user success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiNotFoundResponse({
+    description: "User not found",
+    schema: NotFoundSchema,
+  }),
+  ApiOkResponse({
+    description: "Unbanned user success",
+    schema: SuccessSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiForbiddenResponse({
+    description: "This path is protected !!",
+    schema: ForbiddenSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the banned user" }),
+  ApiBadRequestResponse({
+    description: "This id is not from mongodb",
+    schema: BadRequestBodySchema,
+  }),
   ApiOperation({ summary: "unban a user" })
 );
 
 //* Get all ban user Decorator
 export const GetAllBanUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the users",
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the user",
+  }),
   ApiOperation({ summary: "get all ban users" }),
-  ApiOkResponse({type: [Object]})
+  ApiOkResponse({ schema: GetAllBannedUsers })
 );

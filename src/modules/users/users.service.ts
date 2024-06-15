@@ -126,12 +126,16 @@ export class UsersService {
     return UsersMessages.ChangeRoleSuccess;
   }
 
-  async searchUser(user: string): Promise<Array<User>> {
+  async searchUser(
+    user: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<User>> {
     if (!user) {
       throw new BadRequestException(UsersMessages.RequiredUser);
     }
 
-    const foundUsers = await this.usersModel.find({
+    const query = this.usersModel.find({
       $or: [
         {
           name: { $regex: user },
@@ -141,7 +145,14 @@ export class UsersService {
       ],
     });
 
-    return foundUsers;
+    const paginatedUsers = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.usersModel
+    );
+
+    return paginatedUsers;
   }
 
   async deleteAccount(user: User, dto: DeleteAccountDto): Promise<string> {
@@ -244,7 +255,11 @@ export class UsersService {
     return UsersMessages.BanUserSuccess;
   }
 
-  async findAllBan(): Promise<Document[]> {
-    return this.banUserModel.find();
+  async findAllBan(
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<BanUser>> {
+    const query = this.banUserModel.find();
+    return mongoosePagination(limit, page, query, this.banUserModel);
   }
 }

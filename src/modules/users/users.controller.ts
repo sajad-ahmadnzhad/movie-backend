@@ -36,6 +36,7 @@ import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
+import { BanUser } from "./schemas/BanUser.schema";
 
 @Controller("users")
 @ApiTags("users")
@@ -61,8 +62,12 @@ export class UsersController {
 
   @Get("search")
   @SearchUserDecorator
-  searchUser(@Query("user") user: string) {
-    return this.usersService.searchUser(user);
+  searchUser(
+    @Query("user") user: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<User>> {
+    return this.usersService.searchUser(user, limit, page);
   }
 
   @Patch("ban")
@@ -87,8 +92,11 @@ export class UsersController {
 
   @Get("ban")
   @GetAllBanUserDecorator
-  getAllBans(): Promise<Document[]> {
-    return this.usersService.findAllBan();
+  getAllBans(
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<BanUser>> {
+    return this.usersService.findAllBan(limit, page);
   }
 
   @Get(":userId")
@@ -154,7 +162,7 @@ export class UsersController {
     @Param("userId", IsValidObjectIdPipe) userId: string,
     @Body() changeSuperAdminDto: ChangeSuperAdminDto,
     @UserDecorator() user: User
-  ) {
+  ): Promise<{ message: string }> {
     const success = await this.usersService.changeSuperAdmin(
       userId,
       changeSuperAdminDto,
