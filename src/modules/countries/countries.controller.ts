@@ -27,7 +27,7 @@ import {
 import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { Document } from "mongoose";
 import { Throttle } from "@nestjs/throttler";
-import { PaginatedList } from '../../common/interfaces/public.interface';
+import { PaginatedList } from "../../common/interfaces/public.interface";
 import { Country } from "./schemas/Country.schema";
 
 @Controller("countries")
@@ -63,8 +63,12 @@ export class CountriesController {
 
   @Get("search")
   @SearchCountriesDecorator
-  search(@Query("country") country: string): Promise<Array<Document>> {
-    return this.countriesService.search(country);
+  search(
+    @Query("country") country: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Country>> {
+    return this.countriesService.search(country, limit, page);
   }
 
   @Get(":id")

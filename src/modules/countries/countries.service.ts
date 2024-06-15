@@ -85,16 +85,27 @@ export class CountriesService {
     return this.checkExistCountry(id);
   }
 
-  search(countryQuery: string): Promise<Array<Document>> {
+  search(
+    countryQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Country>> {
     if (!countryQuery?.trim()) {
       throw new BadRequestException(CountriesMessages.RequiredCountryQuery);
     }
 
-    const countries = this.countryModel.find({
+    const query = this.countryModel.find({
       name: { $regex: countryQuery },
     });
 
-    return countries;
+    const paginatedCountries = mongoosePagination(
+      limit,
+      page,
+      query,
+      this.countryModel
+    );
+
+    return paginatedCountries;
   }
 
   async update(

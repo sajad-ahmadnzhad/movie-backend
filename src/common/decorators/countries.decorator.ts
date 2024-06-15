@@ -9,14 +9,31 @@ import {
   ApiConflictResponse,
   ApiConsumes,
   ApiCookieAuth,
+  ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiQuery,
+  ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
 import { PublicMessages } from "../enum/public.messages";
+import {
+  GetAllCountriesSchema,
+  GetOneCountrySchema,
+} from "../swagger/schemas/country.schema";
+import {
+  TooManyRequests,
+  ConflictSchema,
+  SuccessSchema,
+  JwtExpiredSchema,
+  ForbiddenSchema,
+  BadRequestBodySchema,
+  NotFoundSchema,
+  BadRequestParamSchema,
+} from "../swagger/schemas/public.schema";
 
 //* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
@@ -29,12 +46,32 @@ export const CreateCountryDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, files: 1 },
     })
   ),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiConsumes("multipart/form-data"),
   ApiOperation({ summary: "create new country" }),
-  ApiConflictResponse({ description: "Already exists country" }),
-  ApiOkResponse({ description: "Created country success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
-  ApiForbiddenResponse({ description: "Forbidden resource" })
+  ApiConflictResponse({
+    description: "Already exists country",
+    schema: ConflictSchema,
+  }),
+  ApiCreatedResponse({
+    description: "Created country success",
+    schema: SuccessSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Country validation error",
+    schema: BadRequestBodySchema,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  })
 );
 
 //* Update country decorator
@@ -48,14 +85,36 @@ export const UpdateCountryDecorator = applyDecorators(
       limits: { fileSize: 2048 * 1024, files: 1 },
     })
   ),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
   ApiConsumes("multipart/form-data"),
-  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiNotFoundResponse({
+    description: "Country not found",
+    schema: NotFoundSchema,
+  }),
   ApiForbiddenResponse({
     description: "Cannot update country | Forbidden resource",
+    schema: ForbiddenSchema,
   }),
-  ApiOkResponse({ description: "Updated country success" }),
-  ApiConflictResponse({ description: "Already exists country" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiBadRequestResponse({
+    description: "Country validation error",
+    schema: BadRequestBodySchema,
+  }),
+  ApiOkResponse({
+    description: "Updated country success",
+    schema: SuccessSchema,
+  }),
+  ApiConflictResponse({
+    description: "Already exists country",
+    schema: ConflictSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the country" }),
   ApiOperation({ summary: "update country" })
 );
 
@@ -63,35 +122,90 @@ export const UpdateCountryDecorator = applyDecorators(
 export const RemoveCountryDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
-  ApiNotFoundResponse({ description: "Country not found" }),
+  ApiNotFoundResponse({
+    description: "Country not found",
+    schema: NotFoundSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "This id if not from mongodb",
+    schema: BadRequestParamSchema,
+  }),
   ApiForbiddenResponse({
     description: "Cannot Remove Country | Forbidden resource",
+    schema: ForbiddenSchema,
   }),
-  ApiOkResponse({ description: "Remove country success" }),
-  ApiInternalServerErrorResponse({ description: "Jwt expired" }),
+  ApiOkResponse({
+    description: "Remove country success",
+    schema: SuccessSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the country" }),
   ApiOperation({ summary: "remove country" })
 );
 
 //* Get one country decorator
 export const GetOneCountryDecorator = applyDecorators(
   ApiOperation({ summary: "get one country by id" }),
-  ApiNotFoundResponse({ description: "country not found" }),
-  ApiBadRequestResponse({ description: PublicMessages.InvalidObjectId }),
-  ApiOkResponse({ type: Object })
+  ApiNotFoundResponse({
+    description: "country not found",
+    schema: NotFoundSchema,
+  }),
+  ApiParam({ name: "id", description: "The id of the country" }),
+  ApiBadRequestResponse({
+    description: PublicMessages.InvalidObjectId,
+    schema: BadRequestParamSchema,
+  }),
+  ApiOkResponse({ schema: GetOneCountrySchema })
 );
 
 //* Get all countries
 export const GetAllCountriesDecorator = applyDecorators(
   ApiOperation({ summary: "get all countries" }),
-  ApiQuery({ name: "page", type: Number, required: false }),
-  ApiQuery({ name: "limit", type: Number, required: false }),
-  ApiOkResponse({ type: [Object] })
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the countries",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the country",
+    example: 10,
+  }),
+  ApiOkResponse({ schema: GetAllCountriesSchema })
 );
 
 //* Search Countries decorator
 export const SearchCountriesDecorator = applyDecorators(
   ApiOperation({ summary: "search in countries" }),
-  ApiBadRequestResponse({ description: "Required country query" }),
-  ApiQuery({ name: "country", type: String }),
-  ApiOkResponse({ type: [Object] })
+  ApiBadRequestResponse({
+    description: "Required country query",
+    schema: BadRequestParamSchema,
+  }),
+  ApiQuery({
+    name: "country",
+    type: String,
+    description: "The query of the country",
+  }),
+  ApiQuery({
+    name: "page",
+    type: Number,
+    required: false,
+    description: "The page of the genres",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "limit",
+    type: Number,
+    required: false,
+    description: "The count of the genre",
+    example: 10,
+  }),
+  ApiOkResponse({ schema: GetAllCountriesSchema })
 );
