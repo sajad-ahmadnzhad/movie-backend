@@ -6,13 +6,13 @@ import { Movie } from "./Movie.schema";
 @Schema({ versionKey: false, timestamps: true })
 export class Comment extends Document {
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  userId: ObjectId;
+  creator: ObjectId;
   @Prop({ type: Types.ObjectId, ref: Movie.name, required: true })
   movieId: ObjectId;
   @Prop({ type: String, trim: true, required: true })
   body: string;
-  @Prop({ type: Types.ObjectId, ref: Comment.name })
-  parentId: ObjectId;
+  @Prop({ type: Types.ObjectId, ref: Comment.name, default: null })
+  parentComment: ObjectId;
   @Prop({ type: [Types.ObjectId], ref: Comment.name, default: [] })
   replies: [ObjectId];
   @Prop({ type: Boolean, default: false })

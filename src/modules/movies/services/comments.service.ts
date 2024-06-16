@@ -15,7 +15,7 @@ import { MoviesService } from "./movies.service";
 import { Comment } from "../schemas/Comment.schema";
 import { CommentsMessages } from "../../../common/enum/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
-import { ICreatedBy } from "src/common/interfaces/public.interface";
+import { ICreatedBy } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 
 @Injectable()
@@ -34,7 +34,7 @@ export class CommentsService {
 
     await this.commentModel.create({
       ...createCommentDto,
-      userId: user._id,
+      creator: user._id,
     });
 
     return CommentsMessages.CreatedCommentSuccess;
@@ -53,8 +53,8 @@ export class CommentsService {
 
     const reply = await this.commentModel.create({
       ...replyCommentDto,
-      parentId: id,
-      userId: user._id,
+      parentComment: id,
+      creator: user._id,
       movieId: existingComment.movieId,
     });
 
@@ -137,6 +137,32 @@ export class CommentsService {
     });
 
     return CommentsMessages.UpdatedCommentSuccess;
+  }
+
+  async getMovieComments(movieId: string) {
+    const comments = await this.commentModel
+      .find({ movieId, isAccept: true })
+      .populate({
+        path: "parentComment",
+        select: "body creator",
+        populate: { path: "creator", select: "name username avatarURL" },
+      })
+      .populate({
+        path: "replies",
+        select: "body creator isAccept",
+        populate: { path: "creator", select: "name username avatarURL" },
+      })
+      .populate({
+        path: "creator",
+        select: "name username avatarURL",
+      })
+      .lean()
+      .select("-movieId");
+
+    return comments.flatMap((comment: any) => {
+      comment.replies = comment.replies.filter((reply: any) => reply.isAccept);
+      return comment;
+    });
   }
 
   private async checkExistCommentById(id: string): Promise<Comment> {
