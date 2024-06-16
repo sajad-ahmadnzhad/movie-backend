@@ -16,9 +16,11 @@ import { Bookmark, BookmarkSchema } from "./schemas/Bookmark.schema";
 import { CommentsController } from "./controllers/comments.controller";
 import { CommentsService } from "./services/comments.service";
 import { Comment, CommentSchema } from "./schemas/Comment.schema";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: BanUser.name, schema: BanUserSchema },

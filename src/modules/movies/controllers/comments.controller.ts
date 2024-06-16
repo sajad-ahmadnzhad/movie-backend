@@ -4,9 +4,12 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Put,
+  Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
@@ -23,6 +26,8 @@ import {
 import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
+import { AuthGuard } from "../../../modules/auth/guards/Auth.guard";
+import { IsAdminGuard } from "../../../modules/auth/guards/isAdmin.guard";
 
 @Controller("comments")
 @ApiTags("comments")
@@ -74,8 +79,22 @@ export class CommentsController {
   }
 
   @Get("movie-comments/:id")
-  getMoviesComments(@Param("id", IsValidObjectIdPipe) id: string) {
-    return this.commentsService.getMovieComments(id);
+  getMoviesComments(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+  ) {
+    return this.commentsService.getMovieComments(id, limit, page);
+  }
+
+  @Get("unaccepted-comments/:id")
+  @UseGuards(AuthGuard, IsAdminGuard)
+  getUnacceptedComments(
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number,
+    @UserDecorator() user: User
+  ) {
+    return this.commentsService.getUnacceptedComments(user, limit, page);
   }
 
   @Patch(":id")

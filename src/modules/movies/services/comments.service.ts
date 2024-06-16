@@ -9,14 +9,19 @@ import {
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { User } from "../../../modules/users/schemas/User.schema";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Document, Model } from "mongoose";
 import { Movie } from "../schemas/Movie.schema";
 import { MoviesService } from "./movies.service";
 import { Comment } from "../schemas/Comment.schema";
 import { CommentsMessages } from "../../../common/enum/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
-import { ICreatedBy } from "../../../common/interfaces/public.interface";
+import {
+  ICreatedBy,
+  PaginatedList,
+} from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
+import { mongoosePagination } from "../../../common/utils/pagination.util";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 @Injectable()
 export class CommentsService {
@@ -139,9 +144,66 @@ export class CommentsService {
     return CommentsMessages.UpdatedCommentSuccess;
   }
 
-  async getMovieComments(movieId: string) {
-    const comments = await this.commentModel
-      .find({ movieId, isAccept: true })
+  async getMovieComments(
+    movieId: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Comment>> {
+    await this.moviesService.checkExistMovieById(movieId);
+
+    const query = this.populateComments(
+      this.commentModel.find({ movieId, isAccept: true })
+    );
+
+    const paginatedComments = await mongoosePagination(
+      limit,
+      page,
+      query,
+      this.commentModel
+    );
+
+    paginatedComments.data.flatMap((comment: any) => {
+      comment.replies = comment.replies.filter((reply: any) => reply.isAccept);
+      return comment;
+    });
+
+    return paginatedComments;
+  }
+
+  async getUnacceptedComments(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Comment>> {
+    const movies = await this.movieModel.find({ createdBy: user._id });
+
+    const moviesIds = movies.map((movie) => String(movie._id));
+
+    const query = this.populateComments(
+      this.commentModel.find({ isAccept: false, movieId: { $in: moviesIds } })
+    );
+
+    const paginatedComments = await mongoosePagination(
+      limit,
+      page,
+      query,
+      this.commentModel
+    );
+
+    return paginatedComments;
+  }
+
+  private async checkExistCommentById(id: string): Promise<Comment> {
+    const existingComment = await this.commentModel.findById(id);
+    if (!existingComment) {
+      throw new NotFoundException(CommentsMessages.NotFoundComment);
+    }
+
+    return existingComment;
+  }
+
+  private populateComments(query: any) {
+    return query
       .populate({
         path: "parentComment",
         select: "body creator",
@@ -156,21 +218,20 @@ export class CommentsService {
         path: "creator",
         select: "name username avatarURL",
       })
-      .lean()
-      .select("-movieId");
-
-    return comments.flatMap((comment: any) => {
-      comment.replies = comment.replies.filter((reply: any) => reply.isAccept);
-      return comment;
-    });
+      .select("-movieId")
+      .lean();
   }
 
-  private async checkExistCommentById(id: string): Promise<Comment> {
-    const existingComment = await this.commentModel.findById(id);
-    if (!existingComment) {
-      throw new NotFoundException(CommentsMessages.NotFoundComment);
-    }
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  private async removeRejectedComments(): Promise<void> {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-    return existingComment;
+    await this.commentModel
+      .deleteMany({
+        isReject: true,
+        createdAt: { $lt: oneMonthAgo },
+      })
+      .exec();
   }
 }
