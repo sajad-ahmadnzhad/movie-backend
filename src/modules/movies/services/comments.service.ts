@@ -35,11 +35,18 @@ export class CommentsService {
     createCommentDto: CreateCommentDto,
     user: User
   ): Promise<string> {
-    await this.moviesService.checkExistMovieById(createCommentDto.movieId);
+    const existingMovie = await this.moviesService.checkExistMovieById(
+      createCommentDto.movieId
+    );
+
+    const isAdminMovie =
+      String(existingMovie.createdBy._id) == String(user._id);
 
     await this.commentModel.create({
       ...createCommentDto,
       creator: user._id,
+      isAccept: isAdminMovie || user.isSuperAdmin,
+      isReviewed: isAdminMovie || user.isSuperAdmin,
     });
 
     return CommentsMessages.CreatedCommentSuccess;
@@ -56,11 +63,19 @@ export class CommentsService {
       throw new ConflictException(CommentsMessages.NotAcceptedComment);
     }
 
+    const movie = await this.moviesService.checkExistMovieById(
+      String(existingComment.movieId)
+    );
+
+    const isAdminMovie = String(movie.createdBy._id) == String(user._id);
+
     const reply = await this.commentModel.create({
       ...replyCommentDto,
       parentComment: id,
       creator: user._id,
       movieId: existingComment.movieId,
+      isAccept: isAdminMovie || user.isSuperAdmin,
+      isReviewed: isAdminMovie || user.isSuperAdmin,
     });
 
     await existingComment.updateOne({
@@ -177,10 +192,10 @@ export class CommentsService {
   ): Promise<PaginatedList<Comment>> {
     const movies = await this.movieModel.find({ createdBy: user._id });
 
-    const moviesIds = movies.map((movie) => String(movie._id));
+    const movieIds = movies.map((movie) => String(movie._id));
 
     const query = this.populateComments(
-      this.commentModel.find({ isAccept: false, movieId: { $in: moviesIds } })
+      this.commentModel.find({ isAccept: false, movieId: { $in: movieIds } })
     );
 
     const paginatedComments = await mongoosePagination(
@@ -188,6 +203,21 @@ export class CommentsService {
       page,
       query,
       this.commentModel
+    );
+
+    const commentIds = paginatedComments.data.map((comment) =>
+      String(comment._id)
+    );
+
+    await this.commentModel.updateMany(
+      {
+        _id: {
+          $in: commentIds,
+        },
+      },
+      {
+        isReviewed: true,
+      }
     );
 
     return paginatedComments;
@@ -207,9 +237,13 @@ export class CommentsService {
       },
     });
 
+    const repliesIds = existingComment.replies.map((reply: any) =>
+      String(reply._id)
+    );
+
     await this.commentModel.deleteMany({
       _id: {
-        $in: existingComment.replies.map(String),
+        $in: repliesIds,
       },
     });
 
