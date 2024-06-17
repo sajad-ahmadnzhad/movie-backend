@@ -1,10 +1,11 @@
 import { registerDecorator, ValidationArguments } from "class-validator";
+import { SignupUserDto } from "src/modules/auth/dto/signupUser.dto";
 
 export function ValidateObjectIds() {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,
-      propertyName: propertyName,
+      propertyName,
       validator: {
         defaultMessage() {
           return this.errorMessage;
@@ -52,6 +53,27 @@ export function ValidateObjectIds() {
           }
 
           return !hasError;
+        },
+      },
+    });
+  };
+}
+
+interface ValidateArguments extends ValidationArguments {
+  object: SignupUserDto;
+}
+
+export function ConfirmPassword() {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName,
+      validator: {
+        defaultMessage() {
+          return "ConfirmPassword is not equal to password";
+        },
+        validate(value: string, validationArguments: ValidateArguments) {
+          return value == validationArguments?.object.password;
         },
       },
     });

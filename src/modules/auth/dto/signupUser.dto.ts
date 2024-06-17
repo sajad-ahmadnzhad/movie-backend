@@ -8,6 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from "class-validator";
+import { ConfirmPassword } from "src/common/utils/custom-decorators";
 
 export class SignupUserDto {
   @IsString()
@@ -51,4 +52,9 @@ export class SignupUserDto {
     minLength: 8,
   })
   password: string;
+
+  @IsNotEmpty()
+  @ApiProperty()
+  @ConfirmPassword()
+  confirmPassword: string;
 }
