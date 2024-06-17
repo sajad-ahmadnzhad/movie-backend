@@ -193,6 +193,31 @@ export class CommentsService {
     return paginatedComments;
   }
 
+  async remove(id: string, user: User): Promise<string> {
+    const existingComment = await this.checkExistCommentById(id);
+
+    if (String(existingComment._id) !== String(user._id)) {
+      if (!user.isSuperAdmin)
+        throw new ForbiddenException(CommentsMessages.CannotRemoveComment);
+    }
+
+    await this.commentModel.updateMany({
+      $pull: {
+        replies: existingComment._id,
+      },
+    });
+
+    await this.commentModel.deleteMany({
+      _id: {
+        $in: existingComment.replies.map(String),
+      },
+    });
+
+    await existingComment.deleteOne();
+
+    return CommentsMessages.RemovedCommentSuccess;
+  }
+
   private async checkExistCommentById(id: string): Promise<Comment> {
     const existingComment = await this.commentModel.findById(id);
     if (!existingComment) {

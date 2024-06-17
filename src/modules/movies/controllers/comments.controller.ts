@@ -112,4 +112,14 @@ export class CommentsController {
 
     return { message: success };
   }
+
+  @Delete(":id")
+  @UseGuards(AuthGuard)
+  async remove(
+    @Param("id", IsValidObjectIdPipe) id: string,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.remove(id, user);
+    return { message: success };
+  }
 }

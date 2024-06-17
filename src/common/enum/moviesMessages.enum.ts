@@ -25,4 +25,6 @@ export enum CommentsMessages {
   RejectedCommentSuccess = "Comment rejected successfully",
   AlreadyRejectedComment = "This comment already rejected",
   UpdatedCommentSuccess = "Comment updated successfully",
+  CannotRemoveComment = "You do not own this comment",
+  RemovedCommentSuccess = "Comment removed successfully",
 }
