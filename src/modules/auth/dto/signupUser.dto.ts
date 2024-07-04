@@ -8,7 +8,7 @@ import {
   MaxLength,
   MinLength,
 } from "class-validator";
-import { ConfirmPassword } from "src/common/utils/custom-decorators";
+import { ConfirmPassword } from "../../../common/utils/custom-decorators";
 
 export class SignupUserDto {
   @IsString()

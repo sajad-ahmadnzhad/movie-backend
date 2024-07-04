@@ -24,7 +24,7 @@ import { GenresModule } from "../genres/genres.module";
 import { MoviesModule } from "../movies/movies.module";
 import { LoggerMiddleware } from "../../common/middlewares/application.log";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { typeormConfig } from "src/config/typeorm.config";
+import { typeormConfig } from "../../config/typeorm.config";
 
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { typeormConfig } from "src/config/typeorm.config";
     AuthModule,
     MongooseModule.forRootAsync(mongooseConfig()),
     CacheModule.registerAsync(cacheConfig()),
+    TypeOrmModule.forRootAsync(typeormConfig()),
     UsersModule,
     MailModule,
     CountriesModule,
@@ -43,7 +44,6 @@ import { typeormConfig } from "src/config/typeorm.config";
     ActorsModule,
     GenresModule,
     MoviesModule,
-    TypeOrmModule.forRootAsync(typeormConfig()),
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },
