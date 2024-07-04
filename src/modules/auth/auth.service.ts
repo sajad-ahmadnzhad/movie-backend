@@ -99,6 +99,7 @@ export class AuthService {
     );
 
     await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
+    await this.userRepository.save(user)
 
     return { success: AuthMessages.SignupUserSuccess, accessToken };
   }
