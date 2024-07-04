@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { User } from "../users/schemas/User.schema";
+import { User as UserMongoose } from "../users/schemas/User.schema";
 import { Document, Model, ObjectId } from "mongoose";
 import { SignupUserDto } from "./dto/signupUser.dto";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
@@ -28,15 +28,20 @@ import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
 import { BanUser } from "../users/schemas/BanUser.schema";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { User } from "./entities/User.entity";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(UserMongoose.name)
+    private readonly userModel: Model<UserMongoose>,
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
     @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
     @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService
   ) {}
@@ -55,44 +60,45 @@ export class AuthService {
   async signupUser(dto: SignupUserDto): Promise<SignupUser> {
     const { username, email } = dto;
 
-    const existingUser = await this.userModel.findOne({
-      $or: [{ username }, { email }],
+    const existingUser = await this.userRepository.findOne({
+      where: [{ username }, { email }],
     });
 
     if (existingUser) {
       throw new ConflictException(AuthMessages.AlreadyRegistered);
     }
 
+    //TODO: Change to mysql
     const isBanUser = !!(await this.banUserModel.findOne({ email: dto.email }));
 
     if (isBanUser) {
       throw new ForbiddenException(AuthMessages.BannedAccount);
     }
 
-    const isFirstUser = (await this.userModel.countDocuments()) == 0;
+    const isFirstUser = (await this.userRepository.count()) == 0;
 
     const hashPassword = hashData(dto.password, 12);
 
-    const user = (await this.userModel.create({
+    const user = this.userRepository.create({
       ...dto,
       isAdmin: isFirstUser,
       isSuperAdmin: isFirstUser,
       password: hashPassword,
-    })) as User & { _id: ObjectId };
+    });
 
     const accessToken = this.generateToken(
-      { id: user._id.toString() },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
-      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
+      { id: user.id },
+      process.env.ACCESS_TOKEN_EXPIRE_TIME as string,
+      process.env.ACCESS_TOKEN_SECRET as string
     );
 
     const refreshToken = this.generateToken(
-      { id: user._id.toString() },
-      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME") as string,
-      this.configService.get<string>("REFRESH_TOKEN_SECRET") as string
+      { id: user.id },
+      process.env.REFRESH_TOKEN_EXPIRE_TIME as string,
+      process.env.REFRESH_TOKEN_SECRET as string
     );
 
-    await this.redisCache.set(user._id.toString(), refreshToken);
+    await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
 
     return { success: AuthMessages.SignupUserSuccess, accessToken };
   }
