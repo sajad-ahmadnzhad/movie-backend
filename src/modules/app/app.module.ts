@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module";
 import { MongooseModule } from "@nestjs/mongoose";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { CacheModule } from "@nestjs/cache-manager";
 import { APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
@@ -23,6 +23,8 @@ import { ActorsModule } from "../actors/actors.module";
 import { GenresModule } from "../genres/genres.module";
 import { MoviesModule } from "../movies/movies.module";
 import { LoggerMiddleware } from "../../common/middlewares/application.log";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { typeormConfig } from "src/config/typeorm.config";
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { LoggerMiddleware } from "../../common/middlewares/application.log";
     ActorsModule,
     GenresModule,
     MoviesModule,
+    TypeOrmModule.forRootAsync(typeormConfig()),
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },
