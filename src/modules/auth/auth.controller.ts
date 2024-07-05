@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  Res,
+} from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignupUserDto } from "./dto/signupUser.dto";
 import { Request, Response } from "express";
@@ -87,7 +96,7 @@ export class AuthController {
   @ResetPasswordDecorator
   async resetPassword(
     @Body() body: ResetPasswordDto,
-    @Param("userId") userId: string,
+    @Param("userId", ParseIntPipe) userId: number,
     @Param("token") token: string
   ) {
     const success = await this.authService.resetPassword(body, userId, token);
@@ -106,7 +115,7 @@ export class AuthController {
   @Get(":userId/verify/:token")
   @VerifyEmailDecorator
   async verifyEmail(
-    @Param("userId") userId: string,
+    @Param("userId", ParseIntPipe) userId: number,
     @Param("token") token: string
   ) {
     const success = await this.authService.verifyEmail(userId, token);

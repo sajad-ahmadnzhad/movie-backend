@@ -1,9 +1,10 @@
 import { MailerAsyncOptions } from "@nestjs-modules/mailer/dist/interfaces/mailer-async-options.interface";
+import { ConfigService } from "@nestjs/config";
 
 export const mailConfig = (): MailerAsyncOptions => {
-  const { GMAIL_USER, GMAIL_PASS } = process.env;
   return {
-    useFactory: () => {
+    inject: [ConfigService],
+    useFactory: (configService: ConfigService) => {
       return {
         transport: {
           service: "gmail",
@@ -12,8 +13,8 @@ export const mailConfig = (): MailerAsyncOptions => {
           logger: true,
           debug: true,
           auth: {
-            user: GMAIL_USER,
-            pass: GMAIL_PASS,
+            user: configService.get("GMAIL_USER"),
+            pass: configService.get("GMAIL_PASS"),
           },
           tls: { rejectUnauthorized: false },
         },

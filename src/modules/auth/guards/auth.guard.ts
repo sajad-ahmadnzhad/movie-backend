@@ -2,25 +2,30 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { InjectModel } from "@nestjs/mongoose";
 import { Request } from "express";
-import { Model } from "mongoose";
-import { User } from "../../users/schemas/User.schema";
-import { BanUser } from "src/modules/users/schemas/BanUser.schema";
+import { User } from "../entities/user.entity";
+import { BanUser } from "../entities/banUser.entity";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
+    @Inject(forwardRef(() => JwtService))
     private jwtService: JwtService,
+    @Inject(forwardRef(() => ConfigService))
     private configService: ConfigService,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(BanUser)
+    private readonly banUserRepository: Repository<BanUser>
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -32,17 +37,17 @@ export class AuthGuard implements CanActivate {
       throw new ForbiddenException("This path is protected !!");
     }
 
-    let jwtPayload: null | { id: string } = null;
+    let jwtPayload: null | { id: number } = null;
 
     try {
-      jwtPayload = this.jwtService.verify<{ id: string }>(accessToken, {
+      jwtPayload = this.jwtService.verify<{ id: number }>(accessToken, {
         secret: this.configService.get<string>("ACCESS_TOKEN_SECRET"),
       });
     } catch (error: any) {
       throw new InternalServerErrorException(error.message);
     }
 
-    const user = await this.userModel.findById(jwtPayload?.id);
+    const user = await this.userRepository.findOneBy({ id: jwtPayload?.id });
 
     if (!user) {
       throw new NotFoundException("User not found");
@@ -54,7 +59,7 @@ export class AuthGuard implements CanActivate {
       );
     }
 
-    const isBanUser = !!(await this.banUserModel.findOne({
+    const isBanUser = !!(await this.banUserRepository.findOneBy({
       email: user.email,
     }));
 

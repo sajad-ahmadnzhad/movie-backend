@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Token } from "./token.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -38,9 +40,12 @@ export class User {
   @Column({ type: "boolean", default: false })
   isVerifyEmail: boolean;
 
-  @CreateDateColumn()
+  @OneToOne(() => Token, (token) => token.user)
+  token: Token;
+
+  @CreateDateColumn({type: 'timestamp'})
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({type: 'timestamp'})
   updatedAt: Date;
 }
