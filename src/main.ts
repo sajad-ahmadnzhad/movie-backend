@@ -12,6 +12,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = configService.get<string>("PORT") || 3000;
 
+  app.setGlobalPrefix("api");
+
   //* Config and Init Swagger
   swaggerConfigInit(app);
 

@@ -1,7 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+  CreateDateColumn,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+  ManyToOne,
+} from "typeorm";
 import { User } from "./User.entity";
 
-@Entity({ name: "banUser" })
+@Entity({ name: "bans" })
 export class BanUser {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,6 +16,12 @@ export class BanUser {
   @Column({ type: "varchar", nullable: false, unique: true })
   email: string;
 
-  @ManyToOne(() => User, { onDelete: "CASCADE" })
-  createdBy: User;
+  @ManyToOne(() => User, (user) => user.id)
+  bannedBy: User;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

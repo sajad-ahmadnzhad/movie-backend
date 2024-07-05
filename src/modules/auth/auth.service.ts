@@ -6,10 +6,11 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  forwardRef,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { User as UserMongoose } from "../users/schemas/User.schema";
-import { Document, Model, ObjectId } from "mongoose";
+import { Model, ObjectId } from "mongoose";
 import { SignupUserDto } from "./dto/signupUser.dto";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
 import * as bcrypt from "bcrypt";
@@ -26,11 +27,12 @@ import { ResetPasswordDto } from "./dto/resetPassword.dto";
 import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
-import { BanUser } from "../users/schemas/BanUser.schema";
+import { BanUser as MongooseBanUser } from "../users/schemas/BanUser.schema";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { User } from "./entities/User.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
+import { BanUser } from "./entities/banUser.entity";
 
 @Injectable()
 export class AuthService {
@@ -40,9 +42,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
     @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
-    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
+    @InjectModel(MongooseBanUser.name)
+    private readonly banUserModel: Model<MongooseBanUser>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(BanUser)
+    private readonly banUserRepository: Repository<BanUser>,
+    @Inject(forwardRef(() => MailerService))
     private readonly mailerService: MailerService,
+    @Inject(forwardRef(() => ConfigService))
     private readonly configService: ConfigService
   ) {}
 
@@ -66,13 +73,6 @@ export class AuthService {
 
     if (existingUser) {
       throw new ConflictException(AuthMessages.AlreadyRegistered);
-    }
-
-    //TODO: Change to mysql
-    const isBanUser = !!(await this.banUserModel.findOne({ email: dto.email }));
-
-    if (isBanUser) {
-      throw new ForbiddenException(AuthMessages.BannedAccount);
     }
 
     const isFirstUser = (await this.userRepository.count()) == 0;
@@ -99,7 +99,7 @@ export class AuthService {
     );
 
     await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
-    await this.userRepository.save(user)
+    await this.userRepository.save(user);
 
     return { success: AuthMessages.SignupUserSuccess, accessToken };
   }
@@ -107,17 +107,16 @@ export class AuthService {
   async signinUser(dto: SigninUserDto): Promise<SigninUser> {
     const { identifier, password } = dto;
 
-    const user: (User & { _id: ObjectId }) | null = await this.userModel
-      .findOne({
-        $or: [{ email: identifier }, { username: identifier }],
-      })
-      .select("password email");
+    const user = await this.userRepository.findOne({
+      where: [{ email: identifier }, { username: identifier }],
+      select: { password: true, email: true },
+    });
 
     if (!user) {
       throw new NotFoundException(AuthMessages.NotFoundUser);
     }
 
-    const isBanUser = !!(await this.banUserModel.findOne({
+    const isBanUser = !!(await this.banUserRepository.findOneBy({
       email: user.email,
     }));
 
@@ -131,18 +130,18 @@ export class AuthService {
       throw new ForbiddenException(AuthMessages.InvalidPassword);
     }
     const accessToken = this.generateToken(
-      { id: user._id.toString() },
+      { id: user.id },
       this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
       this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
     );
 
     const refreshToken = this.generateToken(
-      { id: user._id.toString() },
+      { id: user.id },
       this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME") as string,
       this.configService.get<string>("REFRESH_TOKEN_SECRET") as string
     );
 
-    await this.redisCache.set(user._id.toString(), refreshToken);
+    await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
 
     return { success: AuthMessages.SigninUserSuccess, accessToken };
   }
