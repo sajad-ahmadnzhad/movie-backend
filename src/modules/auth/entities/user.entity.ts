@@ -45,7 +45,9 @@ export class User {
   @OneToOne(() => Token, (token) => token.user)
   token: Token;
 
-  @OneToMany(() => BanUser, (banUser) => banUser.bannedBy)
+  @OneToMany(() => BanUser, (banUser) => banUser.bannedBy, {
+    onDelete: "SET NULL",
+  })
   bans: BanUser[];
 
   @CreateDateColumn({ type: "timestamp" })

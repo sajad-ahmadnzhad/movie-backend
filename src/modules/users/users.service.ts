@@ -24,7 +24,7 @@ import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../auth/entities/User.entity";
 import { Like, Repository } from "typeorm";
-import { AuthMessages } from "src/common/enum/authMessages.enum";
+import { AuthMessages } from "../../common/enum/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
 
 @Injectable()
@@ -112,7 +112,7 @@ export class UsersService {
 
     if (!foundUser) throw new NotFoundException(UsersMessages.NotFound);
 
-    if ((foundUser.isAdmin && !user.isSuperAdmin) || foundUser.isAdmin) {
+    if (foundUser.isAdmin && !user.isSuperAdmin) {
       throw new BadRequestException(UsersMessages.CannotRemoveAdmin);
     }
 
@@ -286,9 +286,17 @@ export class UsersService {
       throw new NotFoundException(UsersMessages.NotFound);
     }
 
-    if (user.id !== existingBanUser.bannedBy.id && !user.isSuperAdmin) {
-      throw new ForbiddenException(UsersMessages.CannotUnbanUser);
+    if (!existingBanUser.bannedBy && !user.isSuperAdmin) {
+      //TODO: Add a good message for this error
+      throw new ConflictException(
+        "Access to remove this user only for super admin"
+      );
     }
+
+    if (existingBanUser.bannedBy)
+      if (user.id !== existingBanUser.bannedBy.id && !user.isSuperAdmin) {
+        throw new ForbiddenException(UsersMessages.CannotUnbanUser);
+      }
 
     await this.banUserRepository.delete({ id });
 
@@ -324,19 +332,18 @@ export class UsersService {
     return paginatedUsers;
   }
 
+  //TODO: Create bookmark table
   // getMyBookmarks(
   //   user: MongooseUser,
   //   limit?: number,
   //   page?: number
   // ): Promise<PaginatedList<Bookmark>> {
-  //   // const query = this.bookmarkModel.find({ userId: user._id });
-  //   const query = 1
+  // const query = this.bookmarkModel.find({ userId: user._id });
   //   const paginatedBookmarks = mongoosePagination(
   //     limit,
   //     page,
   //     query,
   //     // this.bookmarkModel
-
   //   );
 
   //   return paginatedBookmarks;

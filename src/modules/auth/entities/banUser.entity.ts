@@ -17,7 +17,7 @@ export class BanUser {
   @Column({ type: "varchar", nullable: false, unique: true })
   email: string;
 
-  @ManyToOne(() => User, (user) => user.bans)
+  @ManyToOne(() => User, (user) => user.bans, { onDelete: "SET NULL" })
   @JoinColumn()
   bannedBy: User;
 
