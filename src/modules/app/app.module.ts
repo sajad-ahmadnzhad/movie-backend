@@ -37,7 +37,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     MongooseModule.forRootAsync(mongooseConfig()),
     CacheModule.registerAsync(cacheConfig()),
     TypeOrmModule.forRootAsync(typeormConfig()),
-    // UsersModule,
+    UsersModule,
     MailModule,
     // CountriesModule,
     // IndustriesModule,

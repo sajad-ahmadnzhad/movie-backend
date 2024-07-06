@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { User } from "./User.entity";
 
@@ -16,7 +17,8 @@ export class BanUser {
   @Column({ type: "varchar", nullable: false, unique: true })
   email: string;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, (user) => user.bans)
+  @JoinColumn()
   bannedBy: User;
 
   @CreateDateColumn()

@@ -5,12 +5,16 @@ import { ConfigService } from "@nestjs/config";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { swaggerConfigInit } from "./config/swagger.config";
 import { corsConfig } from "./config/cors.config";
+import * as express from "express";
 
 async function bootstrap() {
   const logger = new Logger();
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
   const PORT = configService.get<string>("PORT") || 3000;
+
+  app.use(express.json({ limit: "50mb" }));
+  app.use(express.urlencoded({ extended: true }));
 
   app.setGlobalPrefix("api");
 

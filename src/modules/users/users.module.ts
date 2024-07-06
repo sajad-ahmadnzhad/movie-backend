@@ -1,19 +1,12 @@
 import { Module } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { UsersController } from "./users.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { User, UserSchema } from "./schemas/User.schema";
-import { BanUser, BanUserSchema } from "./schemas/BanUser.schema";
-import { Bookmark, BookmarkSchema } from "../movies/schemas/Bookmark.schema";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { BanUser } from "../auth/entities/banUser.entity";
+import { User } from "../auth/entities/user.entity";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: BanUser.name, schema: BanUserSchema },
-      { name: Bookmark.name, schema: BookmarkSchema },
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, BanUser])],
   controllers: [UsersController],
   providers: [UsersService],
 })

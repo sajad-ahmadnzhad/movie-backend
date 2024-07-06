@@ -76,12 +76,14 @@ export class AuthService {
 
     const hashPassword = hashData(dto.password, 12);
 
-    const user = this.userRepository.create({
+    let user = this.userRepository.create({
       ...dto,
       isAdmin: isFirstUser,
       isSuperAdmin: isFirstUser,
       password: hashPassword,
     });
+
+    user = await this.userRepository.save(user);
 
     const accessToken = this.generateToken(
       { id: user.id },
@@ -96,7 +98,6 @@ export class AuthService {
     );
 
     await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
-    await this.userRepository.save(user);
 
     return { success: AuthMessages.SignupUserSuccess, accessToken };
   }
@@ -106,7 +107,7 @@ export class AuthService {
 
     const user = await this.userRepository.findOne({
       where: [{ email: identifier }, { username: identifier }],
-      select: { password: true, email: true },
+      select: { password: true, email: true, id: true },
     });
 
     if (!user) {

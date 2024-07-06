@@ -13,8 +13,6 @@ import {
 import { UsersService } from "./users.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiCookieAuth, ApiTags } from "@nestjs/swagger";
-import { User } from "./schemas/User.schema";
-import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { UserDecorator } from "./decorators/currentUser.decorator";
 import { Express, Response } from "express";
 import {
@@ -37,8 +35,8 @@ import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
-import { BanUser } from "./schemas/BanUser.schema";
-import { Bookmark } from "../movies/schemas/Bookmark.schema";
+import { User } from "../auth/entities/user.entity";
+import { BanUser } from "../auth/entities/banUser.entity";
 
 @Controller("users")
 @ApiTags("users")
@@ -65,11 +63,11 @@ export class UsersController {
   @Get("search")
   @SearchUserDecorator
   searchUser(
-    @Query("user") user: string,
+    @Query("user") userQuery: string,
     @Query("page", new ParseIntPipe({ optional: true })) page?: number,
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ): Promise<PaginatedList<User>> {
-    return this.usersService.searchUser(user, limit, page);
+    return this.usersService.searchUser(userQuery, limit, page);
   }
 
   @Patch("ban")
@@ -86,7 +84,7 @@ export class UsersController {
   @UnbanUserDecorator
   async unbanUser(
     @UserDecorator() user: User,
-    @Param("id", IsValidObjectIdPipe) id: string
+    @Param("id", ParseIntPipe) id: number
   ): Promise<{ message: string }> {
     const success = await this.usersService.unbanUser(id, user);
     return { message: success };
@@ -101,21 +99,19 @@ export class UsersController {
     return this.usersService.findAllBan(limit, page);
   }
 
-  @Get("bookmark")
-  @GetMyBookmarksDecorator
-  getMyBookmarks(
-    @UserDecorator() user: User,
-    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  ): Promise<PaginatedList<Bookmark>> {
-    return this.usersService.getMyBookmarks(user, limit, page);
-  }
+  // @Get("bookmark")
+  // @GetMyBookmarksDecorator
+  // getMyBookmarks(
+  //   @UserDecorator() user: User,
+  //   @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+  //   @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  // ): Promise<PaginatedList<Bookmark>> {
+  //   return this.usersService.getMyBookmarks(user, limit, page);
+  // }
 
   @Get(":userId")
   @GetOneUserDecorator
-  findUser(
-    @Param("userId", IsValidObjectIdPipe) userId: string
-  ): Promise<User> {
+  findUser(@Param("userId", ParseIntPipe) userId: number): Promise<User> {
     return this.usersService.findUser(userId);
   }
 
@@ -150,7 +146,7 @@ export class UsersController {
   @Delete(":userId")
   @RemoveUserDecorator
   async removeUser(
-    @Param("userId", IsValidObjectIdPipe) userId: string,
+    @Param("userId", ParseIntPipe) userId: number,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
     const success = await this.usersService.removeUser(userId, user);
@@ -161,7 +157,7 @@ export class UsersController {
   @Patch("change-role/:userId")
   @ChangeRoleUserDecorator
   async changeRoleUser(
-    @Param("userId", IsValidObjectIdPipe) userId: string
+    @Param("userId", ParseIntPipe) userId: number
   ): Promise<{ message: string }> {
     const success = await this.usersService.changeRoleUser(userId);
 
@@ -171,7 +167,7 @@ export class UsersController {
   @Patch("change-super-admin/:userId")
   @ChangeSuperAdminDecorator
   async changeSuperAdmin(
-    @Param("userId", IsValidObjectIdPipe) userId: string,
+    @Param("userId", ParseIntPipe) userId: number,
     @Body() changeSuperAdminDto: ChangeSuperAdminDto,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {

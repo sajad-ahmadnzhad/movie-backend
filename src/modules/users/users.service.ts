@@ -7,15 +7,12 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { InjectModel } from "@nestjs/mongoose";
-import { User } from "./schemas/User.schema";
-import { Model } from "mongoose";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import { UsersMessages } from "../../common/enum/usersMessages.enum";
 import {
   cachePagination,
-  mongoosePagination,
+  typeORMPagination,
 } from "../../common/utils/pagination.util";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
@@ -24,16 +21,19 @@ import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile, sendError } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
-import { BanUser } from "./schemas/BanUser.schema";
-import { Bookmark } from "../movies/schemas/Bookmark.schema";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "../auth/entities/User.entity";
+import { Like, Repository } from "typeorm";
+import { AuthMessages } from "src/common/enum/authMessages.enum";
+import { BanUser } from "../auth/entities/banUser.entity";
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private readonly usersModel: Model<User>,
-    @InjectModel(BanUser.name) private readonly banUserModel: Model<BanUser>,
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
-    @InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(BanUser)
+    private readonly banUserRepository: Repository<BanUser>
   ) {}
 
   async findAllUsers(
@@ -46,24 +46,21 @@ export class UsersService {
       return cachePagination(limit, page, usersCache);
     }
 
-    const query = this.usersModel.find();
-
-    const searchResult = await mongoosePagination(
+    const paginatedUsers = await typeORMPagination(
       limit,
       page,
-      query,
-      this.usersModel
+      this.userRepository
     );
 
-    const users = await this.usersModel.find();
+    const users = await this.userRepository.find();
 
     await this.redisCache.set("users", users, 30_000);
 
-    return searchResult;
+    return paginatedUsers;
   }
 
-  async findUser(userId: string): Promise<User> {
-    const user = await this.usersModel.findById(userId);
+  async findUser(userId: number): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) {
       throw new NotFoundException(UsersMessages.NotFound);
@@ -77,15 +74,29 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
     file?: Express.Multer.File
   ): Promise<string> {
+    const findDuplicatedKey = await this.userRepository
+      .createQueryBuilder("user")
+      .where("user.email = :email OR user.username = :username", {
+        email: updateUserDto.email,
+        username: updateUserDto.username,
+      })
+      .andWhere("user.id != :id", { id: user.id })
+      .getOne();
+
+    if (findDuplicatedKey) {
+      throw new ConflictException(AuthMessages.AlreadyRegistered);
+    }
+
     let avatarURL: string | undefined = file && saveFile(file, "user-avatar");
 
     if (avatarURL) avatarURL = `/uploads/user-avatar/${avatarURL}`;
 
     try {
-      await this.usersModel.updateOne(
-        { email: user.email },
+      await this.userRepository.update(
+        { id: user.id },
         {
-          $set: { ...updateUserDto, avatarURL },
+          ...updateUserDto,
+          avatarURL,
         }
       );
     } catch (error) {
@@ -96,8 +107,8 @@ export class UsersService {
     return UsersMessages.UpdatedSuccess;
   }
 
-  async removeUser(userId: string, user: User): Promise<string> {
-    const foundUser = await this.usersModel.findById(userId);
+  async removeUser(userId: number, user: User): Promise<string> {
+    const foundUser = await this.userRepository.findOneBy({ id: userId });
 
     if (!foundUser) throw new NotFoundException(UsersMessages.NotFound);
 
@@ -109,13 +120,13 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.CannotRemoveSuperAdmin);
     }
 
-    await foundUser.deleteOne();
+    await this.userRepository.remove(foundUser);
 
     return UsersMessages.RemovedSuccess;
   }
 
-  async changeRoleUser(userId: string): Promise<string> {
-    const user = await this.usersModel.findById(userId);
+  async changeRoleUser(userId: number): Promise<string> {
+    const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) throw new NotFoundException(UsersMessages.NotFound);
 
@@ -123,46 +134,56 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.CannotChangeRoleSuperAdmin);
     }
 
-    await user.updateOne({ isAdmin: !user.isAdmin });
+    await this.userRepository.update(
+      { id: user.id },
+      { isAdmin: !user.isAdmin }
+    );
 
     return UsersMessages.ChangeRoleSuccess;
   }
 
   async searchUser(
-    user: string,
+    userQuery: string,
     limit?: number,
     page?: number
   ): Promise<PaginatedList<User>> {
-    if (!user) {
+    if (!userQuery?.trim()) {
       throw new BadRequestException(UsersMessages.RequiredUser);
     }
 
-    const query = this.usersModel.find({
-      $or: [
+    const options = {
+      where: [
         {
-          name: { $regex: user },
-          username: { $regex: user },
-          email: { $regex: user },
+          name: Like(`%${userQuery}%`),
+        },
+        {
+          username: Like(`%${userQuery}%`),
+        },
+        {
+          email: Like(`%${userQuery}%`),
         },
       ],
-    });
+    };
 
-    const paginatedUsers = mongoosePagination(
+    const paginatedUsers = typeORMPagination(
       limit,
       page,
-      query,
-      this.usersModel
+      this.userRepository,
+      options
     );
 
     return paginatedUsers;
   }
 
   async deleteAccount(user: User, dto: DeleteAccountDto): Promise<string> {
-    const foundUser = (await this.usersModel
-      .findOne({ email: user.email })
-      .select("password")) as User;
+    const foundUser = (await this.userRepository.findOne({
+      where: {
+        id: user.id,
+      },
+      select: ["id", "password"],
+    })) as User;
 
-    if (foundUser.isSuperAdmin) {
+    if (user.isSuperAdmin) {
       throw new BadRequestException(
         UsersMessages.TransferOwnershipForDeleteAccount
       );
@@ -177,23 +198,27 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.InvalidPassword);
     }
 
-    await foundUser.deleteOne();
+    await this.userRepository.delete({ id: foundUser.id });
+    await this.redisCache.del(`userRefreshToken:${foundUser.id}`);
 
     return UsersMessages.DeletedAccountSuccess;
   }
 
   async changeSuperAdmin(
-    userId: string,
+    userId: number,
     dto: ChangeSuperAdminDto,
     user: User
   ): Promise<string> {
-    const existingUser = await this.usersModel.findById(userId);
+    const existingUser = await this.userRepository.findOneBy({ id: userId });
 
     if (!existingUser) throw new NotFoundException(UsersMessages.NotFound);
 
-    const foundUser = (await this.usersModel
-      .findById(user._id)
-      .select("password")) as User;
+    const currentSuperAdmin = (await this.userRepository.findOne({
+      where: {
+        id: user.id,
+      },
+      select: ["id", "password"],
+    })) as User;
 
     if (existingUser.isSuperAdmin) {
       throw new BadRequestException(UsersMessages.EnteredIdIsSuperAdmin);
@@ -201,21 +226,27 @@ export class UsersService {
 
     const comparePassword = bcrypt.compareSync(
       dto.password,
-      foundUser.password
+      currentSuperAdmin.password
     );
 
     if (!comparePassword) {
       throw new BadRequestException(UsersMessages.InvalidPassword);
     }
 
-    await existingUser.updateOne({ isAdmin: true, isSuperAdmin: true });
-    await foundUser.updateOne({ isSuperAdmin: false });
+    await this.userRepository.update(
+      { id: userId },
+      { isAdmin: true, isSuperAdmin: true }
+    );
+    await this.userRepository.update(
+      { id: currentSuperAdmin.id },
+      { isSuperAdmin: false }
+    );
 
     return UsersMessages.OwnershipTransferSuccess;
   }
 
   async banUser(banUserDto: BanUserDto, user: User): Promise<string> {
-    const existingUser = await this.usersModel.findOne(banUserDto);
+    const existingUser = await this.userRepository.findOneBy(banUserDto);
 
     if (!existingUser) {
       throw new NotFoundException(UsersMessages.NotFound);
@@ -229,30 +260,37 @@ export class UsersService {
       throw new ForbiddenException(UsersMessages.CannotBanAdmin);
     }
 
-    const alreadyBanUser = await this.banUserModel.findOne(banUserDto);
+    const alreadyBanUser = await this.banUserRepository.findOneBy(banUserDto);
 
     if (alreadyBanUser) {
       throw new ConflictException(UsersMessages.AlreadyBannedUser);
     }
 
-    await this.banUserModel.create({ ...banUserDto, createdBy: user._id });
+    const newBanUser = this.banUserRepository.create({
+      ...banUserDto,
+      bannedBy: user,
+    });
+
+    await this.banUserRepository.save(newBanUser);
 
     return UsersMessages.BanUserSuccess;
   }
 
-  async unbanUser(id: string, user: User): Promise<string> {
-    const existingBanUser = await this.banUserModel.findById(id);
+  async unbanUser(id: number, user: User): Promise<string> {
+    const existingBanUser = await this.banUserRepository.findOne({
+      where: { id },
+      relations: ["bannedBy"],
+    });
 
     if (!existingBanUser) {
       throw new NotFoundException(UsersMessages.NotFound);
     }
 
-    if (String(user._id) !== String(existingBanUser.createdBy)) {
-      if (!user.isSuperAdmin)
-        throw new ForbiddenException(UsersMessages.CannotUnbanUser);
+    if (user.id !== existingBanUser.bannedBy.id && !user.isSuperAdmin) {
+      throw new ForbiddenException(UsersMessages.CannotUnbanUser);
     }
 
-    await existingBanUser.deleteOne();
+    await this.banUserRepository.delete({ id });
 
     return UsersMessages.BanUserSuccess;
   }
@@ -261,24 +299,46 @@ export class UsersService {
     limit?: number,
     page?: number
   ): Promise<PaginatedList<BanUser>> {
-    const query = this.banUserModel.find();
-    return mongoosePagination(limit, page, query, this.banUserModel);
-  }
+    const usersCache: BanUser[] | undefined =
+      await this.redisCache.get("banUsers");
 
-  getMyBookmarks(
-    user: User,
-    limit?: number,
-    page?: number
-  ): Promise<PaginatedList<Bookmark>> {
-    const query = this.bookmarkModel.find({ userId: user._id });
+    if (usersCache) {
+      return cachePagination(limit, page, usersCache);
+    }
 
-    const paginatedBookmarks = mongoosePagination(
+    const options = {
+      relations: ["bannedBy"],
+    };
+
+    const paginatedUsers = await typeORMPagination(
       limit,
       page,
-      query,
-      this.bookmarkModel
+      this.banUserRepository,
+      options
     );
 
-    return paginatedBookmarks;
+    const users = await this.banUserRepository.find(options);
+
+    await this.redisCache.set("banUsers", users, 30_000);
+
+    return paginatedUsers;
   }
+
+  // getMyBookmarks(
+  //   user: MongooseUser,
+  //   limit?: number,
+  //   page?: number
+  // ): Promise<PaginatedList<Bookmark>> {
+  //   // const query = this.bookmarkModel.find({ userId: user._id });
+  //   const query = 1
+  //   const paginatedBookmarks = mongoosePagination(
+  //     limit,
+  //     page,
+  //     query,
+  //     // this.bookmarkModel
+
+  //   );
+
+  //   return paginatedBookmarks;
+  // }
 }

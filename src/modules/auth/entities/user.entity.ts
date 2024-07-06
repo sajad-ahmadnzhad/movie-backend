@@ -2,11 +2,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Token } from "./token.entity";
+import { BanUser } from "./banUser.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -43,9 +45,12 @@ export class User {
   @OneToOne(() => Token, (token) => token.user)
   token: Token;
 
-  @CreateDateColumn({type: 'timestamp'})
+  @OneToMany(() => BanUser, (banUser) => banUser.bannedBy)
+  bans: BanUser[];
+
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
-  @UpdateDateColumn({type: 'timestamp'})
+  @UpdateDateColumn({ type: "timestamp" })
   updatedAt: Date;
 }
