@@ -1,5 +1,5 @@
 import { Model } from "mongoose";
-import { ObjectLiteral, Repository } from "typeorm";
+import { FindManyOptions, ObjectLiteral, Repository } from "typeorm";
 
 interface OutputPagination<T> {
   count: number;
@@ -58,7 +58,7 @@ export const typeORMPagination = async <T extends ObjectLiteral>(
   limitQuery: number = 20,
   pageQuery: number = 1,
   repository: Repository<T>,
-  options: any = {}
+  options: FindManyOptions<T> = {}
 ): Promise<OutputPagination<T>> => {
   const page = pageQuery || 1;
   const pageSize = limitQuery || 20;

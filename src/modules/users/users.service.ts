@@ -23,7 +23,7 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../auth/entities/User.entity";
-import { Like, Repository } from "typeorm";
+import { FindManyOptions, Like, Repository } from "typeorm";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
 
@@ -46,13 +46,18 @@ export class UsersService {
       return cachePagination(limit, page, usersCache);
     }
 
+    const options: FindManyOptions<User> = {
+      order: { createdAt: "DESC" },
+    };
+
     const paginatedUsers = await typeORMPagination(
       limit,
       page,
-      this.userRepository
+      this.userRepository,
+      options
     );
 
-    const users = await this.userRepository.find();
+    const users = await this.userRepository.find(options);
 
     await this.redisCache.set("users", users, 30_000);
 
@@ -121,6 +126,7 @@ export class UsersService {
     }
 
     await this.userRepository.remove(foundUser);
+    await this.redisCache.del(`userRefreshToken:${userId}`);
 
     return UsersMessages.RemovedSuccess;
   }
@@ -151,7 +157,7 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.RequiredUser);
     }
 
-    const options = {
+    const options: FindManyOptions<User> = {
       where: [
         {
           name: Like(`%${userQuery}%`),
@@ -163,6 +169,7 @@ export class UsersService {
           email: Like(`%${userQuery}%`),
         },
       ],
+      order: { createdAt: "DESC" },
     };
 
     const paginatedUsers = typeORMPagination(
@@ -198,8 +205,8 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.InvalidPassword);
     }
 
-    await this.userRepository.delete({ id: foundUser.id });
-    await this.redisCache.del(`userRefreshToken:${foundUser.id}`);
+    await this.userRepository.delete({ id: user.id });
+    await this.redisCache.del(`userRefreshToken:${user.id}`);
 
     return UsersMessages.DeletedAccountSuccess;
   }
@@ -314,8 +321,9 @@ export class UsersService {
       return cachePagination(limit, page, usersCache);
     }
 
-    const options = {
+    const options: FindManyOptions<BanUser> = {
       relations: ["bannedBy"],
+      order: { createdAt: "DESC" },
     };
 
     const paginatedUsers = await typeORMPagination(
