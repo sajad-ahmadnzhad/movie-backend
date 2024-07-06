@@ -42,7 +42,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     // CountriesModule,
     // IndustriesModule,
     // ActorsModule,
-    // GenresModule,
+    GenresModule,
     // MoviesModule,
   ],
   providers: [

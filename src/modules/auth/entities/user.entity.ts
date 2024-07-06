@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { Token } from "./token.entity";
 import { BanUser } from "./banUser.entity";
+import { Genre } from "../../genres/entities/genre.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -49,6 +50,9 @@ export class User {
     onDelete: "SET NULL",
   })
   bans: BanUser[];
+
+  @OneToMany(() => Genre, (genre) => genre.createdBy)
+  genres: Genre[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
