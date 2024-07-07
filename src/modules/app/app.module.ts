@@ -40,7 +40,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     UsersModule,
     MailModule,
     CountriesModule,
-    // IndustriesModule,
+    IndustriesModule,
     // ActorsModule,
     GenresModule,
     // MoviesModule,

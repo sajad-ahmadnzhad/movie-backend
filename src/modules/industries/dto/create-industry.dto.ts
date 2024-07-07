@@ -1,12 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger";
 import {
+  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
-  Matches,
 } from "class-validator";
-import { PublicMessages } from "../../../common/enum/public.messages";
 import { Transform } from "class-transformer";
 
 export class CreateIndustryDto {
@@ -28,8 +28,8 @@ export class CreateIndustryDto {
   description?: string;
 
   @IsNotEmpty()
-  @IsString()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
-  @ApiProperty()
-  countryId: string;
+  @IsNumber()
+  @IsInt()
+  @ApiProperty({ example: 1, type: "number" })
+  countryId: number;
 }

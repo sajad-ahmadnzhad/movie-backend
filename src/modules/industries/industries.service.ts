@@ -1,97 +1,120 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
-import { User } from "../users/schemas/User.schema";
-import { sendError } from "../../common/utils/functions.util";
-import { InjectModel } from "@nestjs/mongoose";
-import { Industry } from "./schemas/Industry.schema";
-import { Document, Model } from "mongoose";
-import { Country } from "../countries/schemas/Country.schema";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import {
   cachePagination,
-  mongoosePagination,
+  typeORMPagination,
 } from "../../common/utils/pagination.util";
-import {
-  ICreatedBy,
-  PaginatedList,
-} from "../../common/interfaces/public.interface";
+import { PaginatedList } from "../../common/interfaces/public.interface";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Country } from "../countries/entities/country.entity";
+import { Repository, FindManyOptions, Like } from "typeorm";
+import { Industry } from "./entities/industry.entity";
+import { User } from "../auth/entities/User.entity";
+import { CountriesService } from "../countries/countries.service";
 
 @Injectable()
 export class IndustriesService {
   constructor(
-    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
-    @InjectModel(Country.name) private readonly countryModel: Model<Country>,
-    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
+    @InjectRepository(Country)
+    private readonly countryRepository: Repository<Country>,
+    @InjectRepository(Industry)
+    private readonly industryRepository: Repository<Industry>,
+    @Inject(forwardRef(() => CountriesService))
+    private readonly countriesService: CountriesService
   ) {}
 
   async create(createIndustryDto: CreateIndustryDto, user: User) {
-    const existingCountry = await this.countryModel.findById(
-      createIndustryDto.countryId
-    );
+    const { name, description, countryId } = createIndustryDto;
+
+    const existingCountry = await this.countryRepository.findOneBy({
+      id: countryId,
+    });
 
     if (!existingCountry) {
       throw new NotFoundException(CountriesMessages.NotFoundCountry);
     }
 
-    try {
-      await this.industryModel.create({
-        name: createIndustryDto.name,
-        description: createIndustryDto.description,
-        country: createIndustryDto.countryId,
-        createdBy: user._id,
-      });
+    const findDuplicatedKey = await this.industryRepository.findOneBy({ name });
 
-      return IndustriesMessages.CreatedIndustrySuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
+    if (findDuplicatedKey) {
+      throw new ConflictException(IndustriesMessages.AlreadyExistsIndustry);
     }
+
+    await this.industryRepository
+      .createQueryBuilder()
+      .insert()
+      .into(Industry)
+      .values([
+        {
+          name,
+          description,
+          country: existingCountry,
+          createdBy: user,
+        },
+      ])
+      .execute();
+
+    return IndustriesMessages.CreatedIndustrySuccess;
   }
 
   async findAll(page: number, limit: number): Promise<PaginatedList<Industry>> {
-    const industriesCache =
-      await this.redisCache.get<Array<Industry>>("industries");
+    const industriesCache = await this.redisCache.get<Industry[] | undefined>(
+      "industries"
+    );
 
     if (industriesCache) {
       return cachePagination(limit, page, industriesCache);
     }
 
-    const industries = await this.industryModel.find();
+    const options: FindManyOptions<Industry> = {
+      relations: ["createdBy", "country"],
+      order: { createdAt: "DESC" },
+    };
+
+    const industries = await this.industryRepository.find(options);
+
     await this.redisCache.set("industries", industries, 30_000);
 
-    const query = this.industryModel.find();
-
-    const mongoosePaginationResult = mongoosePagination(
+    const paginatedIndustries = typeORMPagination(
       limit,
       page,
-      query,
-      this.industryModel
+      this.industryRepository,
+      options
     );
 
-    return mongoosePaginationResult;
+    return paginatedIndustries;
   }
 
-  findOne(id: string): Promise<Document> {
+  findOne(id: number): Promise<Industry> {
     return this.checkExistIndustry(id);
   }
 
-  async findByCountry(id: string): Promise<Document[]> {
-    const existingCountry = await this.countryModel.findById(id);
+  async findByCountry(id: number): Promise<Industry[]> {
+    const country = await this.countriesService.checkExistCountry(id);
 
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
+    const industries = await this.industryRepository
+      .createQueryBuilder("industry")
+      .leftJoinAndSelect("industry.country", "countries")
+      .leftJoinAndSelect("industry.createdBy", "users")
+      .where("industry.country.id = :id", { id: country.id })
+      .orderBy("industry.createdAt", "DESC")
+      .getMany();
 
-    return this.industryModel.find({ country: id });
+    return industries;
   }
 
   search(
@@ -103,74 +126,86 @@ export class IndustriesService {
       throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);
     }
 
-    const query = this.industryModel.find({
-      name: { $regex: industryQuery },
-    });
+    const options: FindManyOptions<Industry> = {
+      where: [
+        { name: Like(`%${industryQuery}%`) },
+        { description: Like(`%${industryQuery}%`) },
+      ],
 
-    const paginatedIndustries = mongoosePagination(
-      limit,
-      page,
-      query,
-      this.industryModel
-    );
+      relations: ["createdBy", "country"],
+      order: { createdAt: "DESC" },
+    };
 
-    return paginatedIndustries;
+    return typeORMPagination(limit, page, this.industryRepository, options);
   }
 
   async update(
-    id: string,
+    id: number,
     updateIndustryDto: UpdateIndustryDto,
     user: User
   ): Promise<string> {
-    const existingIndustry = await this.checkExistIndustry(id);
+    const { name, description, countryId } = updateIndustryDto;
 
-    if (updateIndustryDto.countryId) {
-      const existingCountry = await this.countryModel.findById(
-        updateIndustryDto.countryId
+    const industry = await this.checkExistIndustry(id);
+
+    if (!industry.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(
+        IndustriesMessages.OnlySuperAdminCanUpdateIndustry
       );
-
-      if (!existingCountry)
-        throw new NotFoundException(CountriesMessages.NotFoundCountry);
     }
 
-    if (String(user._id) !== String(existingIndustry.createdBy._id)) {
-      if (!user.isSuperAdmin)
+    let country: null | Country = null;
+    if (countryId) {
+      country = await this.countriesService.checkExistCountry(countryId);
+    }
+
+    if (industry.createdBy)
+      if (user.id !== industry.createdBy.id && !user.isSuperAdmin) {
         throw new ForbiddenException(IndustriesMessages.CannotUpdateIndustry);
+      }
+
+    const findDuplicatedKey = await this.industryRepository
+      .createQueryBuilder("industry")
+      .where("industry.name = :name", { name })
+      .andWhere("industry.id != :id", { id })
+      .getOne();
+
+    if (findDuplicatedKey) {
+      throw new ConflictException(IndustriesMessages.AlreadyExistsIndustry);
     }
 
-    try {
-      await this.industryModel.updateOne({
-        $set: {
-          name: updateIndustryDto.name,
-          description: updateIndustryDto.description,
-          country: updateIndustryDto.countryId,
-        },
-      });
-      return IndustriesMessages.UpdatedIndustrySuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
-    }
+    await this.industryRepository.update(
+      { id },
+      { name, description, country: country || undefined }
+    );
+
+    return IndustriesMessages.UpdatedIndustrySuccess;
   }
 
-  async remove(id: string, user: User): Promise<string> {
+  async remove(id: number, user: User): Promise<string> {
     const existingIndustry = await this.checkExistIndustry(id);
 
-    if (String(user._id) !== String(existingIndustry.createdBy._id)) {
-      if (!user.isSuperAdmin)
-        throw new ForbiddenException(IndustriesMessages.CannotRemoveIndustry);
+    if (!existingIndustry.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(
+        IndustriesMessages.OnlySuperAdminCanRemoveIndustry
+      );
     }
 
-    try {
-      await existingIndustry.deleteOne();
-      return IndustriesMessages.RemoveIndustrySuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
-    }
+    if (existingIndustry.createdBy)
+      if (user.id !== existingIndustry.createdBy.id && !user.isSuperAdmin) {
+        throw new ForbiddenException(IndustriesMessages.CannotRemoveIndustry);
+      }
+
+    await this.industryRepository.delete({ id });
+
+    return IndustriesMessages.RemoveIndustrySuccess;
   }
 
-  private async checkExistIndustry(id: string): Promise<ICreatedBy<Industry>> {
-    const existingIndustry: ICreatedBy<Industry> | null =
-      await this.industryModel.findById(id);
+  private async checkExistIndustry(id: number): Promise<Industry> {
+    const existingIndustry = await this.industryRepository.findOne({
+      where: { id },
+      relations: ["createdBy", "country"],
+    });
 
     if (!existingIndustry) {
       throw new NotFoundException(IndustriesMessages.NotFoundIndustry);

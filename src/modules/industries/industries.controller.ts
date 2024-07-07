@@ -23,11 +23,9 @@ import {
   GetIndustryByCountryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/schemas/User.schema";
-import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Industry } from "./schemas/Industry.schema";
-import { Document } from "mongoose";
+import { User } from "../auth/entities/User.entity";
+import { Industry } from "./entities/industry.entity";
 
 @Controller("industries")
 @ApiTags("industries")
@@ -69,22 +67,20 @@ export class IndustriesController {
 
   @Get("by-country/:id")
   @GetIndustryByCountryDecorator
-  findByCountry(
-    @Param("id", IsValidObjectIdPipe) id: string
-  ): Promise<Document[]> {
+  findByCountry(@Param("id", ParseIntPipe) id: number): Promise<Industry[]> {
     return this.industriesService.findByCountry(id);
   }
 
   @Get(":id")
   @GetOneIndustryDecorator
-  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+  findOne(@Param("id", ParseIntPipe) id: number): Promise<Industry> {
     return this.industriesService.findOne(id);
   }
 
   @Patch(":id")
   @UpdateIndustryDecorator
   async update(
-    @Param("id") id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateIndustryDto: UpdateIndustryDto,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
@@ -99,7 +95,7 @@ export class IndustriesController {
   @Delete(":id")
   @RemoveIndustryDecorator
   async remove(
-    @Param("id", IsValidObjectIdPipe) id: string,
+    @Param("id", ParseIntPipe) id: number,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
     const success = await this.industriesService.remove(id, user);

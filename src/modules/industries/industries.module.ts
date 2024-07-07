@@ -6,10 +6,11 @@ import { BanUser } from "../auth/entities/banUser.entity";
 import { Country } from "../countries/entities/country.entity";
 import { User } from "../auth/entities/User.entity";
 import { Industry } from "./entities/industry.entity";
+import { CountriesService } from "../countries/countries.service";
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, Country, BanUser , Industry])],
   controllers: [IndustriesController],
-  providers: [IndustriesService],
+  providers: [IndustriesService , CountriesService],
 })
 export class IndustriesModule {}

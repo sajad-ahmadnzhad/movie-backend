@@ -7,4 +7,6 @@ export enum IndustriesMessages {
   CannotRemoveIndustry = "You are not allowed to remove this industry",
   RemoveIndustrySuccess = "Industry removed successfully",
   RequiredIndustryQuery = "Industry query is required",
+  OnlySuperAdminCanUpdateIndustry = "Only a super admin can update a industy when the main admin has been deleted",
+  OnlySuperAdminCanRemoveIndustry = "Only a super admin can remove a industy when the main admin has been deleted",
 }

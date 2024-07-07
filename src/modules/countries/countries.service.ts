@@ -194,7 +194,7 @@ export class CountriesService {
     return CountriesMessages.RemoveCountrySuccess;
   }
 
-  private async checkExistCountry(id: number): Promise<Country> {
+  async checkExistCountry(id: number): Promise<Country> {
     const existingCountry = await this.countryRepository.findOne({
       where: { id },
       relations: ["createdBy"],
