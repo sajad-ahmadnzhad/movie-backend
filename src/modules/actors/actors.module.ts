@@ -1,25 +1,16 @@
 import { Module } from "@nestjs/common";
 import { ActorsService } from "./actors.service";
 import { ActorsController } from "./actors.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Actor, ActorSchema } from "./schemas/Actor.schema";
-import { Country, CountrySchema } from "../countries/schemas/Country.schema";
-import { User, UserSchema } from "../users/schemas/User.schema";
-import {
-  Industry,
-  IndustrySchema,
-} from "../industries/schemas/Industry.schema";
-import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { Industry } from "../industries/entities/industry.entity";
+import { Country } from "../countries/entities/country.entity";
+import { Actor } from "./entities/actor.entity";
+import { User } from "../auth/entities/User.entity";
+import { BanUser } from "../auth/entities/banUser.entity";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Actor.name, schema: ActorSchema },
-      { name: Country.name, schema: CountrySchema },
-      { name: User.name, schema: UserSchema },
-      { name: Industry.name, schema: IndustrySchema },
-      { name: BanUser.name, schema: BanUserSchema },
-    ]),
+    TypeOrmModule.forFeature([User, Actor, Country, Industry, BanUser]),
   ],
   controllers: [ActorsController],
   providers: [ActorsService],

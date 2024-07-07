@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { AuthModule } from "../auth/auth.module";
 import { MongooseModule } from "@nestjs/mongoose";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { CacheModule } from "@nestjs/cache-manager";
 import { APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
@@ -41,7 +41,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     MailModule,
     CountriesModule,
     IndustriesModule,
-    // ActorsModule,
+    ActorsModule,
     GenresModule,
     // MoviesModule,
   ],

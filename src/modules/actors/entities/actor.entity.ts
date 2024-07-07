@@ -1,45 +1,50 @@
-import { Actor } from "../../actors/entities/actor.entity";
 import { User } from "../../auth/entities/User.entity";
 import { Country } from "../../countries/entities/country.entity";
+import { Industry } from "../../industries/entities/industry.entity";
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 
-@Entity({ name: "industries" })
-export class Industry {
+@Entity({ name: "actors" })
+export class Actor {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({
     type: "varchar",
     unique: true,
-    length: 50,
     nullable: false,
+    length: 50,
   })
   name: string;
 
-  @Column({ type: "text", nullable: true })
-  description?: string;
+  @Column({ type: "varchar", length: 200, nullable: true })
+  bio: string;
 
-  @ManyToOne(() => Country, (country) => country.industries, {
+  @Column({ type: "varchar", nullable: true })
+  photo: string;
+
+  @ManyToOne(() => Country, (country) => country.actors, {
     onDelete: "CASCADE",
   })
   @JoinColumn()
   country: Country;
 
-  @ManyToOne(() => User, (user) => user.industries, { onDelete: "SET NULL" })
+  @ManyToOne(() => Industry, (industry) => industry.actors, {
+    onDelete: "CASCADE",
+  })
+  @JoinColumn()
+  industry: Industry;
+
+  @ManyToOne(() => User, (user) => user.actors, { onDelete: "SET NULL" })
   @JoinColumn()
   createdBy: User;
-
-  @OneToMany(() => Actor , actor => actor.industry)
-    actors: Actor[]
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

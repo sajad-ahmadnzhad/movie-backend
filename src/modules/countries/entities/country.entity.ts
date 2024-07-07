@@ -1,4 +1,4 @@
-import { Industry } from "src/modules/industries/entities/industry.entity";
+import { Industry } from "../../industries/entities/industry.entity";
 import { User } from "../../auth/entities/User.entity";
 import {
   Column,
@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Actor } from "../../actors/entities/actor.entity";
 
 @Entity({ name: "countries" })
 export class Country {
@@ -31,6 +32,9 @@ export class Country {
 
   @OneToMany(() => Industry, (industry) => industry.country)
   industries: Industry[];
+
+  @OneToMany(() => Actor, (actor) => actor.country)
+  actors: Actor[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
