@@ -15,7 +15,6 @@ import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/schemas/User.schema";
 import {
   CreateCountryDecorator,
   GetAllCountriesDecorator,
@@ -24,11 +23,10 @@ import {
   SearchCountriesDecorator,
   UpdateCountryDecorator,
 } from "../../common/decorators/countries.decorator";
-import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
-import { Document } from "mongoose";
 import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Country } from "./schemas/Country.schema";
+import { User } from "../auth/entities/User.entity";
+import { Country } from "./entities/country.entity";
 
 @Controller("countries")
 @ApiTags("countries")
@@ -73,14 +71,14 @@ export class CountriesController {
 
   @Get(":id")
   @GetOneCountryDecorator
-  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+  findOne(@Param("id", ParseIntPipe) id: number): Promise<Country> {
     return this.countriesService.findOne(id);
   }
 
   @Patch(":id")
   @UpdateCountryDecorator
   async update(
-    @Param("id", IsValidObjectIdPipe) id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateCountryDto: UpdateCountryDto,
     @UserDecorator() user: User,
     @UploadedFile() file?: Express.Multer.File
@@ -98,7 +96,7 @@ export class CountriesController {
   @Delete(":id")
   @RemoveCountryDecorator
   async remove(
-    @Param("id", IsValidObjectIdPipe) id: string,
+    @Param("id", ParseIntPipe) id: number,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
     const success = await this.countriesService.remove(id, user);

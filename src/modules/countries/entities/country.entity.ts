@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,6 +24,7 @@ export class Country {
   flag_image_URL: string;
 
   @ManyToOne(() => User, (user) => user.countries, { onDelete: "SET NULL" })
+  @JoinColumn()
   createdBy: User;
 
   @CreateDateColumn({ type: "timestamp" })

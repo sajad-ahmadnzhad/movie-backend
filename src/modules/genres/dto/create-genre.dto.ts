@@ -4,10 +4,7 @@ import { IsNotEmpty, IsOptional, IsString, Length } from "class-validator";
 
 export class CreateGenreDto {
   @IsString()
-  @Transform(({ value }: { value: string }) => {
-    value?.trim();
-    return value?.toLowerCase();
-  })
+  @Transform(({ value }: { value: string }) => value?.trim())
   @IsNotEmpty()
   @Length(3, 50)
   @ApiProperty({
