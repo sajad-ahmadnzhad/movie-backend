@@ -294,10 +294,7 @@ export class UsersService {
     }
 
     if (!existingBanUser.bannedBy && !user.isSuperAdmin) {
-      //TODO: Add a good message for this error
-      throw new ConflictException(
-        "Access to remove this user only for super admin"
-      );
+      throw new ConflictException(UsersMessages.OnlySuperAdminCanUnbanUser);
     }
 
     if (existingBanUser.bannedBy)

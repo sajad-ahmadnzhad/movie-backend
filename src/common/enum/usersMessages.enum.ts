@@ -18,4 +18,5 @@ export enum UsersMessages {
   CannotBanSuperAdmin = "You cannot ban super admin",
   CannotUnbanUser = "You cannot unban user",
   AlreadyBannedUser = "This user already banned",
+  OnlySuperAdminCanUnbanUser = "Only a super admin can unban a user when the original banner has been removed",
 }

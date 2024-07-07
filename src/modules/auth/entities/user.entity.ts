@@ -46,9 +46,7 @@ export class User {
   @OneToOne(() => Token, (token) => token.user)
   token: Token;
 
-  @OneToMany(() => BanUser, (banUser) => banUser.bannedBy, {
-    onDelete: "SET NULL",
-  })
+  @OneToMany(() => BanUser, (banUser) => banUser.bannedBy)
   bans: BanUser[];
 
   @OneToMany(() => Genre, (genre) => genre.createdBy)

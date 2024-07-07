@@ -14,13 +14,13 @@ export class Genre {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: "varchar", unique: true, nullable: false })
+  @Column({ type: "varchar", unique: true, nullable: false, length: 50 })
   name: string;
 
   @Column({ type: "text", nullable: true })
   description: string;
 
-  @ManyToOne(() => User, (user) => user.genres)
+  @ManyToOne(() => User, (user) => user.genres, { onDelete: "SET NULL" })
   @JoinColumn()
   createdBy: User;
 

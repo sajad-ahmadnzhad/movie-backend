@@ -13,7 +13,6 @@ import { GenresService } from "./genres.service";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
-import { User } from "../users/schemas/User.schema";
 import { ApiTags } from "@nestjs/swagger";
 import {
   CreateGenreDecorator,
@@ -24,10 +23,9 @@ import {
   UpdateGenreDecorator,
 } from "../../common/decorators/genres.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { Genre } from "./schemas/Genre.schema";
-import { IsValidObjectIdPipe } from "../../common/pipes/isValidObjectId.pipe";
-import { Document } from "mongoose";
 import { Throttle } from "@nestjs/throttler";
+import { User } from "../auth/entities/user.entity";
+import { Genre } from "./entities/genre.entity";
 
 @Controller("genres")
 @ApiTags("genres")
@@ -66,14 +64,14 @@ export class GenresController {
 
   @Get(":id")
   @GetOneGenreDecorator
-  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+  findOne(@Param("id", ParseIntPipe) id: number): Promise<Genre> {
     return this.genresService.findOne(id);
   }
 
   @Patch(":id")
   @UpdateGenreDecorator
   async update(
-    @Param("id", IsValidObjectIdPipe) id: string,
+    @Param("id", ParseIntPipe) id: number,
     @Body() updateCountryDto: UpdateGenreDto,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
@@ -85,7 +83,7 @@ export class GenresController {
   @Delete(":id")
   @RemoveGenreDecorator
   async remove(
-    @Param("id", IsValidObjectIdPipe) id: string,
+    @Param("id", ParseIntPipe) id: number,
     @UserDecorator() user: User
   ): Promise<{ message: string }> {
     const success = await this.genresService.remove(id, user);

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -7,61 +8,70 @@ import {
 } from "@nestjs/common";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
-import { User } from "../users/schemas/User.schema";
-import { InjectModel } from "@nestjs/mongoose";
-import { Genre } from "./schemas/Genre.schema";
-import { Document, Model } from "mongoose";
+import { User } from "../auth/entities/User.entity";
 import { GenresMessages } from "../../common/enum/genresMessages.enum";
-import { sendError } from "../../common/utils/functions.util";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import {
-  ICreatedBy,
-  PaginatedList,
-} from "../../common/interfaces/public.interface";
+import { PaginatedList } from "../../common/interfaces/public.interface";
 import {
   cachePagination,
-  mongoosePagination,
+  typeORMPagination,
 } from "../../common/utils/pagination.util";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Genre } from "./entities/genre.entity";
+import { FindManyOptions, Like, Repository } from "typeorm";
 
 @Injectable()
 export class GenresService {
   constructor(
-    @InjectModel(Genre.name) private readonly genreModel: Model<Genre>,
-    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
+    @InjectRepository(Genre) private readonly genreRepository: Repository<Genre>
   ) {}
   async create(createGenreDto: CreateGenreDto, user: User): Promise<string> {
-    try {
-      await this.genreModel.create({
-        ...createGenreDto,
-        createdBy: user._id,
-      });
+    const findDuplicatedKey = await this.genreRepository.findOneBy({
+      name: createGenreDto.name,
+    });
 
-      return GenresMessages.CreatedGenreSuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
+    if (findDuplicatedKey) {
+      throw new ConflictException(GenresMessages.AlreadyExistsGenre);
     }
+
+    const genre = this.genreRepository.create({
+      ...createGenreDto,
+      createdBy: user,
+    });
+
+    await this.genreRepository.save(genre);
+
+    return GenresMessages.CreatedGenreSuccess;
   }
+
   async findAll(limit?: number, page?: number): Promise<PaginatedList<Genre>> {
-    const genresCache = await this.redisCache.get<Array<Genre>>("genres");
+    const genresCache = await this.redisCache.get<Genre[] | undefined>(
+      "genres"
+    );
 
     if (genresCache) {
       return cachePagination(limit, page, genresCache);
     }
 
-    const genres = await this.genreModel.find();
+    const options: FindManyOptions<Genre> = {
+      relations: ["createdBy"],
+      order: { createdAt: "DESC" },
+    };
+
+    const genres = await this.genreRepository.find(options);
+
     await this.redisCache.set("genres", genres, 30_000);
 
-    const query = this.genreModel.find();
-
-    const mongoosePaginationResult = mongoosePagination(
+    const paginatedGenres = typeORMPagination(
       limit,
       page,
-      query,
-      this.genreModel
+      this.genreRepository,
+      options
     );
 
-    return mongoosePaginationResult;
+    return paginatedGenres;
   }
 
   search(
@@ -73,69 +83,86 @@ export class GenresService {
       throw new BadRequestException(GenresMessages.RequiredGenreQuery);
     }
 
-    const query = this.genreModel.find({
-      name: { $regex: genreQuery },
-    });
+    const options: FindManyOptions<Genre> = {
+      where: [
+        {
+          name: Like(`%${genreQuery}%`),
+        },
+        {
+          description: Like(`%${genreQuery}%`),
+        },
+      ],
+      order: { createdAt: "DESC" },
+      relations: ["createdBy"],
+    };
 
-    const paginatedGenres = mongoosePagination(
+    const paginatedGenres = typeORMPagination(
       limit,
       page,
-      query,
-      this.genreModel
+      this.genreRepository,
+      options
     );
 
     return paginatedGenres;
   }
 
-  findOne(id: string): Promise<Document> {
+  findOne(id: number): Promise<Genre> {
     return this.checkExistGenre(id);
   }
 
   async update(
-    id: string,
+    id: number,
     updateGenreDto: UpdateGenreDto,
     user: User
   ): Promise<string> {
-    const existingGenre = await this.checkExistGenre(id);
+    const genre = await this.checkExistGenre(id);
 
-    if (String(user._id) !== String(existingGenre.createdBy._id)) {
-      if (!user.isSuperAdmin)
+    if (!genre.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(GenresMessages.OnlySuperAdminCanUpdateGenre);
+    }
+
+    if (genre.createdBy)
+      if (user.id !== genre.createdBy.id && !user.isSuperAdmin) {
         throw new ForbiddenException(GenresMessages.CannotUpdateGenre);
+      }
+
+    const existingGenre = await this.genreRepository
+      .createQueryBuilder("genre")
+      .where("genre.name = :genre", { genre: updateGenreDto.name })
+      .andWhere("genre.id != :id", { id })
+      .getOne();
+
+    if (existingGenre) {
+      throw new ConflictException(GenresMessages.AlreadyExistsGenre);
     }
 
-    try {
-      await existingGenre.updateOne({
-        $set: {
-          ...updateGenreDto,
-          createdBy: user._id,
-        },
-      });
+    await this.genreRepository.update({ id }, updateGenreDto);
 
-      return GenresMessages.UpdatedGenreSuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
-    }
+    return GenresMessages.UpdatedGenreSuccess;
   }
 
-  async remove(id: string, user: User): Promise<string> {
-    const existingGenre = await this.checkExistGenre(id);
+  async remove(id: number, user: User): Promise<string> {
+    const genre = await this.checkExistGenre(id);
 
-    if (String(user._id) !== String(existingGenre.createdBy._id)) {
-      if (!user.isSuperAdmin)
+    if (!genre.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(GenresMessages.OnlySuperAdminCanRemoveGenre);
+    }
+
+    if (genre.createdBy)
+      if (user.id !== genre.createdBy.id && !user.isSuperAdmin) {
         throw new ForbiddenException(GenresMessages.CannotRemoveGenre);
-    }
+      }
 
-    try {
-      await existingGenre.deleteOne();
-      return GenresMessages.RemoveGenreSuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
-    }
+    await this.genreRepository.delete({ id });
+
+    return GenresMessages.RemoveGenreSuccess;
   }
 
-  private async checkExistGenre(id: string): Promise<ICreatedBy<Genre>> {
-    const existingGenre: ICreatedBy<Genre> | null =
-      await this.genreModel.findById(id);
+  private async checkExistGenre(id: number): Promise<Genre> {
+    const existingGenre = await this.genreRepository.findOne({
+      where: { id },
+      relations: ["createdBy"],
+    });
 
     if (!existingGenre) {
       throw new NotFoundException(GenresMessages.NotFoundGenre);
