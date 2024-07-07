@@ -39,7 +39,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     TypeOrmModule.forRootAsync(typeormConfig()),
     UsersModule,
     MailModule,
-    // CountriesModule,
+    CountriesModule,
     // IndustriesModule,
     // ActorsModule,
     GenresModule,

@@ -1,19 +1,13 @@
 import { Module } from "@nestjs/common";
 import { CountriesService } from "./countries.service";
 import { CountriesController } from "./countries.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Country, CountrySchema } from "./schemas/Country.schema";
-import { User, UserSchema } from "../users/schemas/User.schema";
-import { BanUser, BanUserSchema } from "../users/schemas/BanUser.schema";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { BanUser } from "../auth/entities/banUser.entity";
+import { User } from "../auth/entities/User.entity";
+import { Country } from "./entities/country.entity";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: Country.name, schema: CountrySchema },
-      { name: User.name, schema: UserSchema },
-      { name: BanUser.name, schema: BanUserSchema },
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, BanUser , Country])],
   controllers: [CountriesController],
   providers: [CountriesService],
 })
