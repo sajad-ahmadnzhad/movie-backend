@@ -11,6 +11,7 @@ import { Token } from "./token.entity";
 import { BanUser } from "./banUser.entity";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Country } from "../../countries/entities/country.entity";
+import { Industry } from "../../industries/entities/industry.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -55,6 +56,9 @@ export class User {
 
   @OneToMany(() => Country, (country) => country.createdBy)
   countries: Country[];
+
+  @OneToMany(() => Industry, (industry) => industry.createdBy)
+  industries: Industry[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

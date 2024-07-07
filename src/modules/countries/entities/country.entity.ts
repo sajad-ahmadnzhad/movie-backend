@@ -1,3 +1,4 @@
+import { Industry } from "src/modules/industries/entities/industry.entity";
 import { User } from "../../auth/entities/User.entity";
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
@@ -26,6 +28,9 @@ export class Country {
   @ManyToOne(() => User, (user) => user.countries, { onDelete: "SET NULL" })
   @JoinColumn()
   createdBy: User;
+
+  @OneToMany(() => Industry, (industry) => industry.country)
+  industries: Industry[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
