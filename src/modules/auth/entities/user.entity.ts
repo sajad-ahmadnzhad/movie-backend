@@ -13,6 +13,7 @@ import { Genre } from "../../genres/entities/genre.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Actor } from "../../actors/entities/actor.entity";
+import { Movie } from "../../movies/entities/movie.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -63,6 +64,9 @@ export class User {
 
   @OneToMany(() => Actor, (actor) => actor.createdBy)
   actors: Actor[];
+
+  @OneToMany(() => Movie, (movie) => movie.createdBy)
+  movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

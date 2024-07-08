@@ -5,12 +5,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { Actor } from "../../actors/entities/actor.entity";
+import { Movie } from "../../movies/entities/movie.entity";
 
 @Entity({ name: "countries" })
 export class Country {
@@ -35,6 +37,9 @@ export class Country {
 
   @OneToMany(() => Actor, (actor) => actor.country)
   actors: Actor[];
+
+  @ManyToMany(() => Movie, (movie) => movie.countries)
+  movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

@@ -1,3 +1,4 @@
+import { Movie } from "../../movies/entities/movie.entity";
 import { Actor } from "../../actors/entities/actor.entity";
 import { User } from "../../auth/entities/User.entity";
 import { Country } from "../../countries/entities/country.entity";
@@ -6,6 +7,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -40,6 +42,9 @@ export class Industry {
 
   @OneToMany(() => Actor, (actor) => actor.industry)
   actors: Actor[];
+
+  @ManyToMany(() => Movie, (movie) => movie.industries)
+  movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

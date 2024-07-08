@@ -1,9 +1,11 @@
+import { Movie } from "../../movies/entities/movie.entity";
 import { User } from "../../auth/entities/User.entity";
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -23,6 +25,9 @@ export class Genre {
   @ManyToOne(() => User, (user) => user.genres, { onDelete: "SET NULL" })
   @JoinColumn()
   createdBy: User;
+
+  @ManyToMany(() => Movie, (movie) => movie.genres)
+  movie: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
