@@ -16,6 +16,7 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { Bookmark } from "./Bookmark.entity";
+import { Like } from "./like.entity";
 
 @Entity({ name: "movies" })
 export class Movie {
@@ -63,6 +64,9 @@ export class Movie {
 
   @OneToMany(() => Bookmark, (bookmark) => bookmark.movie)
   bookmarks: Movie;
+
+  @OneToMany(() => Like, (like) => like.movie)
+  likes: Movie;
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
