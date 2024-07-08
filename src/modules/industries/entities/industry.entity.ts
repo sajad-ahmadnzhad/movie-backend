@@ -38,8 +38,8 @@ export class Industry {
   @JoinColumn()
   createdBy: User;
 
-  @OneToMany(() => Actor , actor => actor.industry)
-    actors: Actor[]
+  @OneToMany(() => Actor, (actor) => actor.industry)
+  actors: Actor[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

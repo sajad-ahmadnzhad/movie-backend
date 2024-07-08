@@ -1,42 +1,36 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
-import { removeFile, sendError } from "../../common/utils/functions.util";
-import { InjectModel } from "@nestjs/mongoose";
-import { Actor } from "./schemas/Actor.schema";
-import { Document, Model } from "mongoose";
+import { removeFile } from "../../common/utils/functions.util";
 import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
-import { User } from "../users/schemas/User.schema";
-import { Industry } from "../industries/schemas/Industry.schema";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
-import {
-  ICreatedBy,
-  IIndustry,
-  PaginatedList,
-} from "../../common/interfaces/public.interface";
+import { PaginatedList } from "../../common/interfaces/public.interface";
 import { saveFile } from "../../common/utils/upload-file.util";
-import {
-  cachePagination,
-  mongoosePagination,
-} from "../../common/utils/pagination.util";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { RedisCache } from "cache-manager-redis-yet";
-import { Country } from "../countries/schemas/Country.schema";
-import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
+import { typeORMPagination } from "../../common/utils/pagination.util";
+import { IndustriesService } from "../industries/industries.service";
+import { InjectRepository } from "@nestjs/typeorm";
+import { FindManyOptions, Like, Repository } from "typeorm";
+import { Actor } from "./entities/actor.entity";
+import { Industry } from "../industries/entities/industry.entity";
+import { User } from "../auth/entities/User.entity";
 
 @Injectable()
 export class ActorsService {
   constructor(
-    @InjectModel(Actor.name) private readonly actorModel: Model<Actor>,
-    @InjectModel(Industry.name) private readonly industryModel: Model<Industry>,
-    @InjectModel(Country.name) private readonly countryModel: Model<Industry>,
-    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
+    @Inject(forwardRef(() => IndustriesService))
+    private readonly industriesService: IndustriesService,
+    @InjectRepository(Industry)
+    private readonly industryRepository: Repository<Industry>,
+    @InjectRepository(Actor)
+    private readonly actorRepository: Repository<Actor>
   ) {}
 
   async create(
@@ -46,10 +40,18 @@ export class ActorsService {
   ): Promise<string> {
     const { name, bio, industryId } = createActorDto;
 
-    const existingIndustry: IIndustry<Industry> | null =
-      await this.industryModel.findById(industryId);
+    const findDuplicatedKey = await this.actorRepository.findOneBy({ name });
 
-    if (!existingIndustry) {
+    if (findDuplicatedKey) {
+      throw new ConflictException(ActorsMessages.AlreadyExistsActor);
+    }
+
+    const industry = await this.industryRepository.findOne({
+      where: { id: industryId },
+      relations: ["country"],
+    });
+
+    if (!industry) {
       throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
     }
 
@@ -57,74 +59,48 @@ export class ActorsService {
 
     if (filePath) filePath = `/uploads/actor-photo/${filePath}`;
 
-    try {
-      await this.actorModel.create({
-        name,
-        createdBy: user._id,
-        country: existingIndustry.country._id,
-        photo: filePath,
-        bio,
-        industry: industryId,
-      });
-      return ActorsMessages.CreatedActorSuccess;
-    } catch (error) {
-      removeFile(filePath);
-      throw sendError(error.message, error.status);
-    }
+    const actor = this.actorRepository.create({
+      name,
+      createdBy: user,
+      country: industry.country,
+      photo: filePath,
+      bio,
+      industry,
+    });
+
+    await this.actorRepository.save(actor);
+
+    return ActorsMessages.CreatedActorSuccess;
   }
 
-  async findAll(page?: number, limit?: number): Promise<PaginatedList<Actor>> {
-    const actorsCache = await this.redisCache.get<Array<Actor>>("actors");
+  async findAll(
+    countryId?: number,
+    industryId?: number,
+    page?: number,
+    limit?: number
+  ): Promise<PaginatedList<Actor>> {
+    const options: FindManyOptions<Actor> = {
+      where: {
+        country: { id: countryId },
+        industry: { id: industryId },
+      },
 
-    if (actorsCache) {
-      return cachePagination(limit, page, actorsCache);
-    }
+      relations: ["country", "createdBy", "industry"],
+      order: { createdAt: "DESC" },
+    };
 
-    const actors = await this.actorModel.find();
-    await this.redisCache.set("actors", actors, 30_000);
-
-    const query = this.actorModel.find();
-
-    const mongoosePaginationResult = mongoosePagination(
+    const mongoosePaginationResult = typeORMPagination(
       limit,
       page,
-      query,
-      this.actorModel
+      this.actorRepository,
+      options
     );
 
     return mongoosePaginationResult;
   }
 
-  findOne(id: string): Promise<Document> {
+  findOne(id: number): Promise<Actor> {
     return this.checkExistActor(id);
-  }
-
-  async findActorsByCountry(id: string): Promise<Document[]> {
-    const existingCountry = await this.countryModel.findById(id);
-
-    if (!existingCountry) {
-      throw new NotFoundException(CountriesMessages.NotFoundCountry);
-    }
-
-    const actors = this.actorModel.find({
-      $or: [{ country: id }, { country: existingCountry._id }],
-    });
-
-    return actors;
-  }
-
-  async findActorsByIndustry(id: string): Promise<Document[]> {
-    const existingIndustry = await this.industryModel.findById(id);
-
-    if (!existingIndustry) {
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-    }
-
-    const actors = this.actorModel.find({
-      $or: [{ industry: id }, { industry: existingIndustry._id }],
-    });
-
-    return actors;
   }
 
   search(
@@ -136,81 +112,108 @@ export class ActorsService {
       throw new BadRequestException(ActorsMessages.RequiredActorQuery);
     }
 
-    const query = this.actorModel.find({
-      name: { $regex: actorQuery },
-    });
-    const paginatedActors = mongoosePagination(
+    const options: FindManyOptions<Actor> = {
+      where: [
+        {
+          name: Like(`%${actorQuery}%`),
+        },
+        {
+          bio: Like(`%${actorQuery}%`),
+        },
+      ],
+      order: { createdAt: "DESC" },
+      relations: ["createdBy", "country", "industry"],
+    };
+
+    const paginatedActors = typeORMPagination(
       limit,
       page,
-      query,
-      this.actorModel
+      this.actorRepository,
+      options
     );
 
     return paginatedActors;
   }
 
   async update(
-    id: string,
+    id: number,
     updateActorDto: UpdateActorDto,
     user: User,
     file?: Express.Multer.File
   ) {
+    const { name, bio, industryId } = updateActorDto;
+
     const existingActor = await this.checkExistActor(id);
 
-    const existingIndustry: IIndustry<Industry> | null | undefined =
-      updateActorDto.industryId &&
-      (await this.industryModel.findById(updateActorDto.industryId));
+    if (!existingActor.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(ActorsMessages.OnlySuperAdminCanUpdateActor);
+    }
 
-    if (updateActorDto.industryId && !existingIndustry)
-      throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
-
-    if (String(user._id) !== String(existingActor.createdBy._id)) {
-      if (!user.isSuperAdmin)
+    if (existingActor.createdBy)
+      if (user.id !== existingActor.createdBy.id && !user.isSuperAdmin) {
         throw new ForbiddenException(ActorsMessages.CannotUpdateActor);
+      }
+
+    let existingIndustry: null | Industry = null;
+
+    if (industryId) {
+      existingIndustry =
+        await this.industriesService.checkExistIndustry(industryId);
+    }
+
+    const findDuplicatedKey = await this.actorRepository
+      .createQueryBuilder("actors")
+      .where("actors.name = :name", { name })
+      .andWhere("actors.id != :id", { id })
+      .getOne();
+
+    if (findDuplicatedKey) {
+      throw new ConflictException(ActorsMessages.AlreadyExistsActor);
     }
 
     let filePath = file && saveFile(file, "actor-photo");
 
     if (file) filePath = `/uploads/actor-photo/${filePath}`;
 
-    try {
-      await existingActor.updateOne({
-        $set: {
-          name: updateActorDto.name,
-          bio: updateActorDto.bio,
-          industry: updateActorDto.industryId,
-          createdBy: user._id,
-          photo: filePath,
-          country: existingIndustry?.country._id,
-        },
-      });
+    await this.actorRepository.update(
+      { id },
+      {
+        name,
+        bio,
+        industry: existingIndustry || undefined,
+        country: existingIndustry?.country,
+        photo: filePath,
+      }
+    );
 
-      return ActorsMessages.UpdatedActorSuccess;
-    } catch (error) {
-      removeFile(filePath);
-      throw sendError(error.message, error.status);
-    }
+    if (file) removeFile(filePath);
+
+    return ActorsMessages.UpdatedActorSuccess;
   }
 
-  async remove(id: string, user: User): Promise<string> {
+  async remove(id: number, user: User): Promise<string> {
     const existingActor = await this.checkExistActor(id);
 
-    if (String(user._id) !== String(existingActor.createdBy._id)) {
-      if (!user.isSuperAdmin)
-        throw new ForbiddenException(ActorsMessages.CannotRemoveActor);
+    if (!existingActor.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(ActorsMessages.OnlySuperAdminCanRemoveActor);
     }
 
-    try {
-      await existingActor.deleteOne();
-      return ActorsMessages.RemoveActorSuccess;
-    } catch (error) {
-      throw sendError(error.message, error.status);
-    }
+    if (existingActor.createdBy)
+      if (user.id !== existingActor.createdBy.id && !user.isSuperAdmin) {
+        throw new ForbiddenException(ActorsMessages.CannotRemoveActor);
+      }
+
+    await this.actorRepository.delete({ id });
+    removeFile(existingActor.photo);
+
+    return ActorsMessages.RemoveActorSuccess;
   }
 
-  private async checkExistActor(id: string): Promise<ICreatedBy<Actor>> {
-    const existingActor: ICreatedBy<Actor> | null =
-      await this.industryModel.findById(id);
+  private async checkExistActor(id: number): Promise<Actor> {
+    const existingActor = await this.actorRepository.findOne({
+      where: { id },
+      relations: ["createdBy", "industry", "country"],
+    });
 
     if (!existingActor) {
       throw new NotFoundException(ActorsMessages.NotFoundActor);

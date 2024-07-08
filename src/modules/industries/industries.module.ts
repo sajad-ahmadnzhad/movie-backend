@@ -9,8 +9,8 @@ import { Industry } from "./entities/industry.entity";
 import { CountriesService } from "../countries/countries.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Country, BanUser , Industry])],
+  imports: [TypeOrmModule.forFeature([User, Country, BanUser, Industry])],
   controllers: [IndustriesController],
-  providers: [IndustriesService , CountriesService],
+  providers: [IndustriesService, CountriesService],
 })
 export class IndustriesModule {}

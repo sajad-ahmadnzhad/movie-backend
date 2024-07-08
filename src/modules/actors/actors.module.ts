@@ -7,12 +7,14 @@ import { Country } from "../countries/entities/country.entity";
 import { Actor } from "./entities/actor.entity";
 import { User } from "../auth/entities/User.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
+import { IndustriesService } from "../industries/industries.service";
+import { CountriesService } from "../countries/countries.service";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, Actor, Country, Industry, BanUser]),
   ],
   controllers: [ActorsController],
-  providers: [ActorsService],
+  providers: [ActorsService, IndustriesService, CountriesService],
 })
 export class ActorsModule {}

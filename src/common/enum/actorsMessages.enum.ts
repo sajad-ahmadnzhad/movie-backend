@@ -7,4 +7,6 @@ export enum ActorsMessages {
   CannotRemoveActor = "You are not allowed to remove this actor",
   RemoveActorSuccess = "Actor removed successfully",
   RequiredActorQuery = "Actor query is required",
+  OnlySuperAdminCanUpdateActor = "Only a super admin can update a Actor when the main admin has been deleted",
+  OnlySuperAdminCanRemoveActor = "Only a super admin can remove a Actor when the main admin has been deleted",
 }

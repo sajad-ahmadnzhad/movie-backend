@@ -87,15 +87,27 @@ export const GetAllActorsDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: "number",
     required: false,
     description: "The page of the actors",
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: "number",
     required: false,
     description: "The count of the actors",
+  }),
+  ApiQuery({
+    name: "countryId",
+    type: "number",
+    required: false,
+    description: "The id of the country",
+  }),
+  ApiQuery({
+    name: "industryId",
+    type: "number",
+    required: false,
+    description: "The id of the industry",
   }),
   ApiOkResponse({ schema: GetAllActorsSchema })
 );
@@ -117,44 +129,6 @@ export const GetOneActorDecorator = applyDecorators(
   }),
   ApiParam({ name: "id", description: "The id of the actor" }),
   ApiOkResponse({ schema: GetOneActorSchema })
-);
-
-//* Get actors by country decorator
-export const GetActorsByCountry = applyDecorators(
-  ApiOperation({ summary: "get actors by country" }),
-  ApiTooManyRequestsResponse({
-    description: "Too many requests",
-    schema: TooManyRequests,
-  }),
-  ApiNotFoundResponse({
-    description: "Country not found",
-    schema: NotFoundSchema,
-  }),
-  ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
-    schema: BadRequestParamSchema,
-  }),
-  ApiParam({ name: "id", description: "The id of the country" }),
-  ApiOkResponse({ schema: GetAllActorsSchema })
-);
-
-//* Get actors by industry decorator
-export const GetActorsByIndustry = applyDecorators(
-  ApiOperation({ summary: "get actors by industry" }),
-  ApiTooManyRequestsResponse({
-    description: "Too many requests",
-    schema: TooManyRequests,
-  }),
-  ApiParam({ name: "id", description: "The id of the industry" }),
-  ApiNotFoundResponse({
-    description: "Industry not found",
-    schema: NotFoundSchema,
-  }),
-  ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
-    schema: BadRequestParamSchema,
-  }),
-  ApiOkResponse({ schema: GetAllActorsSchema })
 );
 
 //* Search Actors decorator

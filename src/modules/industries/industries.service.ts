@@ -201,7 +201,7 @@ export class IndustriesService {
     return IndustriesMessages.RemoveIndustrySuccess;
   }
 
-  private async checkExistIndustry(id: number): Promise<Industry> {
+   async checkExistIndustry(id: number): Promise<Industry> {
     const existingIndustry = await this.industryRepository.findOne({
       where: { id },
       relations: ["createdBy", "country"],
