@@ -16,6 +16,7 @@ import { Actor } from "../../actors/entities/actor.entity";
 import { Movie } from "../../movies/entities/movie.entity";
 import { Bookmark } from "../../movies/entities/Bookmark.entity";
 import { Like } from "../../movies/entities/like.entity";
+import { Comment } from "../../movies/entities/comment.entity";
 
 @Entity({ name: "users" })
 export class User {
@@ -75,6 +76,9 @@ export class User {
 
   @OneToMany(() => Like, (like) => like.movie)
   likes: Like[];
+
+  @OneToMany(() => Comment, (comment) => comment.creator)
+  comments: Comment[];
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
