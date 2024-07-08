@@ -11,9 +11,11 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+import { Bookmark } from "./Bookmark.entity";
 
 @Entity({ name: "movies" })
 export class Movie {
@@ -58,6 +60,9 @@ export class Movie {
   @ManyToOne(() => User, (user) => user.movies, { onDelete: "SET NULL" })
   @JoinColumn()
   createdBy: User;
+
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.movie)
+  bookmarks: Movie;
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
