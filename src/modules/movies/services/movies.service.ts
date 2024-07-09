@@ -25,16 +25,11 @@ import { RedisCache } from "cache-manager-redis-yet";
 import { User } from "../../auth/entities/User.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Actor } from "../../actors/entities/actor.entity";
-import {
-  FindManyOptions,
-  LessThanOrEqual,
-  Like,
-  MoreThanOrEqual,
-  Repository,
-} from "typeorm";
+import { FindManyOptions, Like, Repository } from "typeorm";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Movie } from "../entities/movie.entity";
+import { Like as LikeRepo } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
 
 @Injectable()
@@ -49,6 +44,8 @@ export class MoviesService {
     private readonly industryRepository: Repository<Industry>,
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
+    @InjectRepository(LikeRepo)
+    private readonly likeRepository: Repository<LikeRepo>,
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>
   ) {}
@@ -206,39 +203,43 @@ export class MoviesService {
     return paginatedMovies;
   }
 
-  // async likeToggle(id: string, user: User): Promise<string> {
-  //   await this.checkExistMovieById(id);
+  async likeToggle(id: number, user: User): Promise<string> {
+    const movie = await this.checkExistMovieById(id);
 
-  //   const likedMovie = await this.likeModel.findOne({
-  //     movieId: id,
-  //     userId: user._id,
-  //   });
+    const likedMovie = await this.likeRepository
+      .createQueryBuilder("like")
+      .where("like.movie.id = :movieId", { movieId: movie.id })
+      .andWhere("like.user.id = :userId", { userId: user.id })
+      .getOne();
 
-  //   if (likedMovie) {
-  //     await likedMovie.deleteOne();
-  //     return MoviesMessages.UnlikedMovieSuccess;
-  //   }
+    if (likedMovie) {
+      await this.likeRepository.remove(likedMovie);
+      return MoviesMessages.UnlikedMovieSuccess;
+    }
 
-  //   await this.likeModel.create({ movieId: id, userId: user._id });
-  //   return MoviesMessages.LikedMovieSuccess;
-  // }
+    const like = this.likeRepository.create({ movie, user });
 
-  // async bookmarkToggle(id: string, user: User): Promise<string> {
-  //   await this.checkExistMovieById(id);
+    await this.likeRepository.save(like);
 
-  //   const bookmarkedMovie = await this.bookmarkModel.findOne({
-  //     movieId: id,
-  //     userId: user._id,
-  //   });
+    return MoviesMessages.LikedMovieSuccess;
+  }
 
-  //   if (bookmarkedMovie) {
-  //     await bookmarkedMovie.deleteOne();
-  //     return MoviesMessages.UnBookmarkMovieSuccess;
-  //   }
+  async bookmarkToggle(id: string, user: User): Promise<string> {
+    await this.checkExistMovieById(id);
 
-  //   await this.bookmarkModel.create({ movieId: id, userId: user._id });
-  //   return MoviesMessages.BookmarkMovieSuccess;
-  // }
+    const bookmarkedMovie = await this.bookmarkModel.findOne({
+      movieId: id,
+      userId: user._id,
+    });
+
+    if (bookmarkedMovie) {
+      await bookmarkedMovie.deleteOne();
+      return MoviesMessages.UnBookmarkMovieSuccess;
+    }
+
+    await this.bookmarkModel.create({ movieId: id, userId: user._id });
+    return MoviesMessages.BookmarkMovieSuccess;
+  }
 
   // async update(
   //   id: string,

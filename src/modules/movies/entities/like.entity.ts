@@ -14,7 +14,7 @@ export class Like {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.likes, { onDelete: "CASCADE" })
+  @ManyToOne(() => User, (user) => user.likes, { onDelete: "CASCADE"  , eager: true })
   @JoinColumn()
   user: User;
 

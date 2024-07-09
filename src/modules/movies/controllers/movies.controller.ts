@@ -79,16 +79,16 @@ export class MoviesController {
     return this.moviesService.findOne(id);
   }
 
-  // @Post("like/:id")
-  // @LikeMovieDecorator
-  // async likeToggle(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.moviesService.likeToggle(id, user);
+  @Post("like/:id")
+  @LikeMovieDecorator
+  async likeToggle(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.likeToggle(id, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
   // @Post("bookmark/:id")
   // @BookmarkMovieDecorator
