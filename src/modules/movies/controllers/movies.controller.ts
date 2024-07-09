@@ -120,15 +120,15 @@ export class MoviesController {
     return { message: success };
   }
 
-  // @Delete(":id")
-  // @RemoveMovieDecorator
-  // @Throttle({ default: { ttl: 60_000, limit: 5 } })
-  // async remove(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.moviesService.remove(id, user);
+  @Delete(":id")
+  @RemoveMovieDecorator
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  async remove(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.remove(id, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 }

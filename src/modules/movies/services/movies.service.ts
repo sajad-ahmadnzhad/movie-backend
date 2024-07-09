@@ -13,12 +13,7 @@ import {
   saveFile,
   saveMovieFile,
 } from "../../../common/utils/upload-file.util";
-import {
-  existingIds,
-  existingObjectIds,
-  getMovieCountries,
-  removeFile,
-} from "../../../common/utils/functions.util";
+import { existingIds, removeFile } from "../../../common/utils/functions.util";
 import { typeORMPagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
@@ -262,12 +257,12 @@ export class MoviesService {
       updateMovieDto;
 
     if (!movie.createdBy && !user.isSuperAdmin) {
-      throw new ConflictException();
+      throw new ConflictException(MoviesMessages.OnlySuperAdminCanUpdateMovie);
     }
 
     if (movie.createdBy)
       if (movie.createdBy.id !== user.id && !user.isSuperAdmin) {
-        throw new ForbiddenException();
+        throw new ForbiddenException(MoviesMessages.CannotUpdateMovie);
       }
 
     try {
@@ -337,18 +332,25 @@ export class MoviesService {
     return MoviesMessages.UpdatedMovieSuccess;
   }
 
-  // async remove(id: string, user: User): Promise<string> {
-  //   const existingMovie = await this.checkExistMovieById(id);
+  async remove(id: number, user: User): Promise<string> {
+    const movie = await this.checkExistMovieById(id);
 
-  //   if (String(user._id) !== String(existingMovie.createdBy._id)) {
-  //     if (!user.isSuperAdmin)
-  //       throw new ForbiddenException(MoviesMessages.CannotRemoveMovie);
-  //   }
+    if (!movie.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException(MoviesMessages.OnlySuperAdminCanRemoveMovie);
+    }
 
-  //   await existingMovie.deleteOne();
+    if (movie.createdBy)
+      if (movie.createdBy.id !== user.id && !user.isSuperAdmin) {
+        throw new ForbiddenException(MoviesMessages.CannotRemoveMovie);
+      }
 
-  //   return MoviesMessages.RemovedMovieSuccess;
-  // }
+    await this.movieRepository.remove(movie);
+
+    removeFile(movie.video_URL);
+    removeFile(movie.poster_URL);
+
+    return MoviesMessages.RemovedMovieSuccess;
+  }
 
   async checkExistMovieById(id: number): Promise<Movie> {
     const existingMovie = await this.movieRepository.findOne({

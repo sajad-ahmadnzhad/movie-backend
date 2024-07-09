@@ -3,6 +3,7 @@ export enum MoviesMessages {
   NotFoundMovie = "Movie not found",
   RequiredMovieQuery = "Movie query is required",
   CannotRemoveMovie = "You are not allowed to remove this movie",
+  CannotUpdateMovie = "You are not allowed to update this movie",
   RemovedMovieSuccess = "Movie removed successfully",
   UpdatedMovieSuccess = "Movie updated successfully",
   RequiredPosterAndVideo = "Poster and video is required",
@@ -10,7 +11,8 @@ export enum MoviesMessages {
   UnlikedMovieSuccess = "Movie unliked successfully",
   UnBookmarkMovieSuccess = "Movie unBookmarked successfully",
   BookmarkMovieSuccess = "Movie bookmarked successfully",
-  VisitMovieSuccess = "Movie was successfully visited",
+  OnlySuperAdminCanUpdateMovie = "Only a super admin can update a movie when the main admin has been deleted",
+  OnlySuperAdminCanRemoveMovie = "Only a super admin can remove a movie when the main admin has been deleted",
 }
 
 export enum CommentsMessages {
