@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -16,6 +17,7 @@ import {
   existingIds,
   existingObjectIds,
   getMovieCountries,
+  removeFile,
 } from "../../../common/utils/functions.util";
 import { typeORMPagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
@@ -60,11 +62,11 @@ export class MoviesService {
     let { release_year, title, description, actors, genres, industries } =
       createMovieDto;
 
-    const fetchedData: {
-      actors?: Actor[];
-      genres?: Genre[];
-      industries?: Industry[];
-    } = {};
+    const fetchedData: Partial<{
+      actors: Actor[];
+      genres: Genre[];
+      industries: Industry[];
+    }> = {};
 
     try {
       fetchedData.actors = await existingIds(actors, this.actorRepository);
@@ -248,40 +250,92 @@ export class MoviesService {
     return MoviesMessages.BookmarkMovieSuccess;
   }
 
-  // async update(
-  //   id: string,
-  //   updateMovieDto: UpdateMovieDto,
-  //   user: User,
-  //   files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
-  // ): Promise<string> {
-  //   const existingMovie = await this.checkExistMovieById(id);
+  async update(
+    id: number,
+    updateMovieDto: UpdateMovieDto,
+    user: User,
+    files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
+  ): Promise<string> {
+    const movie = await this.checkExistMovieById(id);
 
-  //   const { actors, genres, industries } = updateMovieDto;
-  //   let countries: null | string[] = null;
+    let { release_year, title, description, actors, genres, industries } =
+      updateMovieDto;
 
-  //   if (genres) await existingObjectIds(this.genreModel, genres, "Genre");
-  //   if (actors) await existingObjectIds(this.actorModel, actors, "Actor");
-  //   if (industries) {
-  //     await existingObjectIds(this.industryModel, industries, "Industry");
-  //     countries = await getMovieCountries(this.industryModel, industries);
-  //   }
+    if (!movie.createdBy && !user.isSuperAdmin) {
+      throw new ConflictException();
+    }
 
-  //   const filePaths: Partial<{ poster: string; video: string }> = {};
-  //   if (files.poster) filePaths.poster = saveFile(files.poster[0], "posters");
-  //   if (files.video) filePaths.video = saveFile(files.video[0], "movies");
+    if (movie.createdBy)
+      if (movie.createdBy.id !== user.id && !user.isSuperAdmin) {
+        throw new ForbiddenException();
+      }
 
-  //   await existingMovie.updateOne({
-  //     $set: {
-  //       ...updateMovieDto,
-  //       video_URL: filePaths.video && `/uploads/movies/${filePaths.video}`,
-  //       poster_URL: filePaths.poster && `/uploads/posters/${filePaths.poster}`,
-  //       createdBy: user._id,
-  //       countries: countries ? countries : undefined,
-  //     },
-  //   });
+    try {
+      if (genres) {
+        const fetchedGenres = await existingIds(genres, this.genreRepository);
+        await this.movieRepository
+          .createQueryBuilder()
+          .relation(Movie, "genres")
+          .of(movie)
+          .addAndRemove(fetchedGenres, movie.genres);
+      }
 
-  //   return MoviesMessages.UpdatedMovieSuccess;
-  // }
+      if (actors) {
+        const fetchedActors = await existingIds(actors, this.actorRepository);
+        await this.movieRepository
+          .createQueryBuilder()
+          .relation(Movie, "actors")
+          .of(movie)
+          .addAndRemove(fetchedActors, movie.actors);
+      }
+
+      if (industries) {
+        const fetchedIndustries = await existingIds(
+          industries,
+          this.industryRepository
+        );
+        await this.movieRepository
+          .createQueryBuilder()
+          .relation(Movie, "industries")
+          .of(movie)
+          .addAndRemove(fetchedIndustries, movie.industries);
+
+        const countries = await this.countryRepository
+          .createQueryBuilder("country")
+          .innerJoin("country.industries", "industry")
+          .where("industry.id IN(:...ids)", { ids: industries })
+          .getMany();
+
+        await this.movieRepository
+          .createQueryBuilder()
+          .relation(Movie, "countries")
+          .of(movie)
+          .addAndRemove(countries, movie.countries);
+      }
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
+
+    const filePaths: Partial<{ poster: string; video: string }> = {};
+    if (files.poster) filePaths.poster = saveFile(files.poster[0], "posters");
+    if (files.video) filePaths.video = saveFile(files.video[0], "movies");
+
+    await this.movieRepository.update(
+      { id },
+      {
+        title,
+        description,
+        release_year,
+        video_URL: filePaths.video && `/uploads/movies/${filePaths.video}`,
+        poster_URL: filePaths.poster && `/uploads/posters/${filePaths.poster}`,
+      }
+    );
+
+    if (files.poster) removeFile(movie.poster_URL);
+    if (files.video) removeFile(movie.video_URL);
+
+    return MoviesMessages.UpdatedMovieSuccess;
+  }
 
   // async remove(id: string, user: User): Promise<string> {
   //   const existingMovie = await this.checkExistMovieById(id);

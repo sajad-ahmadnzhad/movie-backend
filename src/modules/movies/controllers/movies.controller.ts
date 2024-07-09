@@ -101,24 +101,24 @@ export class MoviesController {
     return { message: success };
   }
 
-  // @Patch(":id")
-  // @Throttle({ default: { ttl: 60_000, limit: 5 } })
-  // @UpdateMovieDecorator
-  // async update(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @Body() updateMovieDto: UpdateMovieDto,
-  //   @UserDecorator() user: User,
-  //   @UploadedFiles()
-  //   files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
-  // ): Promise<{ message: string }> {
-  //   const success = await this.moviesService.update(
-  //     id,
-  //     updateMovieDto,
-  //     user,
-  //     files
-  //   );
-  //   return { message: success };
-  // }
+  @Patch(":id")
+  @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  @UpdateMovieDecorator
+  async update(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() updateMovieDto: UpdateMovieDto,
+    @UserDecorator() user: User,
+    @UploadedFiles()
+    files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
+  ): Promise<{ message: string }> {
+    const success = await this.moviesService.update(
+      id,
+      updateMovieDto,
+      user,
+      files
+    );
+    return { message: success };
+  }
 
   // @Delete(":id")
   // @RemoveMovieDecorator
