@@ -48,7 +48,7 @@ export class Actor {
   @JoinColumn()
   createdBy: User;
 
-  @ManyToMany(() => Movie, (movie) => movie.actors)
+  @ManyToMany(() => Movie, (movie) => movie.actors, { onDelete: "CASCADE" })
   movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })

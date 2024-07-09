@@ -43,7 +43,7 @@ export class Industry {
   @OneToMany(() => Actor, (actor) => actor.industry)
   actors: Actor[];
 
-  @ManyToMany(() => Movie, (movie) => movie.industries)
+  @ManyToMany(() => Movie, (movie) => movie.industries, { onDelete: "CASCADE" })
   movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })

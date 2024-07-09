@@ -2,6 +2,7 @@ import { Transform } from "class-transformer";
 import { IsNotEmpty, IsNumber, Length, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { ValidateObjectIds } from "../../../../common/utils/custom-decorators";
+import { transformIds } from "src/common/utils/functions.util";
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
@@ -13,7 +14,7 @@ export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @Length(5, 2000)
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: "string" })
   description?: string;
 
   @Transform(({ value }) => +value)
@@ -24,28 +25,19 @@ export class CreateMovieDto {
   release_year: number;
 
   @ValidateObjectIds()
-  @Transform(({ value }) => {
-    if (typeof value == "string") return value.split(",");
-    return value;
-  })
-  @ApiProperty({ isArray: true, type: String })
-  genres: [string];
+  @Transform(transformIds)
+  @ApiProperty({ isArray: true, type: "number" })
+  genres: number[];
 
   @ValidateObjectIds()
-  @Transform(({ value }) => {
-    if (typeof value == "string") return value.split(",");
-    return value;
-  })
-  @ApiProperty({ isArray: true, type: String })
-  actors: [string];
+  @Transform(transformIds)
+  @ApiProperty({ isArray: true, type: "number" })
+  actors: number[];
 
   @ValidateObjectIds()
-  @Transform(({ value }) => {
-    if (typeof value == "string") return value.split(",");
-    return value;
-  })
-  @ApiProperty({ isArray: true, type: String })
-  industries: [string];
+  @Transform(transformIds)
+  @ApiProperty({ isArray: true, type: "number" })
+  industries: number[];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
   video: any;

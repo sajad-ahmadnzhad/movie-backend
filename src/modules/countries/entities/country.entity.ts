@@ -38,7 +38,7 @@ export class Country {
   @OneToMany(() => Actor, (actor) => actor.country)
   actors: Actor[];
 
-  @ManyToMany(() => Movie, (movie) => movie.countries)
+  @ManyToMany(() => Movie, (movie) => movie.countries, { onDelete: "CASCADE" })
   movies: Movie[];
 
   @CreateDateColumn({ type: "timestamp" })

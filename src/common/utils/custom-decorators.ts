@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationArguments } from "class-validator";
-import { SignupUserDto } from "src/modules/auth/dto/signupUser.dto";
+import { SignupUserDto } from "../../modules/auth/dto/signupUser.dto";
 
 export function ValidateObjectIds() {
   return function (object: Object, propertyName: string) {
@@ -10,7 +10,7 @@ export function ValidateObjectIds() {
         defaultMessage() {
           return this.errorMessage;
         },
-        validate(value: string[] | string, args: ValidationArguments) {
+        validate(value: number[] | number, args: ValidationArguments) {
           let hasError: boolean = false;
 
           if (!value) {
@@ -18,16 +18,13 @@ export function ValidateObjectIds() {
             return false;
           }
 
-          if (typeof value == "string") value = value.split(",");
-
           if (!Array.isArray(value)) {
             this.errorMessage = `${args.property} must be an array`;
             return false;
           }
 
           value = value.flat(Infinity);
-
-          const duplicates: string[] = [];
+          const duplicates: number[] = [];
           const seen = new Set();
 
           //* Find duplicated keys
@@ -45,9 +42,9 @@ export function ValidateObjectIds() {
           }
 
           for (let i = 0; i < value.length; i++) {
-            if (!value[i].match(/^[0-9a-fA-F]{24}$/)) {
+            if (typeof value[i] !== "number" || isNaN(value[i])) {
               hasError = true;
-              this.errorMessage = `invalid ObjectId ${args.property} index ${i}`;
+              this.errorMessage = `invalid id ${args.property} index ${i}`;
               break;
             }
           }

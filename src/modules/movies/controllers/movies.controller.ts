@@ -26,12 +26,9 @@ import {
 } from "../../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../../users/decorators/currentUser.decorator";
-import { User } from "../../users/schemas/User.schema";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
-import { Movie } from "../schemas/Movie.schema";
-import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
-import { Document } from "mongoose";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
+import { User } from "../../auth/entities/User.entity";
 
 @Controller("movies")
 @ApiTags("movies")
@@ -57,80 +54,80 @@ export class MoviesController {
     return { message: success };
   }
 
-  @Get()
-  @GetAllMoviesDecorator
-  findAll(
-    @Query() filterMoviesDto: FilterMoviesDto
-  ): Promise<PaginatedList<Movie>> {
-    return this.moviesService.findAll(filterMoviesDto);
-  }
+  // @Get()
+  // @GetAllMoviesDecorator
+  // findAll(
+  //   @Query() filterMoviesDto: FilterMoviesDto
+  // ): Promise<PaginatedList<Movie>> {
+  //   return this.moviesService.findAll(filterMoviesDto);
+  // }
 
-  @Get("search")
-  @SearchMoviesDecorator
-  search(
-    @Query("movie") movie: string,
-    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  ): Promise<PaginatedList<Movie>> {
-    return this.moviesService.search(movie, limit, page);
-  }
+  // @Get("search")
+  // @SearchMoviesDecorator
+  // search(
+  //   @Query("movie") movie: string,
+  //   @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+  //   @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  // ): Promise<PaginatedList<Movie>> {
+  //   return this.moviesService.search(movie, limit, page);
+  // }
 
-  @GetOneMovieDecorator
-  @Get(":id")
-  findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
-    return this.moviesService.findOne(id);
-  }
+  // @GetOneMovieDecorator
+  // @Get(":id")
+  // findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
+  //   return this.moviesService.findOne(id);
+  // }
 
-  @Post("like/:id")
-  @LikeMovieDecorator
-  async likeToggle(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.likeToggle(id, user);
+  // @Post("like/:id")
+  // @LikeMovieDecorator
+  // async likeToggle(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.moviesService.likeToggle(id, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Post("bookmark/:id")
-  @BookmarkMovieDecorator
-  async bookmarkToggle(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.bookmarkToggle(id, user);
+  // @Post("bookmark/:id")
+  // @BookmarkMovieDecorator
+  // async bookmarkToggle(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.moviesService.bookmarkToggle(id, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Patch(":id")
-  @Throttle({ default: { ttl: 60_000, limit: 5 } })
-  @UpdateMovieDecorator
-  async update(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @Body() updateMovieDto: UpdateMovieDto,
-    @UserDecorator() user: User,
-    @UploadedFiles()
-    files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.update(
-      id,
-      updateMovieDto,
-      user,
-      files
-    );
-    return { message: success };
-  }
+  // @Patch(":id")
+  // @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  // @UpdateMovieDecorator
+  // async update(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @Body() updateMovieDto: UpdateMovieDto,
+  //   @UserDecorator() user: User,
+  //   @UploadedFiles()
+  //   files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
+  // ): Promise<{ message: string }> {
+  //   const success = await this.moviesService.update(
+  //     id,
+  //     updateMovieDto,
+  //     user,
+  //     files
+  //   );
+  //   return { message: success };
+  // }
 
-  @Delete(":id")
-  @RemoveMovieDecorator
-  @Throttle({ default: { ttl: 60_000, limit: 5 } })
-  async remove(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.remove(id, user);
+  // @Delete(":id")
+  // @RemoveMovieDecorator
+  // @Throttle({ default: { ttl: 60_000, limit: 5 } })
+  // async remove(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.moviesService.remove(id, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 }

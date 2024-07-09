@@ -71,10 +71,10 @@ export class User {
   @OneToMany(() => Movie, (movie) => movie.createdBy)
   movies: Movie[];
 
-  @OneToMany(() => Bookmark, (bookmark) => bookmark.movie)
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.user)
   bookmarks: Bookmark[];
 
-  @OneToMany(() => Like, (like) => like.movie)
+  @OneToMany(() => Like, (like) => like.user)
   likes: Like[];
 
   @OneToMany(() => Comment, (comment) => comment.creator)

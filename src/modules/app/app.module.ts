@@ -12,7 +12,7 @@ import { CacheModule } from "@nestjs/cache-manager";
 import { APP_GUARD, APP_PIPE } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { UsersModule } from "../users/users.module";
-import { MailModule } from '../mail/mail.module';
+import { MailModule } from "../mail/mail.module";
 import helmet from "helmet";
 import * as cookieParser from "cookie-parser";
 import { cacheConfig } from "../../config/cache.config";
@@ -43,7 +43,7 @@ import { typeormConfig } from "../../config/typeorm.config";
     IndustriesModule,
     ActorsModule,
     GenresModule,
-    // MoviesModule,
+    MoviesModule,
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },

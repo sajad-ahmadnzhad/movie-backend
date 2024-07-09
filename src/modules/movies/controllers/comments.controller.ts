@@ -33,93 +33,93 @@ import { IsAdminGuard } from "../../../modules/auth/guards/isAdmin.guard";
 @ApiTags("comments")
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-  @Post()
-  @CreateCommentDecorator
-  async createComment(
-    @Body() createCommentDto: CreateCommentDto,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.create(createCommentDto, user);
+  // @Post()
+  // @CreateCommentDecorator
+  // async createComment(
+  //   @Body() createCommentDto: CreateCommentDto,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.create(createCommentDto, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Post("reply/:id")
-  @ReplyCommentDecorator
-  async reply(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @Body() replyCommentDto: ReplyCommentDto,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.reply(id, replyCommentDto, user);
+  // @Post("reply/:id")
+  // @ReplyCommentDecorator
+  // async reply(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @Body() replyCommentDto: ReplyCommentDto,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.reply(id, replyCommentDto, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Put("accept/:id")
-  @AcceptCommentDecorator
-  async accept(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.accept(id, user);
+  // @Put("accept/:id")
+  // @AcceptCommentDecorator
+  // async accept(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.accept(id, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Put("reject/:id")
-  @RejectCommentDecorator
-  async reject(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.reject(id, user);
+  // @Put("reject/:id")
+  // @RejectCommentDecorator
+  // async reject(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.reject(id, user);
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Get("movie-comments/:id")
-  getMoviesComments(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @Query("page", new ParseIntPipe({ optional: true })) page: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
-  ) {
-    return this.commentsService.getMovieComments(id, limit, page);
-  }
+  // @Get("movie-comments/:id")
+  // getMoviesComments(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @Query("page", new ParseIntPipe({ optional: true })) page: number,
+  //   @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+  // ) {
+  //   return this.commentsService.getMovieComments(id, limit, page);
+  // }
 
-  @Get("unaccepted-comments/:id")
-  @UseGuards(AuthGuard, IsAdminGuard)
-  getUnacceptedComments(
-    @Query("page", new ParseIntPipe({ optional: true })) page: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit: number,
-    @UserDecorator() user: User
-  ) {
-    return this.commentsService.getUnacceptedComments(user, limit, page);
-  }
+  // @Get("unaccepted-comments/:id")
+  // @UseGuards(AuthGuard, IsAdminGuard)
+  // getUnacceptedComments(
+  //   @Query("page", new ParseIntPipe({ optional: true })) page: number,
+  //   @Query("limit", new ParseIntPipe({ optional: true })) limit: number,
+  //   @UserDecorator() user: User
+  // ) {
+  //   return this.commentsService.getUnacceptedComments(user, limit, page);
+  // }
 
-  @Patch(":id")
-  @UpdateCommentDecorator
-  async update(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User,
-    @Body() updateCommentDto: UpdateCommentDto
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.update(
-      id,
-      updateCommentDto,
-      user
-    );
+  // @Patch(":id")
+  // @UpdateCommentDecorator
+  // async update(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User,
+  //   @Body() updateCommentDto: UpdateCommentDto
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.update(
+  //     id,
+  //     updateCommentDto,
+  //     user
+  //   );
 
-    return { message: success };
-  }
+  //   return { message: success };
+  // }
 
-  @Delete(":id")
-  @UseGuards(AuthGuard)
-  async remove(
-    @Param("id", IsValidObjectIdPipe) id: string,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.commentsService.remove(id, user);
-    return { message: success };
-  }
+  // @Delete(":id")
+  // @UseGuards(AuthGuard)
+  // async remove(
+  //   @Param("id", IsValidObjectIdPipe) id: string,
+  //   @UserDecorator() user: User
+  // ): Promise<{ message: string }> {
+  //   const success = await this.commentsService.remove(id, user);
+  //   return { message: success };
+  // }
 }

@@ -45,11 +45,11 @@ export class Movie {
   @JoinTable()
   countries: Country[];
 
-  @ManyToMany(() => Genre, (genre) => genre.movie, { onDelete: "SET NULL" })
+  @ManyToMany(() => Genre, (genre) => genre.movies, { onDelete: "CASCADE" })
   @JoinTable()
   genres: Genre[];
 
-  @ManyToMany(() => Actor, (actor) => actor.movies, { onDelete: "SET NULL" })
+  @ManyToMany(() => Actor, (actor) => actor.movies, { onDelete: "CASCADE" })
   @JoinTable()
   actors: Actor[];
 
