@@ -14,7 +14,10 @@ export class Bookmark {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.bookmarks, { onDelete: "CASCADE" })
+  @ManyToOne(() => User, (user) => user.bookmarks, {
+    onDelete: "CASCADE",
+    eager: true,
+  })
   @JoinColumn()
   user: User;
 

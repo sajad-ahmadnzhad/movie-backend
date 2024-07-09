@@ -31,6 +31,7 @@ import { Industry } from "../../industries/entities/industry.entity";
 import { Movie } from "../entities/movie.entity";
 import { Like as LikeRepo } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
+import { Bookmark } from "../entities/Bookmark.entity";
 
 @Injectable()
 export class MoviesService {
@@ -46,6 +47,8 @@ export class MoviesService {
     private readonly countryRepository: Repository<Country>,
     @InjectRepository(LikeRepo)
     private readonly likeRepository: Repository<LikeRepo>,
+    @InjectRepository(Bookmark)
+    private readonly bookmarkRepository: Repository<Bookmark>,
     @InjectRepository(Movie)
     private readonly movieRepository: Repository<Movie>
   ) {}
@@ -224,20 +227,24 @@ export class MoviesService {
     return MoviesMessages.LikedMovieSuccess;
   }
 
-  async bookmarkToggle(id: string, user: User): Promise<string> {
-    await this.checkExistMovieById(id);
+  async bookmarkToggle(id: number, user: User): Promise<string> {
+    const movie = await this.checkExistMovieById(id);
 
-    const bookmarkedMovie = await this.bookmarkModel.findOne({
-      movieId: id,
-      userId: user._id,
-    });
+    const bookmarkedMovie = await this.bookmarkRepository
+      .createQueryBuilder("bookmark")
+      .where("bookmark.movie.id = :movieId", { movieId: movie.id })
+      .andWhere("bookmark.user.id = :userId", { userId: user.id })
+      .getOne();
 
     if (bookmarkedMovie) {
-      await bookmarkedMovie.deleteOne();
+      await this.bookmarkRepository.remove(bookmarkedMovie);
       return MoviesMessages.UnBookmarkMovieSuccess;
     }
 
-    await this.bookmarkModel.create({ movieId: id, userId: user._id });
+    const bookmark = this.bookmarkRepository.create({ movie, user });
+
+    await this.bookmarkRepository.save(bookmark);
+
     return MoviesMessages.BookmarkMovieSuccess;
   }
 
