@@ -73,11 +73,11 @@ export class MoviesController {
   //   return this.moviesService.search(movie, limit, page);
   // }
 
-  // @GetOneMovieDecorator
-  // @Get(":id")
-  // findOne(@Param("id", IsValidObjectIdPipe) id: string): Promise<Document> {
-  //   return this.moviesService.findOne(id);
-  // }
+  @GetOneMovieDecorator
+  @Get(":id")
+  findOne(@Param("id", ParseIntPipe) id: number): Promise<Movie> {
+    return this.moviesService.findOne(id);
+  }
 
   // @Post("like/:id")
   // @LikeMovieDecorator

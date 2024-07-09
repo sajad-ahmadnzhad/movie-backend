@@ -128,6 +128,7 @@ export class MoviesService {
         "industries",
         "likes",
         "createdBy",
+        "bookmarks",
       ],
       order: { createdAt: "DESC" },
     };
@@ -139,21 +140,26 @@ export class MoviesService {
       options
     );
 
+    //Calculate movie visits count
+    await Promise.all(
+      paginatedMovies.data.map((movie) => this.calculateMovieVisits(movie))
+    );
+
     return paginatedMovies;
   }
 
-  // async findOne(id: string): Promise<Document> {
-  //   const existingMovie = await this.checkExistMovieById(id);
+  async findOne(id: number): Promise<Movie> {
+    const existingMovie = await this.checkExistMovieById(id);
 
-  //   const existingMovieInCache = (await this.redisCache.get(
-  //     `visitMovie:${id}`
-  //   )) as number;
+    const existingMovieInCache = (await this.redisCache.get(
+      `visitMovie:${id}`
+    )) as number;
 
-  //   await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
+    await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
 
-  //   //* likes , visits , bookmarks in this method
-  //   return this.calculateMovieStats(existingMovie);
-  // }
+    //* Calculate visits in this method
+    return this.calculateMovieVisits(existingMovie);
+  }
 
   // async search(
   //   movieQuery: string,
@@ -269,35 +275,33 @@ export class MoviesService {
   //   return MoviesMessages.RemovedMovieSuccess;
   // }
 
-  // async checkExistMovieById(id: string): Promise<ICreatedBy<Movie>> {
-  //   const existingMovie: ICreatedBy<Movie> | null = await this.movieModel
-  //     .findById(id)
-  //     .lean();
+  async checkExistMovieById(id: number): Promise<Movie> {
+    const existingMovie = await this.movieRepository.findOne({
+      where: { id },
+      relations: [
+        "genres",
+        "countries",
+        "actors",
+        "industries",
+        "likes",
+        "createdBy",
+        "bookmarks",
+      ],
+    });
+    if (!existingMovie) {
+      throw new NotFoundException(MoviesMessages.NotFoundMovie);
+    }
 
-  //   if (!existingMovie) {
-  //     throw new NotFoundException(MoviesMessages.NotFoundMovie);
-  //   }
+    return existingMovie;
+  }
 
-  //   return existingMovie;
-  // }
+  private async calculateMovieVisits(movie: Movie): Promise<Movie> {
+    const visitMovie = await this.redisCache.get<number>(
+      `visitMovie:${movie.id}`
+    );
 
-  // private async calculateMovieStats(
-  //   movie: Document<Movie>
-  // ): Promise<Document<Movie>> {
-  //   const visitMovie = await this.redisCache.get<number>(
-  //     `visitMovie:${movie._id}`
-  //   );
-  //   const likes = await this.likeModel.find({ movieId: `${movie._id}` }).lean();
-  //   const countBookmarks = await this.bookmarkModel
-  //     .find({ movieId: `${movie._id}` })
-  //     .countDocuments();
+    (movie as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
 
-  //   (movie as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
-
-  //   (movie as any).countBookmarks = countBookmarks;
-
-  //   (movie as any).likes = likes;
-
-  //   return movie;
-  // }
+    return movie;
+  }
 }
