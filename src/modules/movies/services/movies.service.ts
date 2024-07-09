@@ -28,6 +28,7 @@ import { Actor } from "../../actors/entities/actor.entity";
 import {
   FindManyOptions,
   LessThanOrEqual,
+  Like,
   MoreThanOrEqual,
   Repository,
 } from "typeorm";
@@ -161,37 +162,49 @@ export class MoviesService {
     return this.calculateMovieVisits(existingMovie);
   }
 
-  // async search(
-  //   movieQuery: string,
-  //   limit?: number,
-  //   page?: number
-  // ): Promise<PaginatedList<Movie>> {
-  //   if (!movieQuery?.trim()) {
-  //     throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
-  //   }
+  async search(
+    movieQuery: string,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Movie>> {
+    if (!movieQuery?.trim()) {
+      throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
+    }
 
-  //   const query = this.movieModel
-  //     .find({
-  //       title: { $regex: movieQuery },
-  //     })
-  //     .lean();
+    const options: FindManyOptions<Movie> = {
+      where: [
+        {
+          title: Like(`%${movieQuery}%`),
+        },
+        {
+          description: Like(`%${movieQuery}%`),
+        },
+      ],
+      relations: [
+        "genres",
+        "countries",
+        "actors",
+        "industries",
+        "likes",
+        "createdBy",
+        "bookmarks",
+      ],
+      order: { createdAt: "DESC" },
+    };
 
-  //   const paginatedMovies = await mongoosePagination(
-  //     limit,
-  //     page,
-  //     query,
-  //     this.movieModel
-  //   );
+    const paginatedMovies = await typeORMPagination(
+      limit,
+      page,
+      this.movieRepository,
+      options
+    );
 
-  //   const moviesStatsPromises = paginatedMovies.data.map((movie: any) => {
-  //     //* likes , visits , bookmarks in this method
-  //     return this.calculateMovieStats(movie);
-  //   });
+    await Promise.all(
+      paginatedMovies.data.map((movie) => this.calculateMovieVisits(movie))
+    );
 
-  //   await Promise.all(moviesStatsPromises);
-
-  //   return paginatedMovies;
-  // }
+    return paginatedMovies;
+  }
 
   // async likeToggle(id: string, user: User): Promise<string> {
   //   await this.checkExistMovieById(id);

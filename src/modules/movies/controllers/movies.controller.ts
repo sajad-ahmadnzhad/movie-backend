@@ -63,15 +63,15 @@ export class MoviesController {
     return this.moviesService.findAll(filterMoviesDto);
   }
 
-  // @Get("search")
-  // @SearchMoviesDecorator
-  // search(
-  //   @Query("movie") movie: string,
-  //   @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-  //   @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  // ): Promise<PaginatedList<Movie>> {
-  //   return this.moviesService.search(movie, limit, page);
-  // }
+  @Get("search")
+  @SearchMoviesDecorator
+  search(
+    @Query("movie") movie: string,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Movie>> {
+    return this.moviesService.search(movie, limit, page);
+  }
 
   @GetOneMovieDecorator
   @Get(":id")
