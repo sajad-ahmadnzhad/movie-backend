@@ -1,29 +1,47 @@
 import { Transform } from "class-transformer";
-import { IsNumber, IsOptional, Matches } from "class-validator";
+import { IsInt, IsNumber, IsOptional, Max } from "class-validator";
 
 export class FilterMoviesDto {
   @IsOptional()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: "genre id is not from mongodb" })
-  genre?: string;
+  @IsNumber()
+  @IsInt()
+  @Transform(({ value }) => +value)
+  genre?: number;
+
   @IsOptional()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: "country id is not from mongodb" })
-  country?: string;
+  @IsNumber()
+  @IsInt()
+  @Transform(({ value }) => +value)
+  country?: number;
+
   @IsOptional()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: "actor id is not from mongodb" })
-  actor?: string;
+  @IsNumber()
+  @IsInt()
+  @Transform(({ value }) => +value)
+  actor?: number;
+
   @IsOptional()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: "industry id is not from mongodb" })
-  industry?: string;
+  @IsNumber()
+  @IsInt()
+  @Transform(({ value }) => +value)
+  industry?: number;
+
   @IsOptional()
   @Transform(({ value }) => +value)
   @IsNumber()
+  @IsInt()
   limit?: number;
+
   @Transform(({ value }) => +value)
   @IsOptional()
   @IsNumber()
+  @IsInt()
   page?: number;
+
   @Transform(({ value }) => +value)
   @IsOptional()
   @IsNumber()
+  @IsInt()
+  @Max(new Date().getFullYear())
   release_year?: number;
 }

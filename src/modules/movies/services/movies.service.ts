@@ -17,7 +17,7 @@ import {
   existingObjectIds,
   getMovieCountries,
 } from "../../../common/utils/functions.util";
-import {} from "../../../common/utils/pagination.util";
+import { typeORMPagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
@@ -25,7 +25,12 @@ import { RedisCache } from "cache-manager-redis-yet";
 import { User } from "../../auth/entities/User.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Actor } from "../../actors/entities/actor.entity";
-import { Repository } from "typeorm";
+import {
+  FindManyOptions,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from "typeorm";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Movie } from "../entities/movie.entity";
@@ -102,37 +107,40 @@ export class MoviesService {
     return MoviesMessages.CreatedMovieSuccess;
   }
 
-  // async findAll(
-  //   filterMoviesDto: FilterMoviesDto
-  // ): Promise<PaginatedList<Movie>> {
-  //   const { limit, page, genre, country, actor, industry, release_year } =
-  //     filterMoviesDto;
+  async findAll(
+    filterMoviesDto: FilterMoviesDto
+  ): Promise<PaginatedList<Movie>> {
+    const { limit, page, genre, country, actor, industry, release_year } =
+      filterMoviesDto;
 
-  //   const filter: any = {};
+    const options: FindManyOptions<Movie> = {
+      where: {
+        genres: { id: genre },
+        countries: { id: country },
+        actors: { id: actor },
+        industries: { id: industry },
+        release_year,
+      },
+      relations: [
+        "genres",
+        "countries",
+        "actors",
+        "industries",
+        "likes",
+        "createdBy",
+      ],
+      order: { createdAt: "DESC" },
+    };
 
-  //   if (genre) filter.genres = { $in: genre };
-  //   if (country) filter.countries = { $in: country };
-  //   if (actor) filter.actors = { $in: actor };
-  //   if (industry) filter.industries = { $in: industry };
-  //   if (release_year) filter.release_year = release_year;
+    let paginatedMovies = await typeORMPagination(
+      limit,
+      page,
+      this.movieRepository,
+      options
+    );
 
-  //   const query = this.movieModel.find(filter);
-  //   let paginationResult = await mongoosePagination(
-  //     limit,
-  //     page,
-  //     query,
-  //     this.movieModel
-  //   );
-
-  //   const movieStatsPromises = paginationResult.data.map((movie: any) => {
-  //     //* likes , visits , bookmarks in this method
-  //     return this.calculateMovieStats(movie);
-  //   });
-
-  //   await Promise.all(movieStatsPromises);
-
-  //   return paginationResult;
-  // }
+    return paginatedMovies;
+  }
 
   // async findOne(id: string): Promise<Document> {
   //   const existingMovie = await this.checkExistMovieById(id);

@@ -29,6 +29,7 @@ import { UserDecorator } from "../../users/decorators/currentUser.decorator";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { User } from "../../auth/entities/User.entity";
+import { Movie } from "../entities/movie.entity";
 
 @Controller("movies")
 @ApiTags("movies")
@@ -54,13 +55,13 @@ export class MoviesController {
     return { message: success };
   }
 
-  // @Get()
-  // @GetAllMoviesDecorator
-  // findAll(
-  //   @Query() filterMoviesDto: FilterMoviesDto
-  // ): Promise<PaginatedList<Movie>> {
-  //   return this.moviesService.findAll(filterMoviesDto);
-  // }
+  @Get()
+  @GetAllMoviesDecorator
+  findAll(
+    @Query() filterMoviesDto: FilterMoviesDto
+  ): Promise<PaginatedList<Movie>> {
+    return this.moviesService.findAll(filterMoviesDto);
+  }
 
   // @Get("search")
   // @SearchMoviesDecorator
