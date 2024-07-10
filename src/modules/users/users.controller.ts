@@ -14,7 +14,7 @@ import { UsersService } from "./users.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ApiCookieAuth, ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "./decorators/currentUser.decorator";
-import { Express, Response } from "express";
+import { Response } from "express";
 import {
   BanUserDecorator,
   ChangeRoleUserDecorator,

@@ -123,7 +123,7 @@ export const UpdateUserDecorator = applyDecorators(
     FileInterceptor("avatar", {
       fileFilter,
       storage: memoryStorage(),
-      limits: { fileSize: 2048 * 1024, fields: 1, files: 1 },
+      limits: { fileSize: 2048 * 1024, files: 1 },
     })
   ),
   ApiTooManyRequestsResponse({
