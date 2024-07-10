@@ -26,6 +26,7 @@ import { User } from "../auth/entities/User.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
+import { Bookmark } from "../movies/entities/Bookmark.entity";
 
 @Injectable()
 export class UsersService {
@@ -33,7 +34,9 @@ export class UsersService {
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(BanUser)
-    private readonly banUserRepository: Repository<BanUser>
+    private readonly banUserRepository: Repository<BanUser>,
+    @InjectRepository(Bookmark)
+    private readonly bookmarkRepository: Repository<Bookmark>
   ) {}
 
   async findAllUsers(
@@ -337,20 +340,39 @@ export class UsersService {
     return paginatedUsers;
   }
 
-  //TODO: Create bookmark table
-  // getMyBookmarks(
-  //   user: MongooseUser,
-  //   limit?: number,
-  //   page?: number
-  // ): Promise<PaginatedList<Bookmark>> {
-  // const query = this.bookmarkModel.find({ userId: user._id });
-  //   const paginatedBookmarks = mongoosePagination(
-  //     limit,
-  //     page,
-  //     query,
-  //     // this.bookmarkModel
-  //   );
+  async getMyBookmarks(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Bookmark>> {
+    const options: FindManyOptions<Bookmark> = {
+      where: { user: { id: user.id } },
+      relations: ["movie"],
+    };
 
-  //   return paginatedBookmarks;
-  // }
+    const bookmarksCache = await this.redisCache.get<Bookmark[] | undefined>(
+      `userBookmarks:${user.id}`
+    );
+
+    if (bookmarksCache) {
+      return cachePagination(limit, page, bookmarksCache);
+    }
+
+    const paginatedBookmarks = await typeORMPagination(
+      limit,
+      page,
+      this.bookmarkRepository,
+      options
+    );
+
+    //Remove user from bookmark object
+    paginatedBookmarks.data.forEach((bookmark: any) => delete bookmark.user);
+
+    await this.redisCache.set(
+      `userBookmarks:${user.id}`,
+      paginatedBookmarks.data
+    );
+
+    return paginatedBookmarks;
+  }
 }

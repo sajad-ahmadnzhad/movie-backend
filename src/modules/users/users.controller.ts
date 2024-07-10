@@ -37,6 +37,7 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
+import { Bookmark } from "../movies/entities/Bookmark.entity";
 
 @Controller("users")
 @ApiTags("users")
@@ -99,15 +100,15 @@ export class UsersController {
     return this.usersService.findAllBan(limit, page);
   }
 
-  // @Get("bookmark")
-  // @GetMyBookmarksDecorator
-  // getMyBookmarks(
-  //   @UserDecorator() user: User,
-  //   @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-  //   @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
-  // ): Promise<PaginatedList<Bookmark>> {
-  //   return this.usersService.getMyBookmarks(user, limit, page);
-  // }
+  @Get("bookmark")
+  @GetMyBookmarksDecorator
+  getMyBookmarks(
+    @UserDecorator() user: User,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ): Promise<PaginatedList<Bookmark>> {
+    return this.usersService.getMyBookmarks(user, limit, page);
+  }
 
   @Get(":userId")
   @GetOneUserDecorator
