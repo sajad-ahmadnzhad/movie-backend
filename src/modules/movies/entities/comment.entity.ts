@@ -40,7 +40,7 @@ export class Comment {
   @TreeParent({ onDelete: "CASCADE" })
   parentComment: Comment;
 
-  @TreeChildren()
+  @TreeChildren({ cascade: true })
   replies: Comment[];
 
   @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })

@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsNotEmpty, IsNumber, Length, Max } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, Length, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { ValidateObjectIds } from "../../../../common/utils/custom-decorators";
 import { transformIds } from "src/common/utils/functions.util";
@@ -13,9 +13,10 @@ export class CreateMovieDto {
 
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
+  @IsString()
   @Length(5, 2000)
   @ApiProperty({ type: "string" })
-  description?: string;
+  description: string;
 
   @Transform(({ value }) => +value)
   @Max(new Date().getFullYear())

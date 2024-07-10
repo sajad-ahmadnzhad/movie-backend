@@ -1,26 +1,25 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import {
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Length,
-  Matches,
   Max,
   Min,
 } from "class-validator";
-import { PublicMessages } from "../../../../common/enum/public.messages";
 
 export class CreateCommentDto {
   @IsNotEmpty()
-  @IsString()
-  @ApiProperty()
-  @Matches(/^[0-9a-fA-F]{24}$/, { message: PublicMessages.InvalidObjectId })
-  movieId: string;
+  @IsNumber()
+  @IsInt()
+  @ApiProperty({ default: 1, type: "number" })
+  movieId: number;
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ type: "string" })
   @Length(5, 300)
   body: string;
   @IsOptional()

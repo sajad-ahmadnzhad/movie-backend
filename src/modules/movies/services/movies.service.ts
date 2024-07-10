@@ -14,7 +14,10 @@ import {
   saveMovieFile,
 } from "../../../common/utils/upload-file.util";
 import { existingIds, removeFile } from "../../../common/utils/functions.util";
-import { typeORMPagination } from "../../../common/utils/pagination.util";
+import {
+  cachePagination,
+  typeORMPagination,
+} from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
@@ -111,6 +114,18 @@ export class MoviesService {
     const { limit, page, genre, country, actor, industry, release_year } =
       filterMoviesDto;
 
+    const cacheKey = `movies_${limit}_${page}_${genre}_${country}_${actor}_${industry}_${release_year}`;
+
+    const moviesCache = await this.redisCache.get<Movie[] | undefined>(
+      cacheKey
+    );
+
+    if (moviesCache) {
+      const paginatedCache = await cachePagination(limit, page, moviesCache);
+      await this.calculateMovieVisits(paginatedCache.data);
+      return paginatedCache;
+    }
+
     const options: FindManyOptions<Movie> = {
       where: {
         genres: { id: genre },
@@ -131,6 +146,9 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
+    const movies = await this.movieRepository.find(options);
+    await this.redisCache.set(cacheKey, movies, 30_000);
+
     let paginatedMovies = await typeORMPagination(
       limit,
       page,
@@ -138,10 +156,7 @@ export class MoviesService {
       options
     );
 
-    //Calculate movie visits count
-    await Promise.all(
-      paginatedMovies.data.map((movie) => this.calculateMovieVisits(movie))
-    );
+    await this.calculateMovieVisits(paginatedMovies.data);
 
     return paginatedMovies;
   }
@@ -166,6 +181,18 @@ export class MoviesService {
   ): Promise<PaginatedList<Movie>> {
     if (!movieQuery?.trim()) {
       throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
+    }
+
+    const cacheKey = `searchMovie_${movieQuery}_${limit}_${page}`;
+
+    const moviesCache = await this.redisCache.get<Movie[] | undefined>(
+      cacheKey
+    );
+
+    if (moviesCache) {
+      const paginatedCache = await cachePagination(limit, page, moviesCache);
+      await this.calculateMovieVisits(paginatedCache.data);
+      return paginatedCache;
     }
 
     const options: FindManyOptions<Movie> = {
@@ -196,9 +223,10 @@ export class MoviesService {
       options
     );
 
-    await Promise.all(
-      paginatedMovies.data.map((movie) => this.calculateMovieVisits(movie))
-    );
+    const movies = await this.movieRepository.find(options);
+    await this.redisCache.set(cacheKey, movies);
+
+    await this.calculateMovieVisits(paginatedMovies.data);
 
     return paginatedMovies;
   }
@@ -372,13 +400,17 @@ export class MoviesService {
     return existingMovie;
   }
 
-  private async calculateMovieVisits(movie: Movie): Promise<Movie> {
+  private async calculateMovieVisits(movies: Movie | Movie[]): Promise<any> {
+    if (Array.isArray(movies)) {
+      return Promise.all(movies.map((m) => this.calculateMovieVisits(m)));
+    }
+
     const visitMovie = await this.redisCache.get<number>(
-      `visitMovie:${movie.id}`
+      `visitMovie:${movies.id}`
     );
 
-    (movie as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
+    (movies as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
 
-    return movie;
+    return movies;
   }
 }

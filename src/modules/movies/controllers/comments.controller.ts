@@ -14,7 +14,6 @@ import {
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { UserDecorator } from "../../../modules/users/decorators/currentUser.decorator";
-import { User } from "../../../modules/users/schemas/User.schema";
 import { CommentsService } from "../services/comments.service";
 import {
   AcceptCommentDecorator,
@@ -23,49 +22,49 @@ import {
   RejectCommentDecorator,
   UpdateCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
-import { IsValidObjectIdPipe } from "../../../common/pipes/isValidObjectId.pipe";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import { AuthGuard } from "../../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../../modules/auth/guards/isAdmin.guard";
+import { User } from "../../auth/entities/User.entity";
 
 @Controller("comments")
 @ApiTags("comments")
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
-  // @Post()
-  // @CreateCommentDecorator
-  // async createComment(
-  //   @Body() createCommentDto: CreateCommentDto,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.create(createCommentDto, user);
+  @Post()
+  @CreateCommentDecorator
+  async createComment(
+    @Body() createCommentDto: CreateCommentDto,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.create(createCommentDto, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
-  // @Post("reply/:id")
-  // @ReplyCommentDecorator
-  // async reply(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @Body() replyCommentDto: ReplyCommentDto,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.reply(id, replyCommentDto, user);
+  @Post("reply/:id")
+  @ReplyCommentDecorator
+  async reply(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() replyCommentDto: ReplyCommentDto,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.reply(id, replyCommentDto, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
-  // @Put("accept/:id")
-  // @AcceptCommentDecorator
-  // async accept(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.accept(id, user);
+  @Put("accept/:id")
+  @AcceptCommentDecorator
+  async accept(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.accept(id, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
   // @Put("reject/:id")
   // @RejectCommentDecorator
@@ -78,14 +77,14 @@ export class CommentsController {
   //   return { message: success };
   // }
 
-  // @Get("movie-comments/:id")
-  // getMoviesComments(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @Query("page", new ParseIntPipe({ optional: true })) page: number,
-  //   @Query("limit", new ParseIntPipe({ optional: true })) limit: number
-  // ) {
-  //   return this.commentsService.getMovieComments(id, limit, page);
-  // }
+  @Get("movie-comments/:id")
+  getMoviesComments(
+    @Param("id", ParseIntPipe) id: number,
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+  ) {
+    return this.commentsService.getMovieComments(id, limit, page);
+  }
 
   // @Get("unaccepted-comments/:id")
   // @UseGuards(AuthGuard, IsAdminGuard)
