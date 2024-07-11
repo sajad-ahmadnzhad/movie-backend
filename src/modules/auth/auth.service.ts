@@ -331,14 +331,18 @@ export class AuthService {
     return AuthMessages.verifiedEmailSuccess;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async removeUnverifiedUsers() {
     const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    oneMonthAgo.setMinutes(oneMonthAgo.getMinutes() - 1);
 
-    await this.userRepository.delete({
-      isVerifyEmail: false,
-      createdAt: LessThanOrEqual(oneMonthAgo),
-    });
+    const unverifiedUsers = await this.userRepository.find({where: {createdAt: LessThanOrEqual(oneMonthAgo) }})
+
+    console.log(unverifiedUsers)
+
+    // await this.userRepository.delete({
+    //   isVerifyEmail: false,
+    //   createdAt: LessThanOrEqual(oneMonthAgo),
+    // });
   }
 }

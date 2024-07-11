@@ -1,6 +1,7 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -8,7 +9,6 @@ import {
   Tree,
   TreeChildren,
   TreeParent,
-  UpdateDateColumn,
 } from "typeorm";
 import { Movie } from "./movie.entity";
 import { User } from "../../auth/entities/User.entity";
@@ -51,9 +51,19 @@ export class Comment {
   @JoinColumn()
   movie: Movie;
 
-  @CreateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

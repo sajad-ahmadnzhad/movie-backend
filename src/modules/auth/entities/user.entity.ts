@@ -1,15 +1,12 @@
 import {
-  AfterInsert,
   AfterRemove,
   BeforeInsert,
-  BeforeRemove,
+  BeforeUpdate,
   Column,
-  CreateDateColumn,
   Entity,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import { Token } from "./token.entity";
 import { BanUser } from "./banUser.entity";
@@ -92,9 +89,19 @@ export class User {
       removeFile(this.avatarURL);
   }
 
-  @CreateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

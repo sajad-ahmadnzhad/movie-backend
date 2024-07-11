@@ -3,15 +3,15 @@ import { Actor } from "../../actors/entities/actor.entity";
 import { User } from "../../auth/entities/User.entity";
 import { Country } from "../../countries/entities/country.entity";
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 
 @Entity({ name: "industries" })
@@ -46,9 +46,19 @@ export class Industry {
   @ManyToMany(() => Movie, (movie) => movie.industries, { onDelete: "CASCADE" })
   movies: Movie[];
 
-  @CreateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

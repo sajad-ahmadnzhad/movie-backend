@@ -1,11 +1,12 @@
 import { User } from "../../auth/entities/User.entity";
 import {
-  CreateDateColumn,
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import { Movie } from "./movie.entity";
 
@@ -25,9 +26,20 @@ export class Bookmark {
   @JoinColumn()
   movie: Movie;
 
-  @CreateDateColumn({ type: "timestamp" })
+
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

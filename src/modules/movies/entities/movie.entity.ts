@@ -4,8 +4,9 @@ import { Country } from "../../countries/entities/country.entity";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
@@ -13,7 +14,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import { Bookmark } from "./Bookmark.entity";
 import { Like } from "./like.entity";
@@ -72,9 +72,19 @@ export class Movie {
   @OneToMany(() => Comment, (comment) => comment.movie)
   comments: Comment[];
 
-  @CreateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: "timestamp" })
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }
