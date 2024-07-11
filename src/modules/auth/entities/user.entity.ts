@@ -52,7 +52,7 @@ export class User {
   @Column({ type: "boolean", default: false })
   isVerifyEmail: boolean;
 
-  @OneToOne(() => Token, (token) => token.user)
+  @OneToOne(() => Token, (token) => token.user, { onDelete: "SET NULL" })
   token: Token;
 
   @OneToMany(() => BanUser, (banUser) => banUser.bannedBy)
