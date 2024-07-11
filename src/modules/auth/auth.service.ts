@@ -25,7 +25,7 @@ import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { User } from "./entities/User.entity";
-import { LessThan, Repository } from "typeorm";
+import { LessThan, LessThanOrEqual, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BanUser } from "./entities/banUser.entity";
 import { Token } from "./entities/token.entity";
@@ -295,12 +295,14 @@ export class AuthService {
        <h1>${url}</h1>`,
     };
 
-    try {
-      await this.mailerService.sendMail(mailOptions);
-      await this.tokenRepository.save(token);
-    } catch (error: any) {
-      throw new InternalServerErrorException(error.message);
-    }
+    setImmediate(async () => {
+      try {
+        await this.mailerService.sendMail(mailOptions);
+        await this.tokenRepository.save(token);
+      } catch (error: any) {
+        throw new InternalServerErrorException(error.message);
+      }
+    });
 
     return AuthMessages.SendVerifyEmailSuccess;
   }
@@ -330,13 +332,13 @@ export class AuthService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  private async removeUnverifiedUsers() {
+  async removeUnverifiedUsers() {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
     await this.userRepository.delete({
       isVerifyEmail: false,
-      createdAt: LessThan(oneMonthAgo),
+      createdAt: LessThanOrEqual(oneMonthAgo),
     });
   }
 }
