@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -122,11 +121,5 @@ export class AuthController {
     const success = await this.authService.verifyEmail(userId, token);
 
     return { message: success };
-  }
-
-  @Delete('remove-unverified-users')
-  removeUnverifiedUsers() {
-    this.authService.removeUnverifiedUsers()
-    return 'success'
   }
 }
