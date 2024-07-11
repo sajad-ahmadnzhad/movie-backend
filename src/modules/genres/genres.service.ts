@@ -60,27 +60,33 @@ export class GenresService {
       order: { createdAt: "DESC" },
     };
 
-    const genres = await this.genreRepository.find(options);
-
-    await this.redisCache.set("genres", genres, 30_000);
-
-    const paginatedGenres = typeORMPagination(
+    const paginatedGenres = await typeORMPagination(
       limit,
       page,
       this.genreRepository,
       options
     );
 
+    await this.redisCache.set("genres", paginatedGenres.data, 30_000);
+
     return paginatedGenres;
   }
 
-  search(
+ async search(
     genreQuery: string,
     limit?: number,
     page?: number
   ): Promise<PaginatedList<Genre>> {
     if (!genreQuery?.trim()) {
       throw new BadRequestException(GenresMessages.RequiredGenreQuery);
+    }
+
+    const cacheKey = `searchGenres_${genreQuery}_${limit}_${page}`;
+
+    const genresCache = await this.redisCache.get<Genre[] | undefined>(cacheKey);
+
+    if (genresCache) {
+      return cachePagination(limit, page, genresCache);
     }
 
     const options: FindManyOptions<Genre> = {
@@ -96,13 +102,15 @@ export class GenresService {
       relations: ["createdBy"],
     };
 
-    const paginatedGenres = typeORMPagination(
+    const paginatedGenres = await typeORMPagination(
       limit,
       page,
       this.genreRepository,
       options
     );
 
+    await this.redisCache.set(cacheKey , paginatedGenres.data , 30_000)
+   
     return paginatedGenres;
   }
 

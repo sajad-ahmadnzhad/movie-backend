@@ -171,7 +171,7 @@ export class MoviesService {
     await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
 
     //* Calculate visits in this method
-    return this.calculateMovieVisits(existingMovie);
+    return this.calculateMovieVisits(existingMovie) as Promise<Movie>;
   }
 
   async search(
@@ -224,7 +224,7 @@ export class MoviesService {
     );
 
     const movies = await this.movieRepository.find(options);
-    await this.redisCache.set(cacheKey, movies);
+    await this.redisCache.set(cacheKey, movies, 30_000);
 
     await this.calculateMovieVisits(paginatedMovies.data);
 
@@ -400,9 +400,12 @@ export class MoviesService {
     return existingMovie;
   }
 
-  private async calculateMovieVisits(movies: Movie | Movie[]): Promise<any> {
+  private async calculateMovieVisits(
+    movies: Movie | Movie[]
+  ): Promise<Movie[] | Movie> {
     if (Array.isArray(movies)) {
-      return Promise.all(movies.map((m) => this.calculateMovieVisits(m)));
+      const calculatedMovies = movies.map((m) => this.calculateMovieVisits(m));
+      return Promise.all(calculatedMovies) as Promise<Movie[]>;
     }
 
     const visitMovie = await this.redisCache.get<number>(

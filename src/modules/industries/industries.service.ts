@@ -85,16 +85,14 @@ export class IndustriesService {
       order: { createdAt: "DESC" },
     };
 
-    const industries = await this.industryRepository.find(options);
-
-    await this.redisCache.set("industries", industries, 30_000);
-
-    const paginatedIndustries = typeORMPagination(
+    const paginatedIndustries = await typeORMPagination(
       limit,
       page,
       this.industryRepository,
       options
     );
+
+    await this.redisCache.set("industries", paginatedIndustries.data, 30_000);
 
     return paginatedIndustries;
   }
@@ -117,13 +115,23 @@ export class IndustriesService {
     return industries;
   }
 
-  search(
+  async search(
     industryQuery: string,
     limit?: number,
     page?: number
   ): Promise<PaginatedList<Industry>> {
     if (!industryQuery?.trim()) {
       throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);
+    }
+
+    const cacheKey = `searchIndustries_${industryQuery}_${limit}_${page}`;
+
+    const industriesCache = await this.redisCache.get<Industry[] | undefined>(
+      cacheKey
+    );
+
+    if (industriesCache) {
+      return cachePagination(limit, page, industriesCache);
     }
 
     const options: FindManyOptions<Industry> = {
@@ -136,7 +144,16 @@ export class IndustriesService {
       order: { createdAt: "DESC" },
     };
 
-    return typeORMPagination(limit, page, this.industryRepository, options);
+    const paginatedIndustries = await typeORMPagination(
+      limit,
+      page,
+      this.industryRepository,
+      options
+    );
+
+    await this.redisCache.set(cacheKey, paginatedIndustries.data, 30_000);
+
+    return paginatedIndustries;
   }
 
   async update(
@@ -201,7 +218,7 @@ export class IndustriesService {
     return IndustriesMessages.RemoveIndustrySuccess;
   }
 
-   async checkExistIndustry(id: number): Promise<Industry> {
+  async checkExistIndustry(id: number): Promise<Industry> {
     const existingIndustry = await this.industryRepository.findOne({
       where: { id },
       relations: ["createdBy", "country"],

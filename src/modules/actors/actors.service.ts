@@ -14,17 +14,23 @@ import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
 import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { saveFile } from "../../common/utils/upload-file.util";
-import { typeORMPagination } from "../../common/utils/pagination.util";
+import {
+  cachePagination,
+  typeORMPagination,
+} from "../../common/utils/pagination.util";
 import { IndustriesService } from "../industries/industries.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { Actor } from "./entities/actor.entity";
 import { Industry } from "../industries/entities/industry.entity";
 import { User } from "../auth/entities/User.entity";
+import { RedisCache } from "cache-manager-redis-yet";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
 
 @Injectable()
 export class ActorsService {
   constructor(
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
     @Inject(forwardRef(() => IndustriesService))
     private readonly industriesService: IndustriesService,
     @InjectRepository(Industry)
@@ -79,6 +85,16 @@ export class ActorsService {
     page?: number,
     limit?: number
   ): Promise<PaginatedList<Actor>> {
+    const cacheKey = `actors_${countryId}_${industryId}_${page}_${limit}`;
+
+    const actorsCache = await this.redisCache.get<Actor[] | undefined>(
+      cacheKey
+    );
+
+    if (actorsCache) {
+      return cachePagination(limit, page, actorsCache);
+    }
+
     const options: FindManyOptions<Actor> = {
       where: {
         country: { id: countryId },
@@ -89,27 +105,39 @@ export class ActorsService {
       order: { createdAt: "DESC" },
     };
 
-    const mongoosePaginationResult = typeORMPagination(
+    const actorsPagination = await typeORMPagination(
       limit,
       page,
       this.actorRepository,
       options
     );
 
-    return mongoosePaginationResult;
+    await this.redisCache.set(cacheKey, actorsPagination.data, 30_000);
+
+    return actorsPagination;
   }
 
   findOne(id: number): Promise<Actor> {
     return this.checkExistActor(id);
   }
 
-  search(
+  async search(
     actorQuery: string,
     limit?: number,
     page?: number
   ): Promise<PaginatedList<Actor>> {
     if (!actorQuery?.trim()) {
       throw new BadRequestException(ActorsMessages.RequiredActorQuery);
+    }
+
+    const cacheKey = `searchActors_${actorQuery}_${limit}_${page}`;
+
+    const actorsCache = await this.redisCache.get<Actor[] | undefined>(
+      cacheKey
+    );
+
+    if (actorsCache) {
+      return cachePagination(limit, page, actorsCache);
     }
 
     const options: FindManyOptions<Actor> = {
@@ -125,12 +153,14 @@ export class ActorsService {
       relations: ["createdBy", "country", "industry"],
     };
 
-    const paginatedActors = typeORMPagination(
+    const paginatedActors = await typeORMPagination(
       limit,
       page,
       this.actorRepository,
       options
     );
+
+    await this.redisCache.set(cacheKey, paginatedActors.data, 30_000);
 
     return paginatedActors;
   }

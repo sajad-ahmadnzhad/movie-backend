@@ -76,31 +76,39 @@ export class CountriesService {
       order: { createdAt: "DESC" },
     };
 
-    const countries = await this.countryRepository.find(options);
-
-    await this.redisCache.set("countries", countries, 30_000);
-
-    const mongoosePaginationResult = typeORMPagination(
+    const paginatedCountries = await typeORMPagination(
       limit,
       page,
       this.countryRepository,
       options
     );
 
-    return mongoosePaginationResult;
+    await this.redisCache.set("countries", paginatedCountries.data, 30_000);
+
+    return paginatedCountries;
   }
 
   findOne(id: number): Promise<Country> {
     return this.checkExistCountry(id);
   }
 
-  search(
+  async search(
     countryQuery: string,
     limit?: number,
     page?: number
   ): Promise<PaginatedList<Country>> {
     if (!countryQuery?.trim()) {
       throw new BadRequestException(CountriesMessages.RequiredCountryQuery);
+    }
+
+    const cacheKey = `searchCountry_${countryQuery}_${limit}_${page}`;
+
+    const countriesCache = await this.redisCache.get<Country[] | undefined>(
+      cacheKey
+    );
+
+    if (countriesCache) {
+      return cachePagination(limit, page, countriesCache);
     }
 
     const options: FindManyOptions<Country> = {
@@ -116,12 +124,14 @@ export class CountriesService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedCountries = typeORMPagination(
+    const paginatedCountries = await typeORMPagination(
       limit,
       page,
       this.countryRepository,
       options
     );
+
+    await this.redisCache.set(cacheKey, paginatedCountries.data, 30_000);
 
     return paginatedCountries;
   }

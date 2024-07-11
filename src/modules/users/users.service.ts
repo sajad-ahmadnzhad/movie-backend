@@ -60,9 +60,7 @@ export class UsersService {
       options
     );
 
-    const users = await this.userRepository.find(options);
-
-    await this.redisCache.set("users", users, 30_000);
+    await this.redisCache.set("users", paginatedUsers.data, 30_000);
 
     return paginatedUsers;
   }
@@ -160,6 +158,14 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.RequiredUser);
     }
 
+    const cacheKey = `searchUsers_${userQuery}_${limit}_${page}`;
+
+    const usersCache = await this.redisCache.get<User[] | undefined>(cacheKey);
+
+    if (usersCache) {
+      return cachePagination(limit, page, usersCache);
+    }
+
     const options: FindManyOptions<User> = {
       where: [
         {
@@ -175,12 +181,14 @@ export class UsersService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedUsers = typeORMPagination(
+    const paginatedUsers = await typeORMPagination(
       limit,
       page,
       this.userRepository,
       options
     );
+
+    await this.redisCache.set(cacheKey, paginatedUsers.data, 30_000);
 
     return paginatedUsers;
   }
