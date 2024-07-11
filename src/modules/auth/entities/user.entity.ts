@@ -1,4 +1,8 @@
 import {
+  AfterInsert,
+  AfterRemove,
+  BeforeInsert,
+  BeforeRemove,
   Column,
   CreateDateColumn,
   Entity,
@@ -17,6 +21,7 @@ import { Movie } from "../../movies/entities/movie.entity";
 import { Bookmark } from "../../movies/entities/Bookmark.entity";
 import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
+import { removeFile } from "../../../common/utils/functions.util";
 
 @Entity({ name: "users" })
 export class User {
@@ -79,6 +84,13 @@ export class User {
 
   @OneToMany(() => Comment, (comment) => comment.creator)
   comments: Comment[];
+
+  @AfterRemove()
+  removeAvatar() {
+    //* Remove user avatar
+    if (!this.avatarURL.includes("custom-avatar.jpg"))
+      removeFile(this.avatarURL);
+  }
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;

@@ -208,7 +208,7 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.InvalidPassword);
     }
 
-    await this.userRepository.delete({ id: user.id });
+    await this.userRepository.remove(user);
     await this.redisCache.del(`userRefreshToken:${user.id}`);
 
     return UsersMessages.DeletedAccountSuccess;
