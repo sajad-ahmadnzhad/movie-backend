@@ -192,9 +192,8 @@ export class CountriesService {
     }
 
     if (existingCountry.createdBy)
-      if (user.id !== existingCountry.createdBy.id) {
-        if (!user.isSuperAdmin)
-          throw new ForbiddenException(CountriesMessages.CannotRemoveCountry);
+      if (user.id !== existingCountry.createdBy.id && !user.isSuperAdmin) {
+        throw new ForbiddenException(CountriesMessages.CannotRemoveCountry);
       }
 
     await this.countryRepository.delete({ id });

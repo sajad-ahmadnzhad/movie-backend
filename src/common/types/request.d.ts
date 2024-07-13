@@ -1,4 +1,4 @@
-import { User } from "./modules/users/models/User.model";
+import { User } from "../modules/auth/entities/User.entity";
 
 declare global {
   namespace Express {

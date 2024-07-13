@@ -76,13 +76,13 @@ export const GetAllUsersDecorator = applyDecorators(
   ApiOperation({ summary: "get all users" }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the user",
   })
@@ -92,14 +92,14 @@ export const GetAllUsersDecorator = applyDecorators(
 export const GetOneUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiBadRequestResponse({
-    description: "This id is not from mongodb",
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
   }),
-  ApiParam({ name: "userId", description: "The id of the user" }),
+  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -159,18 +159,14 @@ export const RemoveUserDecorator = applyDecorators(
     schema: TooManyRequests,
   }),
   ApiBadRequestResponse({
-    description: "Cannot remove admin",
+    description: "Cannot remove admin | Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "userId", description: "The id of the user" }),
-  ApiBadRequestResponse({
-    description: "This id is not from mongodb",
-    schema: BadRequestParamSchema,
-  }),
+  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
   ApiOkResponse({ description: "Removed user success", schema: SuccessSchema }),
   ApiOperation({ summary: "remove user" }),
   ApiForbiddenResponse({
@@ -199,7 +195,7 @@ export const ChangeRoleUserDecorator = applyDecorators(
     schema: BadRequestParamSchema,
   }),
   ApiOkResponse({ description: "Changed role success", schema: SuccessSchema }),
-  ApiParam({ name: "userId", description: "The id of the user" }),
+  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
   ApiOperation({ summary: "change role to admin or user" })
 );
 
@@ -207,10 +203,10 @@ export const ChangeRoleUserDecorator = applyDecorators(
 export const SearchUserDecorator = applyDecorators(
   UseGuards(AuthGuard, IsAdminGuard),
   ApiOperation({ summary: "search in users list" }),
-  ApiQuery({ name: "user", description: "The query of the user" }),
+  ApiQuery({ name: "user", description: "The query of the user"  , type: 'string'}),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the users",
   }),
@@ -220,7 +216,7 @@ export const SearchUserDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the user",
   }),
@@ -271,6 +267,7 @@ export const ChangeSuperAdminDecorator = applyDecorators(
   ApiParam({
     name: "userId",
     description: "ID of the person who becomes the owner",
+    type: 'number'
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -349,14 +346,18 @@ export const UnbanUserDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
+  ApiConflictResponse({
+    description: "Only super admin can unban user",
+    schema: ConflictSchema,
+  }),
   ApiForbiddenResponse({
     description: "This path is protected !!",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the banned user" }),
+  ApiParam({ name: "id", description: "The id of the banned user" , type: 'string' }),
   ApiBadRequestResponse({
-    description: "This id is not from mongodb",
-    schema: BadRequestBodySchema,
+    description: "Invalid id",
+    schema: BadRequestParamSchema,
   }),
   ApiOperation({ summary: "unban a user" })
 );
@@ -374,13 +375,13 @@ export const GetAllBanUserDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the user",
   }),
@@ -397,13 +398,13 @@ export const GetMyBookmarksDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the user",
   }),

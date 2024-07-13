@@ -24,7 +24,6 @@ import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { memoryStorage } from "multer";
 import { movieFileFilter } from "../utils/upload-file.util";
-import { PublicMessages } from "../enum/public.messages";
 import {
   NotFoundSchema,
   TooManyRequests,
@@ -90,26 +89,56 @@ export const GetAllMoviesDecorator = applyDecorators(
   ApiQuery({
     name: "page",
     required: false,
+    type: "number",
     description: "The page of the movies",
+    example: 1,
   }),
   ApiQuery({
     name: "limit",
     required: false,
+    type: "number",
     description: "The count of the movie",
+    example: 10,
   }),
   ApiQuery({
     name: "release_year",
     required: false,
     description: "release year movie",
+    type: "number",
+    example: 2024,
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
   }),
-  ApiQuery({ name: "country", required: false, description: "country id" }),
-  ApiQuery({ name: "actor", required: false, description: "actor id" }),
-  ApiQuery({ name: "industry", required: false, description: "industry id" }),
-  ApiQuery({ name: "genre", required: false, description: "genre id" }),
+  ApiQuery({
+    name: "country",
+    required: false,
+    description: "the id of the country",
+    type: "number",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "actor",
+    required: false,
+    description: "the id of the actor",
+    type: "number",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "industry",
+    required: false,
+    description: "the id of the industry",
+    type: "number",
+    example: 1,
+  }),
+  ApiQuery({
+    name: "genre",
+    required: false,
+    description: "the id of the genre",
+    type: "number",
+    example: 1,
+  }),
   ApiOkResponse({ schema: GetAllMoviesSchema })
 );
 
@@ -121,14 +150,19 @@ export const GetOneMovieDecorator = applyDecorators(
     schema: NotFoundSchema,
   }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
   }),
-  ApiParam({ name: "id", description: "The id of the movie" }),
+  ApiParam({
+    name: "id",
+    description: "The id of the movie",
+    type: "number",
+    example: 1,
+  }),
   ApiOkResponse({ schema: GetOneMovie })
 );
 
@@ -141,20 +175,23 @@ export const SearchMoviesDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "movie",
-    type: String,
+    type: "string",
     description: "The query of the movie",
+    example: "Tiger 3",
   }),
   ApiQuery({
     name: "page",
-    type: String,
+    type: "string",
     description: "The page of the movies",
     required: false,
+    example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: String,
-    description: "The count of the movie",
+    type: "string",
+    description: "The count of the movies",
     required: false,
+    example: 10,
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -171,11 +208,15 @@ export const RemoveMovieDecorator = applyDecorators(
     description: "Movie not found",
     schema: NotFoundSchema,
   }),
+  ApiBadRequestResponse({
+    description: "Invalid id | Only super admin can remove movie",
+    schema: BadRequestParamSchema,
+  }),
   ApiForbiddenResponse({
     description: "Cannot Remove Movie | Forbidden resource",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the movie" }),
+  ApiParam({ name: "id", description: "The id of the movie", type: "number" }),
   ApiOkResponse({ description: "Remove movie success", schema: SuccessSchema }),
   ApiForbiddenResponse({
     description: "Forbidden resource",
@@ -218,13 +259,17 @@ export const UpdateMovieDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
+  ApiBadRequestResponse({
+    description: "Invalid id | Only super admin can remove movie",
+    schema: BadRequestParamSchema,
+  }),
   ApiNotFoundResponse({
     description: "industry | genre | actor not found",
     schema: NotFoundSchema,
   }),
   ApiOkResponse({ description: "Updated success", schema: SuccessSchema }),
   ApiForbiddenResponse({
-    description: "Forbidden resource",
+    description: "Forbidden resource | Cannot update movie",
     schema: ForbiddenSchema,
   }),
   ApiOperation({ summary: "update a movie" })
@@ -239,7 +284,12 @@ export const LikeMovieDecorator = applyDecorators(
     description: "Forbidden resource",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the movie" }),
+  ApiParam({
+    name: "id",
+    description: "The id of the movie",
+    type: "number",
+    example: 1,
+  }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -251,6 +301,10 @@ export const LikeMovieDecorator = applyDecorators(
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Invalid id",
+    schema: BadRequestParamSchema,
   }),
   ApiOperation({ summary: "like a movie" })
 );
@@ -272,9 +326,14 @@ export const BookmarkMovieDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the movie" }),
+  ApiParam({
+    name: "id",
+    description: "The id of the movie",
+    type: "number",
+    example: 1,
+  }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiOkResponse({

@@ -1,11 +1,11 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { CreatedBySchema } from "./public.schema";
+import { GetOneUserSchema } from "./user.schema";
 export const GetOneMovie: SchemaObject = {
   type: "object",
   properties: {
-    _id: {
-      type: "string",
-      example: "666584b9d23d3362e1560500",
+    id: {
+      type: "number",
+      example: 1,
     },
     title: {
       type: "string",
@@ -31,13 +31,28 @@ export const GetOneMovie: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "666584b9d23d3362e1560500",
+          id: {
+            type: "number",
+            example: 1,
           },
           name: {
             type: "string",
             example: "india",
+          },
+          description: {
+            type: "string",
+          },
+          flag_image_URL: {
+            type: "string",
+            example: "uploads/country-flag/3071671--photo2_22-58-57.jpg",
+          },
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
           },
         },
       },
@@ -47,13 +62,24 @@ export const GetOneMovie: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "666584b9d23d3362e1560500",
+          id: {
+            type: "number",
+            example: 1,
           },
           name: {
             type: "string",
             example: "action",
+          },
+          description: {
+            type: "string",
+          },
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
           },
         },
       },
@@ -63,9 +89,9 @@ export const GetOneMovie: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "666584b9d23d3362e1560500",
+          id: {
+            type: "number",
+            example: 1,
           },
           name: {
             type: "string",
@@ -75,6 +101,17 @@ export const GetOneMovie: SchemaObject = {
             type: "string",
             example: "uploads/actor-photo/3071671--photo2_22-58-57.jpg",
           },
+          bio: {
+            type: "string",
+          },
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
         },
       },
     },
@@ -83,18 +120,29 @@ export const GetOneMovie: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "666584b9d23d3362e1560500",
+          id: {
+            type: "number",
+            example: 1,
           },
           name: {
             type: "string",
             example: "bollywood",
           },
+          description: {
+            type: "string",
+          },
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
         },
       },
     },
-    createdBy: CreatedBySchema,
+    createdBy: GetOneUserSchema,
     createdAt: {
       type: "string",
       example: "2024-06-09T10:32:25.954Z",
@@ -107,20 +155,37 @@ export const GetOneMovie: SchemaObject = {
       type: "number",
       example: 100,
     },
-    countBookmarks: {
-      type: "number",
-      example: 100,
-    },
     likes: {
       type: "array",
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "666584b9d23d3362e1560500",
+          id: {
+            type: "number",
+            example: 1,
           },
-          userId: CreatedBySchema,
+          user: GetOneUserSchema,
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+        },
+      },
+    },
+    bookmarks: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            example: 1,
+          },
+          user: GetOneUserSchema,
           createdAt: {
             type: "string",
             example: "2024-06-09T10:32:25.954Z",
@@ -177,13 +242,16 @@ export const GetMyBookmarksSchema: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          userId: CreatedBySchema,
-          movieId: {
+          id: {
+            type: "number",
+            example: 1,
+          },
+          movie: {
             type: "object",
             properties: {
-              _id: {
-                type: "string",
-                example: "666584b9d23d3362e1560500",
+              id: {
+                type: "number",
+                example: 1,
               },
               title: {
                 type: "string",
@@ -205,6 +273,14 @@ export const GetMyBookmarksSchema: SchemaObject = {
                 type: "string",
                 example:
                   "/uploads/movies/1717433950785T68ci0AlwaymCxwCkjB2.mp4",
+              },
+              createdAt: {
+                type: "string",
+                example: "2024-06-09T10:32:25.954Z",
+              },
+              updatedAt: {
+                type: "string",
+                example: "2024-06-09T10:32:25.954Z",
               },
             },
           },

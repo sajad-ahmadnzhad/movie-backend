@@ -328,7 +328,7 @@ export class AuthService {
 
     await this.tokenRepository.remove(existingToken);
 
-    return AuthMessages.verifiedEmailSuccess;
+    return AuthMessages.VerifiedEmailSuccess;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

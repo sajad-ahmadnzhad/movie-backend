@@ -60,6 +60,10 @@ export class MoviesService {
     let { release_year, title, description, actors, genres, industries } =
       createMovieDto;
 
+    if (!files.poster || !files.video) {
+      throw new BadRequestException(MoviesMessages.RequiredPosterAndVideo);
+    }
+
     const fetchedData: Partial<{
       actors: Actor[];
       genres: Genre[];
@@ -75,10 +79,6 @@ export class MoviesService {
       );
     } catch (error) {
       throw new NotFoundException(error.message);
-    }
-
-    if (!files.poster || !files.video) {
-      throw new BadRequestException(MoviesMessages.RequiredPosterAndVideo);
     }
 
     const paths = saveMovieFile(files, {

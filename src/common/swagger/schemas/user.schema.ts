@@ -1,10 +1,9 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { CreatedBySchema } from "./public.schema";
 
 export const GetOneUserSchema: SchemaObject = {
   type: "object",
   required: [
-    "_id",
+    "id",
     "name",
     "username",
     "email",
@@ -16,9 +15,9 @@ export const GetOneUserSchema: SchemaObject = {
     "createdAt",
   ],
   properties: {
-    _id: {
-      type: "string",
-      example: "665c933441256dec15de2ce0",
+    id: {
+      type: "number",
+      example: 12,
     },
     name: {
       type: "string",
@@ -101,15 +100,15 @@ export const GetAllBannedUsers: SchemaObject = {
       items: {
         type: "object",
         properties: {
-          _id: {
-            type: "string",
-            example: "6661b7e6fee9652dfe13ad5b",
+          id: {
+            type: "number",
+            example: 2,
           },
           email: {
             type: "string",
             example: "ali@gmail.com",
           },
-          createdBy: CreatedBySchema,
+          bannedBy: GetOneUserSchema,
           createdAt: {
             type: "string",
             example: "2024-06-02T15:43:48.688Z",

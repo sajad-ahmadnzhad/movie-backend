@@ -1,25 +1,16 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { CreatedBySchema } from "./public.schema";
+import { GetOneUserSchema } from "./user.schema";
 
 export const GetOneActorSchema: SchemaObject = {
   type: "object",
-  required: [
-    "_id",
-    "name",
-    "country",
-    "industry",
-    "createdBy",
-    "createdAt",
-    "updatedAt",
-  ],
   properties: {
-    _id: {
-      type: "string",
-      example: "6660ba084db733818a6a963f",
+    id: {
+      type: "number",
+      example: 1,
     },
     name: {
       type: "string",
-      example: "ana de armas",
+      example: "salman khan",
     },
     bio: {
       type: "string",
@@ -30,11 +21,10 @@ export const GetOneActorSchema: SchemaObject = {
     },
     country: {
       type: "object",
-      required: ["_id", "name"],
       properties: {
-        _id: {
-          type: "string",
-          example: "6660ba084db733818a6a963f",
+        id: {
+          type: "number",
+          example: 1,
         },
         name: {
           type: "string",
@@ -43,15 +33,26 @@ export const GetOneActorSchema: SchemaObject = {
         description: {
           type: "string",
         },
+        flag_image_URL: {
+          type: "string",
+          example: "/uploads/country-flag/iran.jpg",
+        },
+        createdAt: {
+          type: "string",
+          example: "2024-06-08T10:24:58.129Z",
+        },
+        updatedAt: {
+          type: "string",
+          example: "2024-06-08T10:24:58.129Z",
+        },
       },
     },
     industry: {
       type: "object",
-      required: ["_id", "name"],
       properties: {
-        _id: {
-          type: "string",
-          example: "6660ba084db733818a6a963f",
+        id: {
+          type: "number",
+          example: 1,
         },
         name: {
           type: "string",
@@ -60,9 +61,17 @@ export const GetOneActorSchema: SchemaObject = {
         description: {
           type: "string",
         },
+        createdAt: {
+          type: "string",
+          example: "2024-06-08T10:24:58.129Z",
+        },
+        updatedAt: {
+          type: "string",
+          example: "2024-06-08T10:24:58.129Z",
+        },
       },
     },
-    createdBy: CreatedBySchema,
+    createdBy: GetOneUserSchema,
     createdAt: {
       type: "string",
       example: "2024-06-08T10:24:58.129Z",

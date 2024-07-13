@@ -1,7 +1,7 @@
 import { registerDecorator, ValidationArguments } from "class-validator";
 import { SignupUserDto } from "../../modules/auth/dto/signupUser.dto";
 
-export function ValidateObjectIds() {
+export function ValidateIds() {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,

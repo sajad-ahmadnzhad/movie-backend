@@ -1,14 +1,13 @@
-import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { CreatedBySchema } from "./public.schema";
+import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";;
+import { GetOneUserSchema } from "./user.schema";
 
 export const GetOneGenreSchema: SchemaObject = {
   type: "object",
   description: "Get genre",
-  required: ["createdBy", "_id", "name", "createdAt", "updatedAt"],
   properties: {
-    _id: {
-      type: "string",
-      example: "6664317a74eb5d975e91560d",
+    id: {
+      type: "number",
+      example: 1,
     },
     name: {
       type: "string",
@@ -19,7 +18,7 @@ export const GetOneGenreSchema: SchemaObject = {
       type: "string",
       description: "The description of the genre",
     },
-    createdBy: CreatedBySchema,
+    createdBy: GetOneUserSchema,
     createdAt: {
       type: "string",
       example: "2024-06-08T10:24:58.129Z",

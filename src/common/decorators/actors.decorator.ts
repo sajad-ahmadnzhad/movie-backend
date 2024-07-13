@@ -19,7 +19,6 @@ import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { fileFilter } from "../utils/upload-file.util";
 import { memoryStorage } from "multer";
-import { PublicMessages } from "../enum/public.messages";
 import {
   BadRequestBodySchema,
   BadRequestParamSchema,
@@ -124,7 +123,7 @@ export const GetOneActorDecorator = applyDecorators(
     schema: NotFoundSchema,
   }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: 'Invalid id',
     schema: BadRequestParamSchema,
   }),
   ApiParam({ name: "id", description: "The id of the actor" }),
@@ -144,18 +143,18 @@ export const SearchActorsDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "actor",
-    type: String,
+    type: 'string',
     description: "The name of the actor",
   }),
   ApiQuery({
     name: "limit",
-    type: String,
+    type: 'string',
     description: "The count of the actors",
     required: false,
   }),
   ApiQuery({
     name: "page",
-    type: String,
+    type: 'string',
     description: "The page of the actors",
     required: false,
   }),
@@ -195,7 +194,7 @@ export const UpdateActorDecorator = applyDecorators(
     schema: SuccessSchema,
   }),
   ApiConflictResponse({
-    description: "Already exists actor",
+    description: "Already exists actor | Only super admin can update actor",
     schema: ConflictSchema,
   }),
   ApiInternalServerErrorResponse({
@@ -216,6 +215,10 @@ export const RemoveActorDecorator = applyDecorators(
   ApiNotFoundResponse({
     description: "actor not found",
     schema: NotFoundSchema,
+  }),
+  ApiConflictResponse({
+    description: "Only super admin can remove actor",
+    schema: ConflictSchema,
   }),
   ApiForbiddenResponse({
     description: "Cannot remove actor | Forbidden resource",

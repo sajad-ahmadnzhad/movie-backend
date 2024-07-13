@@ -14,7 +14,6 @@ import {
   ApiQuery,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { PublicMessages } from "../enum/public.messages";
 import {
   GetAllGenresSchema,
   GetOneGenreSchema,
@@ -82,14 +81,14 @@ export const UpdateGenreDecorator = applyDecorators(
     schema: SuccessSchema,
   }),
   ApiConflictResponse({
-    description: "Already exists Genre",
+    description: "Already exists Genre | Only super admin can update genre",
     schema: ConflictSchema,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiParam({ name: "id", description: "The id of the genre" , type: 'number' }),
   ApiBadRequestResponse({
     description: "Body validation error",
     schema: BadRequestBodySchema,
@@ -109,7 +108,7 @@ export const RemoveGenreDecorator = applyDecorators(
     description: "Cannot Remove genre | Forbidden resource",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiParam({ name: "id", description: "The id of the genre" , type: 'number'}),
   ApiBadRequestResponse({
     description: "Param validation error",
     schema: BadRequestParamSchema,
@@ -117,6 +116,10 @@ export const RemoveGenreDecorator = applyDecorators(
   ApiOkResponse({
     description: "Remove genre success",
     schema: SuccessSchema,
+  }),
+  ApiConflictResponse({
+    description: "Only super admin can update genre",
+    schema: ConflictSchema,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
@@ -138,10 +141,10 @@ export const GetOneGenreDecorator = applyDecorators(
   }),
   ApiNotFoundResponse({ schema: NotFoundSchema }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: 'Invalid id',
     schema: BadRequestParamSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" }),
+  ApiParam({ name: "id", description: "The id of the genre" , type: 'number'}),
   ApiOkResponse({ schema: GetOneGenreSchema })
 );
 
@@ -154,14 +157,14 @@ export const GetAllGenresDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the genres",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the genre",
     example: 10,
@@ -182,19 +185,21 @@ export const SearchGenresDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the genres",
+    example: 1
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the genre",
+    example: 10
   }),
   ApiQuery({
     name: "genre",
-    type: String,
+    type: 'string',
     description: "the name of the genre",
   }),
   ApiOkResponse({ schema: GetAllGenresSchema })

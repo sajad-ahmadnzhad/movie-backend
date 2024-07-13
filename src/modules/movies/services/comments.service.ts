@@ -13,7 +13,6 @@ import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import {
-  mongoosePagination,
   typeORMPagination,
 } from "../../../common/utils/pagination.util";
 import { Cron, CronExpression } from "@nestjs/schedule";

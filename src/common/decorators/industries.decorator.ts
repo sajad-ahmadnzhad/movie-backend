@@ -15,7 +15,6 @@ import {
   ApiCreatedResponse,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { PublicMessages } from "../enum/public.messages";
 import {
   BadRequestBodySchema,
   BadRequestParamSchema,
@@ -71,15 +70,17 @@ export const GetAllIndustriesDecorator = applyDecorators(
   ApiOperation({ summary: "get all industries" }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: "number",
     required: false,
     description: "The page of the industries",
+    example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: "number",
     required: false,
     description: "The count of the industry",
+    example: 10,
   }),
   ApiOkResponse({ schema: GetAllIndustriesSchema }),
   ApiTooManyRequestsResponse({
@@ -96,7 +97,7 @@ export const GetOneIndustryDecorator = applyDecorators(
     schema: NotFoundSchema,
   }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiParam({ name: "id", description: "The id of the industry" }),
@@ -128,14 +129,19 @@ export const UpdateIndustryDecorator = applyDecorators(
     schema: SuccessSchema,
   }),
   ApiConflictResponse({
-    description: "Already exists industry",
+    description:
+      "Already exists industry | Only super admin can update industry",
     schema: ConflictSchema,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the industry" }),
+  ApiParam({
+    name: "id",
+    description: "The id of the industry",
+    type: "number",
+  }),
   ApiOperation({ summary: "update industry" })
 );
 
@@ -157,9 +163,17 @@ export const RemoveIndustryDecorator = applyDecorators(
   }),
   ApiBadRequestResponse({
     schema: BadRequestParamSchema,
-    description: "This id is not from mongodb",
+    description: "Invalid id",
   }),
-  ApiParam({ name: "id", description: "The id of the industry" }),
+  ApiConflictResponse({
+    schema: BadRequestParamSchema,
+    description: "Only super admin can remove industry",
+  }),
+  ApiParam({
+    name: "id",
+    description: "The id of the industry",
+    type: "number",
+  }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -185,15 +199,17 @@ export const SearchIndustriesDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: "number",
     required: false,
     description: "The page of the industries",
+    example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: "number",
     required: false,
     description: "The count of the industry",
+    example: 1,
   }),
   ApiOkResponse({ schema: GetAllIndustriesSchema }),
   ApiTooManyRequestsResponse({

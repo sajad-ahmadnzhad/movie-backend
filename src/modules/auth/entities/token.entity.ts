@@ -1,12 +1,11 @@
 import {
   BeforeInsert,
+  BeforeUpdate,
   Column,
-  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
 } from "typeorm";
 import { User } from "./User.entity";
 
@@ -22,6 +21,12 @@ export class Token {
   @Column({ type: "varchar", nullable: false })
   token: string;
 
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+  createdAt: Date;
+
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
+  updatedAt: Date;
+
   @BeforeInsert()
   setExpiration() {
     const expirationTime = new Date();
@@ -30,9 +35,8 @@ export class Token {
     this.createdAt = expirationTime;
   }
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

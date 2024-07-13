@@ -1,8 +1,8 @@
 import { Transform } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsString, Length, Max } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ValidateObjectIds } from "../../../../common/utils/custom-decorators";
-import { transformIds } from "src/common/utils/functions.util";
+import { ValidateIds } from "../../../../common/utils/custom-decorators";
+import { transformIds } from "../../../../common/utils/functions.util";
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
@@ -25,17 +25,17 @@ export class CreateMovieDto {
   @ApiProperty()
   release_year: number;
 
-  @ValidateObjectIds()
+  @ValidateIds()
   @Transform(transformIds)
   @ApiProperty({ isArray: true, type: "number" })
   genres: number[];
 
-  @ValidateObjectIds()
+  @ValidateIds()
   @Transform(transformIds)
   @ApiProperty({ isArray: true, type: "number" })
   actors: number[];
 
-  @ValidateObjectIds()
+  @ValidateIds()
   @Transform(transformIds)
   @ApiProperty({ isArray: true, type: "number" })
   industries: number[];

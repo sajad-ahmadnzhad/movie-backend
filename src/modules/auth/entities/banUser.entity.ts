@@ -1,11 +1,11 @@
 import {
-  CreateDateColumn,
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  BeforeUpdate,
+  BeforeInsert,
 } from "typeorm";
 import { User } from "./User.entity";
 
@@ -21,9 +21,19 @@ export class BanUser {
   @JoinColumn()
   bannedBy: User;
 
-  @CreateDateColumn()
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
   updatedAt: Date;
+
+  @BeforeInsert()
+  setCreatedAt() {
+    this.createdAt = new Date();
+  }
+
+  @BeforeUpdate()
+  setUpdatedAt() {
+    this.updatedAt = new Date();
+  }
 }

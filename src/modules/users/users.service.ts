@@ -18,7 +18,7 @@ import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
-import { removeFile, sendError } from "../../common/utils/functions.util";
+import { removeFile } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -97,18 +97,15 @@ export class UsersService {
 
     if (avatarURL) avatarURL = `/uploads/user-avatar/${avatarURL}`;
 
-    try {
       await this.userRepository.update(
         { id: user.id },
         {
           ...updateUserDto,
           avatarURL,
         }
-      );
-    } catch (error) {
-      removeFile(avatarURL);
-      throw sendError(error.message, error.status);
-    }
+    );
+    
+    if(file) removeFile(user.avatarURL)
 
     return UsersMessages.UpdatedSuccess;
   }
@@ -373,7 +370,7 @@ export class UsersService {
       options
     );
 
-    //Remove user from bookmark object
+    //* Remove user from bookmark object
     paginatedBookmarks.data.forEach((bookmark: any) => delete bookmark.user);
 
     await this.redisCache.set(

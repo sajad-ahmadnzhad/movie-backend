@@ -31,6 +31,7 @@ import {
 
 //* Signup user decorator
 export const SignUpUserDecorator = applyDecorators(
+  HttpCode(HttpStatus.CREATED),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -62,7 +63,7 @@ export const SignInUserDecorator = applyDecorators(
     schema: NotFoundSchema,
   }),
   ApiForbiddenResponse({
-    description: "Invalid password or identifier",
+    description: "Invalid password or identifier | banned Account",
     schema: ForbiddenSchema,
   }),
   ApiOkResponse({ description: "Signin success", schema: SuccessSchema }),
@@ -70,11 +71,12 @@ export const SignInUserDecorator = applyDecorators(
     description: "Signin validation error",
     schema: BadRequestBodySchema,
   }),
-  ApiOperation({ summary: "User sign In" })
+  ApiOperation({ summary: "User signin" })
 );
 
 //* Signout user decorator
 export const SignoutUserDecorator = applyDecorators(
+  UseGuards(AuthGuard),
   ApiCookieAuth(),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -89,12 +91,11 @@ export const SignoutUserDecorator = applyDecorators(
     schema: ForbiddenSchema,
   }),
   ApiOkResponse({ description: "Sign out success", schema: SuccessSchema }),
-  ApiOperation({ summary: "User sign out" }),
+  ApiOperation({ summary: "User signout" }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  UseGuards(AuthGuard)
 );
 
 //* Refresh token decorator
@@ -107,6 +108,10 @@ export const RefreshTokenDecorator = applyDecorators(
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Invalid access token",
+    schema: BadRequestParamSchema,
   }),
   ApiNotFoundResponse({
     description: "Refresh token not found",
@@ -155,8 +160,8 @@ export const ResetPasswordDecorator = applyDecorators(
     description: "Reset password success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: "userId", description: "The userId of the token" }),
-  ApiParam({ name: "token", description: "The token" }),
+  ApiParam({ name: "userId", description: "The userId of the token", type: 'number' }),
+  ApiParam({ name: "token", description: "The token" , type: 'string' }),
   ApiOperation({ summary: "User reset password" }),
   HttpCode(HttpStatus.OK)
 );
@@ -179,6 +184,10 @@ export const SendVerifyEmailDecorator = applyDecorators(
     description: "Send verify email success",
     schema: SuccessSchema,
   }),
+  ApiBadRequestResponse({
+    description: "Validation error",
+    schema: BadRequestBodySchema,
+  }),
   ApiOperation({ summary: "Send email for verify user" }),
   HttpCode(HttpStatus.OK)
 );
@@ -186,7 +195,7 @@ export const SendVerifyEmailDecorator = applyDecorators(
 //* Verify email decorator
 export const VerifyEmailDecorator = applyDecorators(
   ApiNotFoundResponse({
-    description: "Token not found",
+    description: "Token not found | User not found",
     schema: NotFoundSchema,
   }),
   ApiTooManyRequestsResponse({
@@ -201,7 +210,7 @@ export const VerifyEmailDecorator = applyDecorators(
     description: "Verified email success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: "userId", description: "The userId of the token" }),
-  ApiParam({ name: "token", description: "The token" }),
+  ApiParam({ name: "userId", description: "The userId of the token" , type: 'number' }),
+  ApiParam({ name: "token", description: "The token" , type: 'string' }),
   ApiOperation({ summary: "Verified user by token" })
 );

@@ -1,4 +1,4 @@
-import { UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
+import { HttpCode, HttpStatus, UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
@@ -19,7 +19,6 @@ import {
   ApiQuery,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { PublicMessages } from "../enum/public.messages";
 import {
   GetAllCountriesSchema,
   GetOneCountrySchema,
@@ -37,6 +36,7 @@ import {
 
 //* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
+  HttpCode(HttpStatus.CREATED),
   UseGuards(AuthGuard, IsAdminGuard),
   ApiCookieAuth(),
   UseInterceptors(
@@ -107,14 +107,14 @@ export const UpdateCountryDecorator = applyDecorators(
     schema: SuccessSchema,
   }),
   ApiConflictResponse({
-    description: "Already exists country",
+    description: "Already exists country | Only super admin can update country",
     schema: ConflictSchema,
   }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" }),
+  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
   ApiOperation({ summary: "update country" })
 );
 
@@ -138,11 +138,15 @@ export const RemoveCountryDecorator = applyDecorators(
     description: "Remove country success",
     schema: SuccessSchema,
   }),
+  ApiConflictResponse({
+    description: "Only super admin can remove country",
+    schema: SuccessSchema,
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" }),
+  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
   ApiOperation({ summary: "remove country" }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -154,12 +158,12 @@ export const RemoveCountryDecorator = applyDecorators(
 export const GetOneCountryDecorator = applyDecorators(
   ApiOperation({ summary: "get one country by id" }),
   ApiNotFoundResponse({
-    description: "country not found",
+    description: "Country not found",
     schema: NotFoundSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" }),
+  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
   ApiBadRequestResponse({
-    description: PublicMessages.InvalidObjectId,
+    description: 'Invalid id',
     schema: BadRequestParamSchema,
   }),
   ApiOkResponse({ schema: GetOneCountrySchema }),
@@ -174,14 +178,14 @@ export const GetAllCountriesDecorator = applyDecorators(
   ApiOperation({ summary: "get all countries" }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the countries",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the country",
     example: 10,
@@ -202,19 +206,19 @@ export const SearchCountriesDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "country",
-    type: String,
+    type: 'string',
     description: "The query of the country",
   }),
   ApiQuery({
     name: "page",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The page of the genres",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: Number,
+    type: 'number',
     required: false,
     description: "The count of the genre",
     example: 10,

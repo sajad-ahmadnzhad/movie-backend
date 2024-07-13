@@ -1,12 +1,12 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { CreatedBySchema } from "./public.schema";
+import { GetOneUserSchema } from "./user.schema";
 
 export const GetOneCountrySchema: SchemaObject = {
   type: "object",
   properties: {
-    _id: {
-      type: "string",
-      example: "665dd4e13b4ea992c20f5910",
+    id: {
+      type: "number",
+      example: 1,
     },
     name: {
       type: "string",
@@ -19,7 +19,7 @@ export const GetOneCountrySchema: SchemaObject = {
       type: "string",
       example: "/uploads/country-flag/171742.1145530829754--movie-backend.png",
     },
-    createdBy: CreatedBySchema,
+    createdBy: GetOneUserSchema,
     createdAt: {
       type: "string",
       example: "2024-06-03T14:36:17.671Z",
