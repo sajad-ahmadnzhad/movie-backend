@@ -11,6 +11,8 @@ export class CreateCountryDto {
     maxLength: 50,
     minLength: 3,
     type: "string",
+    required: true,
+    uniqueItems: true
   })
   name: string;
 

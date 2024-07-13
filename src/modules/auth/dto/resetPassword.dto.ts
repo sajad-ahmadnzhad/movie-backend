@@ -12,6 +12,7 @@ export class ResetPasswordDto {
     type: "string",
     maxLength: 40,
     minLength: 8,
+    required: true
   })
   password: string;
 }

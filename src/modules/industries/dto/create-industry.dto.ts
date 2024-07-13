@@ -17,6 +17,9 @@ export class CreateIndustryDto {
   @ApiProperty({
     maxLength: 50,
     minLength: 3,
+    required: true,
+    uniqueItems: true,
+    type: "string",
   })
   name: string;
   @Transform(({ value }) => value?.trim())
@@ -24,12 +27,22 @@ export class CreateIndustryDto {
   @IsString()
   @IsOptional()
   @Length(5, 150)
-  @ApiProperty({ required: false, maxLength: 150, minLength: 5 })
+  @ApiProperty({
+    required: false,
+    maxLength: 150,
+    minLength: 5,
+    type: "string",
+  })
   description?: string;
 
   @IsNotEmpty()
   @IsNumber()
   @IsInt()
-  @ApiProperty({ example: 1, type: "number" })
+  @ApiProperty({
+    example: 1,
+    type: "number",
+    required: true,
+    uniqueItems: true,
+  })
   countryId: number;
 }

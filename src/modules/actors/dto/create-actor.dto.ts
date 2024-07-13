@@ -13,14 +13,25 @@ export class CreateActorDto {
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    type: "string",
+    required: true,
+    maxLength: 50,
+    minLength: 2,
+    uniqueItems: true
+  })
   @Length(2, 50)
   name: string;
   @IsString()
   @Transform(({ value }) => value?.trim())
   @IsNotEmpty()
   @Length(5, 100)
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    type: "string",
+    maxLength: 100,
+    minLength: 5,
+    required: false,
+  })
   @IsOptional()
   bio?: string;
 
@@ -28,9 +39,9 @@ export class CreateActorDto {
   @Transform(({ value }) => +value)
   @IsNumber()
   @IsInt()
-  @ApiProperty({ type: "string", default: 1 })
+  @ApiProperty({ type: "number", default: 1 , required: true })
   industryId: number;
 
   @ApiProperty({ type: "string", format: "binary", required: false })
-  photo: any;
+  photo?: any;
 }

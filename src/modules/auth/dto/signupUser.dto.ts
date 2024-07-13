@@ -20,6 +20,7 @@ export class SignupUserDto {
     type: "string",
     maxLength: 40,
     minLength: 2,
+    required: true,
   })
   name: string;
 
@@ -33,12 +34,19 @@ export class SignupUserDto {
     type: "string",
     maxLength: 40,
     minLength: 2,
+    required: true,
+    uniqueItems: true,
   })
   username: string;
 
   @IsEmail()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    type: "string",
+    format: "gmail",
+    required: true,
+    uniqueItems: true,
+  })
   email: string;
 
   @IsString()
@@ -50,11 +58,12 @@ export class SignupUserDto {
     type: "string",
     maxLength: 30,
     minLength: 8,
+    required: true,
   })
   password: string;
 
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ required: true, type: "string" })
   @ConfirmPassword()
   confirmPassword: string;
 }

@@ -13,6 +13,8 @@ export class CreateGenreDto {
     minimum: 3,
     example: "Action",
     type: "string",
+    required: true, 
+    uniqueItems: true
   })
   name: string;
 
@@ -27,7 +29,6 @@ export class CreateGenreDto {
     maxLength: 500,
     minLength: 5,
     type: "string",
-    uniqueItems: true,
   })
   description?: string;
 }
