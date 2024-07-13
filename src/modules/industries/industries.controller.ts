@@ -20,7 +20,6 @@ import {
   UpdateIndustryDecorator,
   RemoveIndustryDecorator,
   SearchIndustriesDecorator,
-  GetIndustryByCountryDecorator,
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
@@ -49,10 +48,11 @@ export class IndustriesController {
   @Get()
   @GetAllIndustriesDecorator
   findAll(
-    @Query("page", new ParseIntPipe({ optional: true })) page: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit: number
+    @Query("country", new ParseIntPipe({ optional: true })) country?: number,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number,
   ): Promise<PaginatedList<Industry>> {
-    return this.industriesService.findAll(page, limit);
+    return this.industriesService.findAll(page, limit , country);
   }
 
   @Get("search")
@@ -63,12 +63,6 @@ export class IndustriesController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit: number
   ): Promise<PaginatedList<Industry>> {
     return this.industriesService.search(industry, limit, page);
-  }
-
-  @Get("by-country/:id")
-  @GetIndustryByCountryDecorator
-  findByCountry(@Param("id", ParseIntPipe) id: number): Promise<Industry[]> {
-    return this.industriesService.findByCountry(id);
   }
 
   @Get(":id")

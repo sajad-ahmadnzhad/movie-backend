@@ -82,6 +82,13 @@ export const GetAllIndustriesDecorator = applyDecorators(
     description: "The count of the industry",
     example: 10,
   }),
+  ApiQuery({
+    name: "country",
+    type: "number",
+    required: false,
+    description: "The id of the country",
+    example: 2,
+  }),
   ApiOkResponse({ schema: GetAllIndustriesSchema }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -218,17 +225,3 @@ export const SearchIndustriesDecorator = applyDecorators(
   })
 );
 
-//* Get industry by country decorator
-export const GetIndustryByCountryDecorator = applyDecorators(
-  ApiOperation({ summary: "get industry by country" }),
-  ApiNotFoundResponse({
-    description: "Country not found",
-    schema: NotFoundSchema,
-  }),
-  ApiParam({ name: "id", description: "The id of the industry" }),
-  ApiOkResponse({ schema: GetAllIndustriesSchema }),
-  ApiTooManyRequestsResponse({
-    description: "Too many requests",
-    schema: TooManyRequests,
-  })
-);

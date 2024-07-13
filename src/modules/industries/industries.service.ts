@@ -71,9 +71,15 @@ export class IndustriesService {
     return IndustriesMessages.CreatedIndustrySuccess;
   }
 
-  async findAll(page: number, limit: number): Promise<PaginatedList<Industry>> {
+  async findAll(
+    page?: number,
+    limit?: number,
+    countryId?: number
+  ): Promise<PaginatedList<Industry>> {
+    const redisKey = `Industries_${page}_${limit}_${countryId}`;
+
     const industriesCache = await this.redisCache.get<Industry[] | undefined>(
-      "industries"
+      redisKey
     );
 
     if (industriesCache) {
@@ -81,6 +87,9 @@ export class IndustriesService {
     }
 
     const options: FindManyOptions<Industry> = {
+      where: {
+        country: { id: countryId },
+      },
       relations: ["createdBy", "country"],
       order: { createdAt: "DESC" },
     };
@@ -92,27 +101,13 @@ export class IndustriesService {
       options
     );
 
-    await this.redisCache.set("industries", paginatedIndustries.data, 30_000);
+    await this.redisCache.set(redisKey, paginatedIndustries.data, 30_000);
 
     return paginatedIndustries;
   }
 
   findOne(id: number): Promise<Industry> {
     return this.checkExistIndustry(id);
-  }
-
-  async findByCountry(id: number): Promise<Industry[]> {
-    const country = await this.countriesService.checkExistCountry(id);
-
-    const industries = await this.industryRepository
-      .createQueryBuilder("industry")
-      .leftJoinAndSelect("industry.country", "countries")
-      .leftJoinAndSelect("industry.createdBy", "users")
-      .where("industry.country.id = :id", { id: country.id })
-      .orderBy("industry.createdAt", "DESC")
-      .getMany();
-
-    return industries;
   }
 
   async search(
