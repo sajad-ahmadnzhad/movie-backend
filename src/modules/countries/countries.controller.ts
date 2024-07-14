@@ -28,7 +28,10 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { User } from "../auth/entities/User.entity";
 import { Country } from "./entities/country.entity";
 
-@Controller("countries")
+@Controller({
+  path: "countries",
+  version: "1.0.0",
+})
 @ApiTags("countries")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class CountriesController {

@@ -28,7 +28,10 @@ import { AuthGuard } from "../../../modules/auth/guards/Auth.guard";
 import { IsAdminGuard } from "../../../modules/auth/guards/isAdmin.guard";
 import { User } from "../../auth/entities/User.entity";
 
-@Controller("comments")
+@Controller({
+  path: "comments",
+  version: "1.0.0",
+})
 @ApiTags("comments")
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}

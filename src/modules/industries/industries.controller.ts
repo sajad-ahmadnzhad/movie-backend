@@ -26,7 +26,10 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { User } from "../auth/entities/User.entity";
 import { Industry } from "./entities/industry.entity";
 
-@Controller("industries")
+@Controller({
+  path: "industries",
+  version: "1.0.0",
+})
 @ApiTags("industries")
 export class IndustriesController {
   constructor(private readonly industriesService: IndustriesService) {}

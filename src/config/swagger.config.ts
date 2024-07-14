@@ -6,13 +6,13 @@ export const swaggerConfigInit = (app: INestApplication) => {
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Movies backend")
     .setDescription("Movie introduction website")
-    .setVersion("0.0.1")
+    .setVersion("1.0.0")
     .addCookieAuth("accessToken", swaggerAuthConfig(), "authorization")
     .build();
 
   if (process.env.NODE_ENV !== "prod") {
     const document = SwaggerModule.createDocument(app, swaggerConfig);
-    SwaggerModule.setup("api", app, document);
+    SwaggerModule.setup("v1/api", app, document);
   }
 };
 

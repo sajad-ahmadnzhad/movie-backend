@@ -30,7 +30,10 @@ import {
 
 @Throttle({ default: { ttl: 60_000, limit: 5 } })
 @ApiTags("auth")
-@Controller("auth")
+@Controller({
+  path: "auth",
+  version: "1.0.0",
+})
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post("signup")

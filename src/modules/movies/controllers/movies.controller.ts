@@ -31,7 +31,10 @@ import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { User } from "../../auth/entities/User.entity";
 import { Movie } from "../entities/movie.entity";
 
-@Controller("movies")
+@Controller({
+  path: "movies",
+  version: "1.0.0",
+})
 @ApiTags("movies")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class MoviesController {

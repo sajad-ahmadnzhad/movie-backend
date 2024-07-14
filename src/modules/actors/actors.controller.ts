@@ -28,7 +28,10 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { User } from "../auth/entities/User.entity";
 import { Actor } from "./entities/actor.entity";
 
-@Controller("actors")
+@Controller({
+  path: "actors",
+  version: "1.0.0",
+})
 @ApiTags("actors")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class ActorsController {
@@ -61,7 +64,7 @@ export class ActorsController {
   search(
     @Query("actor") actor: string,
     @Query("page", new ParseIntPipe({ optional: true })) page?: number,
-    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ): Promise<PaginatedList<Actor>> {
     return this.actorsService.search(actor, limit, page);
   }

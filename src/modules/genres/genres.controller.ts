@@ -27,7 +27,10 @@ import { Throttle } from "@nestjs/throttler";
 import { User } from "../auth/entities/user.entity";
 import { Genre } from "./entities/genre.entity";
 
-@Controller("genres")
+@Controller({
+  path: "genres",
+  version: "1.0.0",
+})
 @ApiTags("genres")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
 export class GenresController {

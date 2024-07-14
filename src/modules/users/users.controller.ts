@@ -39,7 +39,10 @@ import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Bookmark } from "../movies/entities/Bookmark.entity";
 
-@Controller("users")
+@Controller({
+  path: "users",
+  version: "1.0.0",
+})
 @ApiTags("users")
 @ApiCookieAuth()
 @Throttle({ default: { limit: 20, ttl: 60_000 } })
