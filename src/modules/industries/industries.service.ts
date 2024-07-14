@@ -92,6 +92,14 @@ export class IndustriesService {
       },
       relations: ["createdBy", "country"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedIndustries = await typeORMPagination(
@@ -137,6 +145,14 @@ export class IndustriesService {
 
       relations: ["createdBy", "country"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedIndustries = await typeORMPagination(
@@ -217,6 +233,14 @@ export class IndustriesService {
     const existingIndustry = await this.industryRepository.findOne({
       where: { id },
       relations: ["createdBy", "country"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     });
 
     if (!existingIndustry) {

@@ -58,6 +58,14 @@ export class GenresService {
     const options: FindManyOptions<Genre> = {
       relations: ["createdBy"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedGenres = await typeORMPagination(
@@ -72,7 +80,7 @@ export class GenresService {
     return paginatedGenres;
   }
 
- async search(
+  async search(
     genreQuery: string,
     limit?: number,
     page?: number
@@ -83,7 +91,9 @@ export class GenresService {
 
     const cacheKey = `searchGenres_${genreQuery}_${limit}_${page}`;
 
-    const genresCache = await this.redisCache.get<Genre[] | undefined>(cacheKey);
+    const genresCache = await this.redisCache.get<Genre[] | undefined>(
+      cacheKey
+    );
 
     if (genresCache) {
       return cachePagination(limit, page, genresCache);
@@ -100,6 +110,14 @@ export class GenresService {
       ],
       order: { createdAt: "DESC" },
       relations: ["createdBy"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedGenres = await typeORMPagination(
@@ -109,8 +127,8 @@ export class GenresService {
       options
     );
 
-    await this.redisCache.set(cacheKey , paginatedGenres.data , 30_000)
-   
+    await this.redisCache.set(cacheKey, paginatedGenres.data, 30_000);
+
     return paginatedGenres;
   }
 
@@ -170,6 +188,14 @@ export class GenresService {
     const existingGenre = await this.genreRepository.findOne({
       where: { id },
       relations: ["createdBy"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     });
 
     if (!existingGenre) {

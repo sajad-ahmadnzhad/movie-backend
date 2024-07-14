@@ -103,6 +103,14 @@ export class ActorsService {
 
       relations: ["country", "createdBy", "industry"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const actorsPagination = await typeORMPagination(
@@ -151,6 +159,14 @@ export class ActorsService {
       ],
       order: { createdAt: "DESC" },
       relations: ["createdBy", "country", "industry"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedActors = await typeORMPagination(
@@ -243,6 +259,14 @@ export class ActorsService {
     const existingActor = await this.actorRepository.findOne({
       where: { id },
       relations: ["createdBy", "industry", "country"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     });
 
     if (!existingActor) {

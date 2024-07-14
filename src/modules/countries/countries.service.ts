@@ -74,6 +74,14 @@ export class CountriesService {
     const options: FindManyOptions<Country> = {
       relations: ["createdBy"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedCountries = await typeORMPagination(
@@ -122,6 +130,14 @@ export class CountriesService {
       ],
       relations: ["createdBy"],
       order: { createdAt: "DESC" },
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     };
 
     const paginatedCountries = await typeORMPagination(
@@ -207,6 +223,14 @@ export class CountriesService {
     const existingCountry = await this.countryRepository.findOne({
       where: { id },
       relations: ["createdBy"],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     });
 
     if (!existingCountry) {
