@@ -64,10 +64,10 @@ export class Movie {
   createdBy: User;
 
   @OneToMany(() => Bookmark, (bookmark) => bookmark.movie)
-  bookmarks: Movie;
+  bookmarks: Bookmark[];
 
   @OneToMany(() => Like, (like) => like.movie)
-  likes: Movie;
+  likes: Like[];
 
   @OneToMany(() => Comment, (comment) => comment.movie)
   comments: Comment[];

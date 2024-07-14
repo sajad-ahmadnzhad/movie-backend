@@ -156,46 +156,12 @@ export const GetOneMovie: SchemaObject = {
       example: 100,
     },
     likes: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          id: {
-            type: "number",
-            example: 1,
-          },
-          user: GetOneUserSchema,
-          createdAt: {
-            type: "string",
-            example: "2024-06-09T10:32:25.954Z",
-          },
-          updatedAt: {
-            type: "string",
-            example: "2024-06-09T10:32:25.954Z",
-          },
-        },
-      },
+      type: "number",
+      example: 1,
     },
     bookmarks: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          id: {
-            type: "number",
-            example: 1,
-          },
-          user: GetOneUserSchema,
-          createdAt: {
-            type: "string",
-            example: "2024-06-09T10:32:25.954Z",
-          },
-          updatedAt: {
-            type: "string",
-            example: "2024-06-09T10:32:25.954Z",
-          },
-        },
-      },
+      type: "number",
+      example: 1,
     },
   },
 };

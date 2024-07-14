@@ -75,7 +75,7 @@ export class MoviesController {
 
   @GetOneMovieDecorator
   @Get(":id")
-  findOne(@Param("id", ParseIntPipe) id: number): Promise<Movie> {
+  findOne(@Param("id", ParseIntPipe) id: number){
     return this.moviesService.findOne(id);
   }
 

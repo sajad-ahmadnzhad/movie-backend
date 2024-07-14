@@ -29,7 +29,7 @@ import { FindManyOptions, Like, Repository } from "typeorm";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Movie } from "../entities/movie.entity";
-import { Like as LikeRepo } from "../entities/like.entity";
+import { Like as LikeEntity } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Bookmark } from "../entities/Bookmark.entity";
 
@@ -45,8 +45,8 @@ export class MoviesService {
     private readonly industryRepository: Repository<Industry>,
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
-    @InjectRepository(LikeRepo)
-    private readonly likeRepository: Repository<LikeRepo>,
+    @InjectRepository(LikeEntity)
+    private readonly likeRepository: Repository<LikeEntity>,
     @InjectRepository(Bookmark)
     private readonly bookmarkRepository: Repository<Bookmark>,
     @InjectRepository(Movie)
@@ -143,11 +143,16 @@ export class MoviesService {
         "createdBy",
         "bookmarks",
       ],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
       order: { createdAt: "DESC" },
     };
-
-    const movies = await this.movieRepository.find(options);
-    await this.redisCache.set(cacheKey, movies, 30_000);
 
     let paginatedMovies = await typeORMPagination(
       limit,
@@ -156,12 +161,19 @@ export class MoviesService {
       options
     );
 
+    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
+
     await this.calculateMovieVisits(paginatedMovies.data);
+
+    //* Calculate bookmarks count and likes count
+    const calculatedResult = this.calculateMoviesCounts(paginatedMovies.data);
+
+    (paginatedMovies as any).data = calculatedResult;
 
     return paginatedMovies;
   }
 
-  async findOne(id: number): Promise<Movie> {
+  async findOne(id: number) {
     const existingMovie = await this.checkExistMovieById(id);
 
     const existingMovieInCache = (await this.redisCache.get(
@@ -171,7 +183,13 @@ export class MoviesService {
     await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
 
     //* Calculate visits in this method
-    return this.calculateMovieVisits(existingMovie) as Promise<Movie>;
+    await this.calculateMovieVisits(existingMovie);
+
+    return {
+      ...existingMovie,
+      bookmarks: existingMovie.bookmarks.length,
+      likes: existingMovie.likes.length,
+    };
   }
 
   async search(
@@ -213,6 +231,14 @@ export class MoviesService {
         "createdBy",
         "bookmarks",
       ],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
       order: { createdAt: "DESC" },
     };
 
@@ -223,10 +249,15 @@ export class MoviesService {
       options
     );
 
-    const movies = await this.movieRepository.find(options);
-    await this.redisCache.set(cacheKey, movies, 30_000);
+    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
 
+    //* Calculate visits movies
     await this.calculateMovieVisits(paginatedMovies.data);
+
+    //* Calculate bookmarks count and likes count
+    const calculatedResult = this.calculateMoviesCounts(paginatedMovies.data);
+
+    (paginatedMovies as any).data = calculatedResult;
 
     return paginatedMovies;
   }
@@ -392,6 +423,14 @@ export class MoviesService {
         "createdBy",
         "bookmarks",
       ],
+      select: {
+        createdBy: {
+          id: true,
+          name: true,
+          username: true,
+          avatarURL: true,
+        },
+      },
     });
     if (!existingMovie) {
       throw new NotFoundException(MoviesMessages.NotFoundMovie);
@@ -415,5 +454,15 @@ export class MoviesService {
     (movies as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
 
     return movies;
+  }
+
+  private calculateMoviesCounts(movies: Movie[]) {
+    return movies.map((movie) => {
+      return {
+        ...movie,
+        bookmarks: movie.bookmarks.length,
+        likes: movie.likes.length,
+      };
+    });
   }
 }
