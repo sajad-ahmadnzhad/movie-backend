@@ -1,5 +1,5 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
-import { GetOneUserSchema } from "./user.schema";
+import { CreatedBySchema } from "./public.schema";
 
 export const GetOneActorSchema: SchemaObject = {
   type: "object",
@@ -71,7 +71,7 @@ export const GetOneActorSchema: SchemaObject = {
         },
       },
     },
-    createdBy: GetOneUserSchema,
+    createdBy: CreatedBySchema,
     createdAt: {
       type: "string",
       example: "2024-06-08T10:24:58.129Z",

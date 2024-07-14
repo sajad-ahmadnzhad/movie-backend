@@ -134,3 +134,22 @@ export const TooManyRequests: SchemaObject = {
   },
 };
 
+export const CreatedBySchema: SchemaObject = {
+  type: "object",
+  properties: {
+    id: {
+      type: "number",
+      example: 1,
+    },
+    name: {
+      type: "string",
+    },
+    username: {
+      type: "string",
+    },
+    avatarURL: {
+      type: "string",
+      example: "/uploads/user-avatar/custom-avatar.jpg",
+    },
+  },
+};
