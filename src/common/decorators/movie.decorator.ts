@@ -34,6 +34,7 @@ import {
   BadRequestParamSchema,
 } from "../swagger/schemas/public.schema";
 import {
+  BookmarkAndLikeHistorySchema,
   GetAllMoviesSchema,
   GetOneMovie,
 } from "../swagger/schemas/movie.schema";
@@ -341,4 +342,75 @@ export const BookmarkMovieDecorator = applyDecorators(
     schema: SuccessSchema,
   }),
   ApiOperation({ summary: "bookmark a movie" })
+);
+
+//* Get bookmark history decorator
+export const GetBookmarkHistoryDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiQuery({
+    name: "page",
+    type: "string",
+    description: "The page of the bookmarks",
+    required: false,
+    example: 1,
+  }),
+  ApiQuery({
+    name: "limit",
+    type: "string",
+    description: "The count of the bookmarks",
+    required: false,
+    example: 10,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiOkResponse({
+    schema: BookmarkAndLikeHistorySchema,
+  }),
+  ApiOperation({ summary: "get movies bookmarks by admins" })
+);
+
+//* Get like history decorator
+export const GetLikeHistoryDecorator = applyDecorators(
+  UseGuards(AuthGuard, IsAdminGuard),
+  ApiCookieAuth(),
+  ApiQuery({
+    name: "page",
+    type: "string",
+    description: "The page of the likes",
+    required: false,
+    example: 1,
+  }),
+  ApiQuery({
+    name: "limit",
+    type: "string",
+    description: "The count of the likes",
+    required: false,
+    example: 10,
+  }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiOkResponse({
+    schema: BookmarkAndLikeHistorySchema,
+  }),
+  ApiOperation({ summary: "get movies likes by admins" })
 );

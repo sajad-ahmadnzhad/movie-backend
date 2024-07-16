@@ -30,7 +30,7 @@ import { Country } from "./entities/country.entity";
 
 @Controller({
   path: "countries",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("countries")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })

@@ -161,14 +161,13 @@ export class MoviesService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
-
-    await this.calculateMovieVisits(paginatedMovies.data);
-
     //* Calculate bookmarks count and likes count
     const calculatedResult = this.calculateMoviesCounts(paginatedMovies.data);
 
     (paginatedMovies as any).data = calculatedResult;
+    await this.calculateMovieVisits(paginatedMovies.data);
+    
+    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
 
     return paginatedMovies;
   }
@@ -302,6 +301,72 @@ export class MoviesService {
     await this.bookmarkRepository.save(bookmark);
 
     return MoviesMessages.BookmarkMovieSuccess;
+  }
+
+  async getBookmarkHistory(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Bookmark>> {
+    const bookmarksCache = await this.redisCache.get<Bookmark[] | undefined>(
+      "bookmark-history"
+    );
+
+    if (bookmarksCache) {
+      return cachePagination(limit, page, bookmarksCache);
+    }
+
+    const options: FindManyOptions<Bookmark> = {
+      where: {
+        movie: { createdBy: { id: user.id } },
+      },
+      relations: ["user", "movie"],
+      order: { createdAt: "DESC" },
+    };
+
+    const paginatedBookmarks = await typeORMPagination(
+      limit,
+      page,
+      this.bookmarkRepository,
+      options
+    );
+
+    await this.redisCache.set("bookmark-history", paginatedBookmarks.data , 30_000);
+
+    return paginatedBookmarks;
+  }
+
+  async getLikeHistory(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<LikeEntity>> {
+    const likesCache = await this.redisCache.get<LikeEntity[] | undefined>(
+      "bookmark-history"
+    );
+
+    if (likesCache) {
+      return cachePagination(limit, page, likesCache);
+    }
+
+    const options: FindManyOptions<LikeEntity> = {
+      where: {
+        movie: { createdBy: { id: user.id } },
+      },
+      relations: ["user", "movie"],
+      order: { createdAt: "DESC" },
+    };
+
+    const paginatedLikes = await typeORMPagination(
+      limit,
+      page,
+      this.likeRepository,
+      options
+    );
+
+    await this.redisCache.set("likes-history", paginatedLikes.data , 30_000);
+
+    return paginatedLikes;
   }
 
   async update(

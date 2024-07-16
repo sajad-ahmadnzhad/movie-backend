@@ -41,7 +41,7 @@ import { Bookmark } from "../movies/entities/Bookmark.entity";
 
 @Controller({
   path: "users",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("users")
 @ApiCookieAuth()

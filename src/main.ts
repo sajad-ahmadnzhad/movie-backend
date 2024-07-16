@@ -30,6 +30,7 @@ async function bootstrap() {
   //* Enable version
   app.enableVersioning({
     type: VersioningType.URI,
+    defaultVersion: '1'
   });
 
   await app.listen(PORT, "0.0.0.0");

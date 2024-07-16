@@ -28,7 +28,7 @@ import { Industry } from "./entities/industry.entity";
 
 @Controller({
   path: "industries",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("industries")
 export class IndustriesController {

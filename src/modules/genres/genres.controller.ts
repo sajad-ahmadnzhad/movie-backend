@@ -29,7 +29,7 @@ import { Genre } from "./entities/genre.entity";
 
 @Controller({
   path: "genres",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("genres")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })

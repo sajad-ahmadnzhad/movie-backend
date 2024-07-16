@@ -1,5 +1,44 @@
 import { SchemaObject } from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 import { CreatedBySchema } from "./public.schema";
+import { GetOneUserSchema } from "./user.schema";
+
+const RowMovieSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    id: {
+      type: "number",
+      example: 1,
+    },
+    title: {
+      type: "string",
+      example: "Boos 2013",
+    },
+    description: {
+      type: "string",
+    },
+    release_year: {
+      type: "number",
+      example: 2013,
+    },
+    poster_URL: {
+      type: "string",
+      example: "/uploads/posters/24555.51533071671--photo-09-22_22-58.jpg",
+    },
+    video_URL: {
+      type: "string",
+      example: "/uploads/movies/1717433950785T68ci0AlwaymCxwCkjB2.mp4",
+    },
+    createdAt: {
+      type: "string",
+      example: "2024-06-09T10:32:25.954Z",
+    },
+    updatedAt: {
+      type: "string",
+      example: "2024-06-09T10:32:25.954Z",
+    },
+  },
+};
+
 export const GetOneMovie: SchemaObject = {
   type: "object",
   properties: {
@@ -212,43 +251,43 @@ export const GetMyBookmarksSchema: SchemaObject = {
             type: "number",
             example: 1,
           },
-          movie: {
-            type: "object",
-            properties: {
-              id: {
-                type: "number",
-                example: 1,
-              },
-              title: {
-                type: "string",
-                example: "Boos 2013",
-              },
-              description: {
-                type: "string",
-              },
-              release_year: {
-                type: "number",
-                example: 2013,
-              },
-              poster_URL: {
-                type: "string",
-                example:
-                  "/uploads/posters/24555.51533071671--photo-09-22_22-58.jpg",
-              },
-              video_URL: {
-                type: "string",
-                example:
-                  "/uploads/movies/1717433950785T68ci0AlwaymCxwCkjB2.mp4",
-              },
-              createdAt: {
-                type: "string",
-                example: "2024-06-09T10:32:25.954Z",
-              },
-              updatedAt: {
-                type: "string",
-                example: "2024-06-09T10:32:25.954Z",
-              },
-            },
+          movie: RowMovieSchema,
+          createdAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+          updatedAt: {
+            type: "string",
+            example: "2024-06-09T10:32:25.954Z",
+          },
+        },
+      },
+    },
+  },
+};
+
+export const BookmarkAndLikeHistorySchema: SchemaObject = {
+  type: "object",
+  properties: {
+    count: {
+      type: "number",
+      example: 1,
+    },
+    page: {
+      type: "number",
+      example: 1,
+    },
+    pages: {
+      type: "number",
+      example: 2,
+    },
+    data: {
+      type: "array",
+      items: {
+        properties: {
+          id: {
+            type: "number",
+            example: 1,
           },
           createdAt: {
             type: "string",
@@ -258,6 +297,8 @@ export const GetMyBookmarksSchema: SchemaObject = {
             type: "string",
             example: "2024-06-09T10:32:25.954Z",
           },
+          user: GetOneUserSchema,
+          movie: RowMovieSchema,
         },
       },
     },

@@ -23,6 +23,8 @@ import {
   UpdateMovieDecorator,
   LikeMovieDecorator,
   BookmarkMovieDecorator,
+  GetBookmarkHistoryDecorator,
+  GetLikeHistoryDecorator,
 } from "../../../common/decorators/movie.decorator";
 import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../../users/decorators/currentUser.decorator";
@@ -33,7 +35,7 @@ import { Movie } from "../entities/movie.entity";
 
 @Controller({
   path: "movies",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("movies")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
@@ -76,12 +78,6 @@ export class MoviesController {
     return this.moviesService.search(movie, limit, page);
   }
 
-  @GetOneMovieDecorator
-  @Get(":id")
-  findOne(@Param("id", ParseIntPipe) id: number){
-    return this.moviesService.findOne(id);
-  }
-
   @Post("like/:id")
   @LikeMovieDecorator
   async likeToggle(
@@ -102,6 +98,32 @@ export class MoviesController {
     const success = await this.moviesService.bookmarkToggle(id, user);
 
     return { message: success };
+  }
+
+  @Get("bookmark-history")
+  @GetBookmarkHistoryDecorator
+  getBookmarkHistory(
+    @UserDecorator() user: User,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ) {
+    return this.moviesService.getBookmarkHistory(user, limit, page);
+  }
+
+  @Get("like-history")
+  @GetLikeHistoryDecorator
+  getLikeHistory(
+    @UserDecorator() user: User,
+    @Query("page", new ParseIntPipe({ optional: true })) page?: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
+  ) {
+    return this.moviesService.getLikeHistory(user, limit, page);
+  }
+
+  @GetOneMovieDecorator
+  @Get(":id")
+  findOne(@Param("id", ParseIntPipe) id: number) {
+    return this.moviesService.findOne(id);
   }
 
   @Patch(":id")

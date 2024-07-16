@@ -30,7 +30,7 @@ import { User } from "../../auth/entities/User.entity";
 
 @Controller({
   path: "comments",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("comments")
 export class CommentsController {

@@ -30,7 +30,7 @@ import { Actor } from "./entities/actor.entity";
 
 @Controller({
   path: "actors",
-  version: "1.0.0",
+  version: "1",
 })
 @ApiTags("actors")
 @Throttle({ default: { ttl: 60_000, limit: 30 } })
