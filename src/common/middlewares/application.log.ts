@@ -2,14 +2,24 @@ import { NestMiddleware, Injectable } from "@nestjs/common";
 import { NextFunction, Request, Response } from "express";
 import * as rfs from "rotating-file-stream";
 import * as path from "path";
+import * as fs from "fs";
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  private readonly logStream = rfs.createStream("application.log", {
-    interval: "5d",
-    path: path.join(process.cwd(), "src", "common", "logs"),
-    size: "10M",
-  });
+  private readonly logStream: rfs.RotatingFileStream;
+
+  constructor() {
+    const logDirectory = path.join(__dirname, "..", "logs");
+
+    if (!fs.existsSync(logDirectory))
+      fs.mkdirSync(logDirectory, { recursive: true });
+
+    this.logStream = rfs.createStream("application.log", {
+      interval: "5d",
+      path: path.join(__dirname, "..", "logs"),
+      size: "10M",
+    });
+  }
 
   use(req: Request, res: Response, next: NextFunction) {
     const start = Date.now();

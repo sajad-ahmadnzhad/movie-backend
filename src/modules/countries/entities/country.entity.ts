@@ -1,5 +1,5 @@
 import { Industry } from "../../industries/entities/industry.entity";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import {
   BeforeInsert,
   BeforeUpdate,

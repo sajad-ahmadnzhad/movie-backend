@@ -25,7 +25,7 @@ import {
 } from "../../common/decorators/countries.decorator";
 import { Throttle } from "@nestjs/throttler";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { Country } from "./entities/country.entity";
 
 @Controller({

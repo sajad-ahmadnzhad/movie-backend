@@ -7,7 +7,7 @@ import {
   BeforeUpdate,
   BeforeInsert,
 } from "typeorm";
-import { User } from "./User.entity";
+import { User } from "./user.entity";
 
 @Entity({ name: "bans" })
 export class BanUser {

@@ -9,7 +9,7 @@ import {
   ApiOperation,
   ApiParam,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { AuthGuard } from "../../modules/auth/guards/auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 
 //* Create comment decorator

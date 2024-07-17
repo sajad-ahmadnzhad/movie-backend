@@ -11,7 +11,7 @@ import {
   TreeParent,
 } from "typeorm";
 import { Movie } from "./movie.entity";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 
 @Entity({ name: "comments" })
 @Tree("closure-table")

@@ -22,7 +22,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Country } from "../countries/entities/country.entity";
 import { Repository, FindManyOptions, Like } from "typeorm";
 import { Industry } from "./entities/industry.entity";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { CountriesService } from "../countries/countries.service";
 
 @Injectable()

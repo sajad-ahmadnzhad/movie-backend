@@ -14,7 +14,7 @@ import {
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
 import { memoryStorage } from "multer";
-import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { AuthGuard } from "../../modules/auth/guards/auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { IsSuperAdminGuard } from "../../modules/auth/guards/isSuperAdmin.guard";
 import { fileFilter } from "../utils/upload-file.util";

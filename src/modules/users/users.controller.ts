@@ -37,7 +37,7 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
-import { Bookmark } from "../movies/entities/Bookmark.entity";
+import { Bookmark } from "../movies/entities/bookmark.entity";
 
 @Controller({
   path: "users",

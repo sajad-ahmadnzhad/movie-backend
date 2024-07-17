@@ -23,7 +23,7 @@ import {
 } from "../../common/decorators/industries.decorator";
 import { UserDecorator } from "../users/decorators/currentUser.decorator";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { Industry } from "./entities/industry.entity";
 
 @Controller({

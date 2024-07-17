@@ -19,7 +19,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Comment } from "../entities/comment.entity";
 import { Repository } from "typeorm";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { Movie } from "../entities/movie.entity";
 
 @Injectable()

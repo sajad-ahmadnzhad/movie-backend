@@ -24,7 +24,7 @@ import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { ConfigService } from "@nestjs/config";
 import { hashData } from "../../common/utils/functions.util";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { User } from "./entities/User.entity";
+import { User } from "./entities/user.entity";
 import { LessThan, LessThanOrEqual, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BanUser } from "./entities/banUser.entity";
@@ -217,22 +217,27 @@ export class AuthService {
       token: randomBytes(32).toString("hex"),
     });
 
+    const BASE_URL = this.configService.get<string>("BASE_URL");
+
     const mailOptions = {
       from: this.configService.get<string>("GMAIL_USER"),
       to: existingUser.email,
       subject: "reset your password",
       html: `<p>Link to reset your password:</p>
       <h1>Click on the link below to reset your password</h1>
-      <h2>${this.configService.get<string>("BASE_URL")}/api/auth/${existingUser.id}/reset-password/${token.token}</h2>
+      <h2>${BASE_URL}/api/v1/auth/${existingUser.id}/reset-password/${token.token}</h2>
        `,
     };
 
-    try {
-      await this.mailerService.sendMail(mailOptions);
-      await this.tokenRepository.save(token);
-    } catch (error) {
-      throw new InternalServerErrorException(error.message);
-    }
+    setImmediate(async () => {
+      try {
+        await this.mailerService.sendMail(mailOptions);
+        await this.tokenRepository.save(token);
+      } catch (error: any) {
+        await this.tokenRepository.delete({ id: token.id });
+        throw new InternalServerErrorException(error.message);
+      }
+    });
 
     return AuthMessages.SendedResetPassword;
   }
@@ -285,7 +290,9 @@ export class AuthService {
       token: randomBytes(32).toString("hex"),
     });
 
-    const url = `${this.configService.get<string>("BASE_URL")}/api/auth/${user.id}/verify/${token.token}`;
+    const BASE_URL = this.configService.get<string>("BASE_URL");
+
+    const url = `${BASE_URL}/api/v1/auth/${user.id}/verify/${token.token}`;
 
     const mailOptions = {
       from: process.env.GMAIL_USER as string,

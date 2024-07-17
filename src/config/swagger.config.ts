@@ -11,14 +11,13 @@ export const swaggerConfigInit = (app: INestApplication) => {
     .addCookieAuth("accessToken", swaggerAuthConfig(), "authorization")
     .build();
 
-  if (process.env.NODE_ENV !== "prod") {
+
     const document = SwaggerModule.createDocument(app, swaggerConfig, {
       ignoreGlobalPrefix: true,
     });
     SwaggerModule.setup("api/v1/docs", app, document, {
       jsonDocumentUrl: "swagger/json",
     });
-  }
 };
 
 function swaggerAuthConfig(): SecuritySchemeObject {

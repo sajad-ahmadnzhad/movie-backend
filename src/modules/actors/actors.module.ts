@@ -5,7 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { Industry } from "../industries/entities/industry.entity";
 import { Country } from "../countries/entities/country.entity";
 import { Actor } from "./entities/actor.entity";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { IndustriesService } from "../industries/industries.service";
 import { CountriesService } from "../countries/countries.service";

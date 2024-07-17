@@ -22,11 +22,11 @@ import { removeFile } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { AuthMessages } from "../../common/enum/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
-import { Bookmark } from "../movies/entities/Bookmark.entity";
+import { Bookmark } from "../movies/entities/bookmark.entity";
 
 @Injectable()
 export class UsersService {

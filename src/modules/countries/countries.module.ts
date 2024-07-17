@@ -3,7 +3,7 @@ import { CountriesService } from "./countries.service";
 import { CountriesController } from "./countries.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BanUser } from "../auth/entities/banUser.entity";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { Country } from "./entities/country.entity";
 import { Industry } from "../industries/entities/industry.entity";
 

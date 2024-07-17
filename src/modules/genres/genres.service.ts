@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { CreateGenreDto } from "./dto/create-genre.dto";
 import { UpdateGenreDto } from "./dto/update-genre.dto";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { GenresMessages } from "../../common/enum/genresMessages.enum";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";

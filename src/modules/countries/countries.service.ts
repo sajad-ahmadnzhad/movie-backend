@@ -21,7 +21,7 @@ import { PaginatedList } from "../../common/interfaces/public.interface";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Country } from "./entities/country.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 
 @Injectable()
 export class CountriesService {

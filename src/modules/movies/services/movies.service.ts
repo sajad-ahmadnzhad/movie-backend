@@ -22,16 +22,21 @@ import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Actor } from "../../actors/entities/actor.entity";
-import { FindManyOptions, Like, Repository } from "typeorm";
+import {
+  EntityNotFoundError,
+  FindManyOptions,
+  Like,
+  Repository,
+} from "typeorm";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Movie } from "../entities/movie.entity";
 import { Like as LikeEntity } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
-import { Bookmark } from "../entities/Bookmark.entity";
+import { Bookmark } from "../entities/bookmark.entity";
 
 @Injectable()
 export class MoviesService {
@@ -78,7 +83,10 @@ export class MoviesService {
         this.industryRepository
       );
     } catch (error) {
-      throw new NotFoundException(error.message);
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
     }
 
     const paths = saveMovieFile(files, {
@@ -166,7 +174,7 @@ export class MoviesService {
 
     (paginatedMovies as any).data = calculatedResult;
     await this.calculateMovieVisits(paginatedMovies.data);
-    
+
     await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
 
     return paginatedMovies;
@@ -331,7 +339,11 @@ export class MoviesService {
       options
     );
 
-    await this.redisCache.set("bookmark-history", paginatedBookmarks.data , 30_000);
+    await this.redisCache.set(
+      "bookmark-history",
+      paginatedBookmarks.data,
+      30_000
+    );
 
     return paginatedBookmarks;
   }
@@ -364,7 +376,7 @@ export class MoviesService {
       options
     );
 
-    await this.redisCache.set("likes-history", paginatedLikes.data , 30_000);
+    await this.redisCache.set("likes-history", paginatedLikes.data, 30_000);
 
     return paginatedLikes;
   }
@@ -432,7 +444,10 @@ export class MoviesService {
           .addAndRemove(countries, movie.countries);
       }
     } catch (error) {
-      throw new NotFoundException(error.message);
+      if (error instanceof EntityNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
     }
 
     const filePaths: Partial<{ poster: string; video: string }> = {};

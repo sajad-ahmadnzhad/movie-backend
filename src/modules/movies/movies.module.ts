@@ -5,12 +5,12 @@ import { CommentsController } from "./controllers/comments.controller";
 import { CommentsService } from "./services/comments.service";
 import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Actor } from "../actors/entities/actor.entity";
 import { Industry } from "../industries/entities/industry.entity";
 import { Movie } from "./entities/movie.entity";
-import { Bookmark } from "./entities/Bookmark.entity";
+import { Bookmark } from "./entities/bookmark.entity";
 import { Comment } from "./entities/comment.entity";
 import { Like } from "./entities/like.entity";
 import { Genre } from "../genres/entities/genre.entity";
@@ -32,7 +32,7 @@ import { Country } from "../countries/entities/country.entity";
       Country
     ]),
   ],
-  controllers: [MoviesController, CommentsController],
-  providers: [MoviesService, CommentsService],
+  controllers: [MoviesController],
+  providers: [MoviesService],
 })
 export class MoviesModule {}

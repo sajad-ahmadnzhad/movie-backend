@@ -1,5 +1,5 @@
 import { Movie } from "../../movies/entities/movie.entity";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import {

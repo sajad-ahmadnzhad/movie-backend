@@ -30,7 +30,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { UserDecorator } from "../../users/decorators/currentUser.decorator";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { Movie } from "../entities/movie.entity";
 
 @Controller({

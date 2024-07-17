@@ -1,5 +1,5 @@
 import { Actor } from "../../actors/entities/actor.entity";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
@@ -15,7 +15,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Bookmark } from "./Bookmark.entity";
+import { Bookmark } from "./bookmark.entity";
 import { Like } from "./like.entity";
 import { Comment } from "./comment.entity";
 

@@ -24,9 +24,9 @@ import {
 } from "../../../common/decorators/comments.decorator";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
-import { AuthGuard } from "../../../modules/auth/guards/Auth.guard";
+import { AuthGuard } from "../../../modules/auth/guards/auth.guard";
 import { IsAdminGuard } from "../../../modules/auth/guards/isAdmin.guard";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 
 @Controller({
   path: "comments",

@@ -20,7 +20,7 @@ import {
   ApiQuery,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { AuthGuard } from "../../modules/auth/guards/auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { memoryStorage } from "multer";
 import { movieFileFilter } from "../utils/upload-file.util";

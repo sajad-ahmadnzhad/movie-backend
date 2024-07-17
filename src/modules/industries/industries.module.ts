@@ -4,11 +4,11 @@ import { IndustriesController } from "./industries.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Country } from "../countries/entities/country.entity";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { Industry } from "./entities/industry.entity";
 import { CountriesService } from "../countries/countries.service";
 import { Movie } from "../movies/entities/movie.entity";
-import { Bookmark } from "../movies/entities/Bookmark.entity";
+import { Bookmark } from "../movies/entities/bookmark.entity";
 import { Like } from "../movies/entities/like.entity";
 import { Comment } from "../movies/entities/comment.entity";
 

@@ -4,7 +4,7 @@ import { AuthController } from "./auth.controller";
 import { JwtModule } from "@nestjs/jwt";
 import { ScheduleModule } from "@nestjs/schedule";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "./entities/User.entity";
+import { User } from "./entities/user.entity";
 import { BanUser } from "./entities/banUser.entity";
 import { Token } from "./entities/token.entity";
 import { MailModule } from "../mail/mail.module";

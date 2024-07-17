@@ -23,7 +23,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { Actor } from "./entities/actor.entity";
 import { Industry } from "../industries/entities/industry.entity";
-import { User } from "../auth/entities/User.entity";
+import { User } from "../auth/entities/user.entity";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 

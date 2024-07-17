@@ -1,6 +1,6 @@
 import { HttpCode, HttpStatus, UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { AuthGuard } from "../../modules/auth/guards/Auth.guard";
+import { AuthGuard } from "../../modules/auth/guards/auth.guard";
 import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { fileFilter } from "../../common/utils/upload-file.util";
 import { memoryStorage } from "multer";

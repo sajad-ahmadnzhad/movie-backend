@@ -15,13 +15,25 @@ export const removeFile = (filePath: string | undefined): void => {
   rimrafSync(removeFilePath);
 };
 
-
 export const transformIds = ({ value }: { value: string | string[] }) => {
-  if (typeof value == "string")
+  if (typeof value == "string") {
+    let parsedValue: any = null;
+
+    try {
+      parsedValue = JSON.parse(value);
+    } catch {
+      parsedValue = value;
+    }
+
+    if (Array.isArray(JSON.parse(value))) {
+      return parsedValue.flat(Infinity).map(Number);
+    }
+
     return value
       .split(",")
       .filter((val) => val?.trim())
       .map(Number);
+  }
 
   return value
     .filter((val) => typeof val == "number" || val.trim())

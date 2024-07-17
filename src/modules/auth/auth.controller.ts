@@ -112,6 +112,7 @@ export class AuthController {
   async sendVerifyMail(@Body() body: SendVerifyEmailDto) {
     const success = await this.authService.sendVerifyEmail(body);
 
+
     return { message: success };
   }
 

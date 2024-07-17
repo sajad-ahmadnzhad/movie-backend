@@ -15,7 +15,7 @@ import { Country } from "../../countries/entities/country.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { Actor } from "../../actors/entities/actor.entity";
 import { Movie } from "../../movies/entities/movie.entity";
-import { Bookmark } from "../../movies/entities/Bookmark.entity";
+import { Bookmark } from "../../movies/entities/bookmark.entity";
 import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
 import { removeFile } from "../../../common/utils/functions.util";

@@ -1,6 +1,6 @@
 import { Movie } from "../../movies/entities/movie.entity";
 import { Actor } from "../../actors/entities/actor.entity";
-import { User } from "../../auth/entities/User.entity";
+import { User } from "../../auth/entities/user.entity";
 import { Country } from "../../countries/entities/country.entity";
 import {
   BeforeInsert,
