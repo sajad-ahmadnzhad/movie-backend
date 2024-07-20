@@ -8,13 +8,11 @@ import {
 } from "@nestjs/common";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
 import { MoviesService } from "./movies.service";
-import { CommentsMessages } from "../../../common/enum/moviesMessages.enum";
+import { CommentsMessages } from "../../../common/enums/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
-import {
-  typeORMPagination,
-} from "../../../common/utils/pagination.util";
+import { typeORMPagination } from "../../../common/utils/pagination.util";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Comment } from "../entities/comment.entity";

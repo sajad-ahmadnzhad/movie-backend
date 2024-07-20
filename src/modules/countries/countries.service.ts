@@ -10,7 +10,7 @@ import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
 import { saveFile } from "../../common/utils/upload-file.util";
 import { removeFile } from "../../common/utils/functions.util";
-import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
+import { CountriesMessages } from "../../common/enums/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import {

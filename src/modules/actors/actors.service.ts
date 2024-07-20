@@ -10,8 +10,8 @@ import {
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
 import { removeFile } from "../../common/utils/functions.util";
-import { ActorsMessages } from "../../common/enum/actorsMessages.enum";
-import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
+import { ActorsMessages } from "../../common/enums/actorsMessages.enum";
+import { IndustriesMessages } from "../../common/enums/industriesMessages.enum";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { saveFile } from "../../common/utils/upload-file.util";
 import {
@@ -203,8 +203,9 @@ export class ActorsService {
     let existingIndustry: null | Industry = null;
 
     if (industryId) {
-      existingIndustry =
-        await this.industriesService.checkExistIndustry(industryId);
+      existingIndustry = await this.industriesService.checkExistIndustry(
+        industryId
+      );
     }
 
     const findDuplicatedKey = await this.actorRepository

@@ -9,8 +9,8 @@ import {
 } from "@nestjs/common";
 import { CreateIndustryDto } from "./dto/create-industry.dto";
 import { UpdateIndustryDto } from "./dto/update-industry.dto";
-import { IndustriesMessages } from "../../common/enum/industriesMessages.enum";
-import { CountriesMessages } from "../../common/enum/countriesMessages.enum";
+import { IndustriesMessages } from "../../common/enums/industriesMessages.enum";
+import { CountriesMessages } from "../../common/enums/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import {

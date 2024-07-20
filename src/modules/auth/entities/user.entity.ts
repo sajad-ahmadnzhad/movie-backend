@@ -19,6 +19,7 @@ import { Bookmark } from "../../movies/entities/bookmark.entity";
 import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
 import { removeFile } from "../../../common/utils/functions.util";
+import { Roles } from "../../../common/enums/roles.enum";
 
 @Entity({ name: "users" })
 export class User {
@@ -51,6 +52,9 @@ export class User {
 
   @Column({ type: "boolean", default: false })
   isVerifyEmail: boolean;
+
+  @Column({ type: "enum", enum: Roles, default: Roles.USER })
+  role: Roles;
 
   @OneToOne(() => Token, (token) => token.user, { onDelete: "SET NULL" })
   token: Token;

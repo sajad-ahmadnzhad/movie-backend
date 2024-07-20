@@ -9,7 +9,7 @@ import {
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
-import { UsersMessages } from "../../common/enum/usersMessages.enum";
+import { UsersMessages } from "../../common/enums/usersMessages.enum";
 import {
   cachePagination,
   typeORMPagination,
@@ -24,7 +24,7 @@ import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../auth/entities/user.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
-import { AuthMessages } from "../../common/enum/authMessages.enum";
+import { AuthMessages } from "../../common/enums/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Bookmark } from "../movies/entities/bookmark.entity";
 
@@ -97,15 +97,15 @@ export class UsersService {
 
     if (avatarURL) avatarURL = `/uploads/user-avatar/${avatarURL}`;
 
-      await this.userRepository.update(
-        { id: user.id },
-        {
-          ...updateUserDto,
-          avatarURL,
-        }
+    await this.userRepository.update(
+      { id: user.id },
+      {
+        ...updateUserDto,
+        avatarURL,
+      }
     );
-    
-    if(file) removeFile(user.avatarURL)
+
+    if (file) removeFile(user.avatarURL);
 
     return UsersMessages.UpdatedSuccess;
   }
@@ -319,8 +319,9 @@ export class UsersService {
     limit?: number,
     page?: number
   ): Promise<PaginatedList<BanUser>> {
-    const usersCache: BanUser[] | undefined =
-      await this.redisCache.get("banUsers");
+    const usersCache: BanUser[] | undefined = await this.redisCache.get(
+      "banUsers"
+    );
 
     if (usersCache) {
       return cachePagination(limit, page, usersCache);

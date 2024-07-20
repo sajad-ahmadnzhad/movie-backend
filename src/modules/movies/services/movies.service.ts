@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { CreateMovieDto } from "../dto/movies/create-movie.dto";
 import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
-import { MoviesMessages } from "../../../common/enum/moviesMessages.enum";
+import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
 import {
   saveFile,
   saveMovieFile,

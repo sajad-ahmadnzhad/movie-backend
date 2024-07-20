@@ -9,7 +9,7 @@ import {
   forwardRef,
 } from "@nestjs/common";
 import { SignupUserDto } from "./dto/signupUser.dto";
-import { AuthMessages } from "../../common/enum/authMessages.enum";
+import { AuthMessages } from "../../common/enums/authMessages.enum";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { RefreshToken, SigninUser, SignupUser } from "./auth.interface";
