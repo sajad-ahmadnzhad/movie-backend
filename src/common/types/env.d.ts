@@ -28,5 +28,8 @@ namespace NodeJS {
     //* Redis config
     REDIS_HOST: string;
     REDIS_PORT: string;
+
+    //NODE ENV
+    NODE_ENV: "dev" | "prod";
   }
 }

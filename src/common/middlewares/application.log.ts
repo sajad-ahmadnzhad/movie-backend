@@ -9,14 +9,18 @@ export class LoggerMiddleware implements NestMiddleware {
   private readonly logStream: rfs.RotatingFileStream;
 
   constructor() {
-    const logDirectory = path.join(__dirname, "..", "logs");
+    let logDirectory = path.join(__dirname, "..", "logs");
+
+    if (process.env.NODE_ENV == "dev") {
+      logDirectory = path.join(process.cwd(), "src", "common", "logs");
+    }
 
     if (!fs.existsSync(logDirectory))
       fs.mkdirSync(logDirectory, { recursive: true });
 
     this.logStream = rfs.createStream("application.log", {
       interval: "5d",
-      path: path.join(__dirname, "..", "logs"),
+      path: logDirectory,
       size: "10M",
     });
   }
