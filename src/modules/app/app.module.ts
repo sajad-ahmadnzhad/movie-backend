@@ -23,6 +23,7 @@ import { MoviesModule } from "../movies/movies.module";
 import { LoggerMiddleware } from "../../common/middlewares/application.log";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormConfig } from "../../config/typeorm.config";
+import { BasicAuthMiddleware } from "../../common/middlewares/basicAuth.middleware";
 
 @Module({
   imports: [
@@ -51,6 +52,8 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(helmet(), cookieParser(), LoggerMiddleware)
-      .forRoutes({ path: "*", method: RequestMethod.ALL });
+      .forRoutes({ path: "*", method: RequestMethod.ALL })
+      .apply(BasicAuthMiddleware)
+      .forRoutes({ path: "swagger", method: RequestMethod.GET });
   }
 }

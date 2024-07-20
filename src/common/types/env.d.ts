@@ -1,8 +1,5 @@
 namespace NodeJS {
   interface ProcessEnv {
-    //* Databases
-    MONGODB_URI: string;
-    REDIS_HOST: string;
     //* Application
     PORT: string;
     BASE_URL: string;
@@ -15,5 +12,21 @@ namespace NodeJS {
     //* Gmail
     GMAIL_USER: string;
     GMAIL_PASS: string;
+
+    //* Mysql database config
+    DB_HOST: string;
+    DB_PORT: string;
+    DB_USERNAME: string;
+    DB_PASSWORD: string;
+    DB_NAME: string;
+    DB_SYNCHRONIZE: string;
+
+    //* Basic auth
+    BASIC_AUTH_USERNAME: string;
+    BASIC_AUTH_PASSWORD: string;
+
+    //* Redis config
+    REDIS_HOST: string;
+    REDIS_PORT: string;
   }
 }
