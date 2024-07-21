@@ -20,6 +20,7 @@ import {
 import { InjectRepository } from "@nestjs/typeorm";
 import { Genre } from "./entities/genre.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
+import { Roles } from "../../common/enums/roles.enum";
 
 @Injectable()
 export class GenresService {
@@ -143,12 +144,12 @@ export class GenresService {
   ): Promise<string> {
     const genre = await this.checkExistGenre(id);
 
-    if (!genre.createdBy && !user.isSuperAdmin) {
+    if (!genre.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(GenresMessages.OnlySuperAdminCanUpdateGenre);
     }
 
     if (genre.createdBy)
-      if (user.id !== genre.createdBy.id && !user.isSuperAdmin) {
+      if (user.id !== genre.createdBy.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(GenresMessages.CannotUpdateGenre);
       }
 
@@ -170,12 +171,12 @@ export class GenresService {
   async remove(id: number, user: User): Promise<string> {
     const genre = await this.checkExistGenre(id);
 
-    if (!genre.createdBy && !user.isSuperAdmin) {
+    if (!genre.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(GenresMessages.OnlySuperAdminCanRemoveGenre);
     }
 
     if (genre.createdBy)
-      if (user.id !== genre.createdBy.id && !user.isSuperAdmin) {
+      if (user.id !== genre.createdBy.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(GenresMessages.CannotRemoveGenre);
       }
 

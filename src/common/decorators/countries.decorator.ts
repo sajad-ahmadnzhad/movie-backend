@@ -1,7 +1,11 @@
-import { HttpCode, HttpStatus, UseGuards, UseInterceptors, applyDecorators } from "@nestjs/common";
+import {
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  UseInterceptors,
+  applyDecorators,
+} from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { fileFilter } from "../../common/utils/upload-file.util";
 import { memoryStorage } from "multer";
 import {
@@ -33,11 +37,16 @@ import {
   NotFoundSchema,
   BadRequestParamSchema,
 } from "../swagger/schemas/public.schema";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Role } from "./role.decorator";
 
 //* Create country decorator
 export const CreateCountryDecorator = applyDecorators(
   HttpCode(HttpStatus.CREATED),
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   UseInterceptors(
     FileInterceptor("countryFlag", {
@@ -76,7 +85,8 @@ export const CreateCountryDecorator = applyDecorators(
 
 //* Update country decorator
 export const UpdateCountryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   UseInterceptors(
     FileInterceptor("countryFlag", {
@@ -114,13 +124,18 @@ export const UpdateCountryDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
+  ApiParam({
+    name: "id",
+    description: "The id of the country",
+    type: "number",
+  }),
   ApiOperation({ summary: "update country" })
 );
 
 //* Remove country decorator
 export const RemoveCountryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Country not found",
@@ -146,7 +161,11 @@ export const RemoveCountryDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
+  ApiParam({
+    name: "id",
+    description: "The id of the country",
+    type: "number",
+  }),
   ApiOperation({ summary: "remove country" }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -161,9 +180,13 @@ export const GetOneCountryDecorator = applyDecorators(
     description: "Country not found",
     schema: NotFoundSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the country" , type: 'number' }),
+  ApiParam({
+    name: "id",
+    description: "The id of the country",
+    type: "number",
+  }),
   ApiBadRequestResponse({
-    description: 'Invalid id',
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiOkResponse({ schema: GetOneCountrySchema }),
@@ -178,14 +201,14 @@ export const GetAllCountriesDecorator = applyDecorators(
   ApiOperation({ summary: "get all countries" }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the countries",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the country",
     example: 10,
@@ -206,19 +229,19 @@ export const SearchCountriesDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "country",
-    type: 'string',
+    type: "string",
     description: "The query of the country",
   }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the genres",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the genre",
     example: 10,

@@ -24,6 +24,7 @@ import { Repository, FindManyOptions, Like } from "typeorm";
 import { Industry } from "./entities/industry.entity";
 import { User } from "../auth/entities/user.entity";
 import { CountriesService } from "../countries/countries.service";
+import { Roles } from "../../common/enums/roles.enum";
 
 @Injectable()
 export class IndustriesService {
@@ -176,7 +177,7 @@ export class IndustriesService {
 
     const industry = await this.checkExistIndustry(id);
 
-    if (!industry.createdBy && !user.isSuperAdmin) {
+    if (!industry.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(
         IndustriesMessages.OnlySuperAdminCanUpdateIndustry
       );
@@ -188,7 +189,10 @@ export class IndustriesService {
     }
 
     if (industry.createdBy)
-      if (user.id !== industry.createdBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== industry.createdBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(IndustriesMessages.CannotUpdateIndustry);
       }
 
@@ -213,14 +217,17 @@ export class IndustriesService {
   async remove(id: number, user: User): Promise<string> {
     const existingIndustry = await this.checkExistIndustry(id);
 
-    if (!existingIndustry.createdBy && !user.isSuperAdmin) {
+    if (!existingIndustry.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(
         IndustriesMessages.OnlySuperAdminCanRemoveIndustry
       );
     }
 
     if (existingIndustry.createdBy)
-      if (user.id !== existingIndustry.createdBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== existingIndustry.createdBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(IndustriesMessages.CannotRemoveIndustry);
       }
 

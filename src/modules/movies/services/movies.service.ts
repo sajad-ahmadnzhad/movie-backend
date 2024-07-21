@@ -37,6 +37,7 @@ import { Movie } from "../entities/movie.entity";
 import { Like as LikeEntity } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Bookmark } from "../entities/bookmark.entity";
+import { Roles } from '../../../common/enums/roles.enum';
 
 @Injectable()
 export class MoviesService {
@@ -392,12 +393,12 @@ export class MoviesService {
     let { release_year, title, description, actors, genres, industries } =
       updateMovieDto;
 
-    if (!movie.createdBy && !user.isSuperAdmin) {
+    if (!movie.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(MoviesMessages.OnlySuperAdminCanUpdateMovie);
     }
 
     if (movie.createdBy)
-      if (movie.createdBy.id !== user.id && !user.isSuperAdmin) {
+      if (movie.createdBy.id !== user.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(MoviesMessages.CannotUpdateMovie);
       }
 
@@ -474,12 +475,12 @@ export class MoviesService {
   async remove(id: number, user: User): Promise<string> {
     const movie = await this.checkExistMovieById(id);
 
-    if (!movie.createdBy && !user.isSuperAdmin) {
+    if (!movie.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(MoviesMessages.OnlySuperAdminCanRemoveMovie);
     }
 
     if (movie.createdBy)
-      if (movie.createdBy.id !== user.id && !user.isSuperAdmin) {
+      if (movie.createdBy.id !== user.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(MoviesMessages.CannotRemoveMovie);
       }
 

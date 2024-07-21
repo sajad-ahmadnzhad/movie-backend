@@ -45,12 +45,6 @@ export class User {
   avatarURL: string;
 
   @Column({ type: "boolean", default: false })
-  isAdmin: boolean;
-
-  @Column({ type: "boolean", default: false })
-  isSuperAdmin: boolean;
-
-  @Column({ type: "boolean", default: false })
   isVerifyEmail: boolean;
 
   @Column({ type: "enum", enum: Roles, default: Roles.USER })

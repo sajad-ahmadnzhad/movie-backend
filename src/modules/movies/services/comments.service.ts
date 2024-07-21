@@ -19,6 +19,7 @@ import { Comment } from "../entities/comment.entity";
 import { Repository } from "typeorm";
 import { User } from "../../auth/entities/user.entity";
 import { Movie } from "../entities/movie.entity";
+import { Roles } from "../../../common/enums/roles.enum";
 
 @Injectable()
 export class CommentsService {
@@ -40,8 +41,8 @@ export class CommentsService {
 
     const comment = this.commentRepository.create({
       creator: user,
-      isAccept: isAdminMovie || user.isSuperAdmin,
-      isReviewed: isAdminMovie || user.isSuperAdmin,
+      isAccept: isAdminMovie || user.role == Roles.SUPER_ADMIN,
+      isReviewed: isAdminMovie || user.role == Roles.SUPER_ADMIN,
       body,
       movie,
       rating,
@@ -74,8 +75,8 @@ export class CommentsService {
       parentComment: existingComment,
       creator: user,
       movie,
-      isAccept: isAdminMovie || user.isSuperAdmin,
-      isReviewed: isAdminMovie || user.isSuperAdmin,
+      isAccept: isAdminMovie || user.role == Roles.SUPER_ADMIN,
+      isReviewed: isAdminMovie || user.role == Roles.SUPER_ADMIN,
     });
 
     await this.commentRepository.save(reply);
@@ -90,7 +91,10 @@ export class CommentsService {
       throw new ConflictException(CommentsMessages.AlreadyAcceptedComment);
     }
 
-    if (user.id !== comment.movie?.createdBy.id && !user.isSuperAdmin) {
+    if (
+      user.id !== comment.movie?.createdBy.id &&
+      user.role !== Roles.SUPER_ADMIN
+    ) {
       throw new ForbiddenException(CommentsMessages.CannotAcceptComment);
     }
 
@@ -109,7 +113,10 @@ export class CommentsService {
       throw new ConflictException(CommentsMessages.AlreadyRejectedComment);
     }
 
-    if (user.id !== comment.movie?.createdBy.id && !user.isSuperAdmin) {
+    if (
+      user.id !== comment.movie?.createdBy.id &&
+      user.role !== Roles.SUPER_ADMIN
+    ) {
       throw new ForbiddenException(CommentsMessages.CannotRejectComment);
     }
 
@@ -134,7 +141,7 @@ export class CommentsService {
     const comment = await this.checkExistCommentById(id);
 
     if (user.id !== comment.movie.createdBy.id)
-      if (user.id !== comment.creator.id && !user.isSuperAdmin) {
+      if (user.id !== comment.creator.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(CommentsMessages.CannotUpdateComment);
       }
 
@@ -234,7 +241,7 @@ export class CommentsService {
     const comment = await this.checkExistCommentById(id);
 
     if (user.id !== comment.movie.createdBy.id)
-      if (user.id !== comment.creator.id && !user.isSuperAdmin) {
+      if (user.id !== comment.creator.id && user.role == Roles.SUPER_ADMIN) {
         throw new ForbiddenException(CommentsMessages.CannotRemoveComment);
       }
 

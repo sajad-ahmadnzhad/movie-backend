@@ -22,6 +22,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Country } from "./entities/country.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { User } from "../auth/entities/user.entity";
+import { Roles } from "../../common/enums/roles.enum";
 
 @Injectable()
 export class CountriesService {
@@ -160,14 +161,14 @@ export class CountriesService {
   ): Promise<string> {
     const country = await this.checkExistCountry(id);
 
-    if (!country.createdBy && !user.isSuperAdmin) {
+    if (!country.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(
         CountriesMessages.OnlySuperAdminCanUpdateCountry
       );
     }
 
     if (country.createdBy)
-      if (user.id !== country.createdBy.id && !user.isSuperAdmin) {
+      if (user.id !== country.createdBy.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(CountriesMessages.CannotUpdateCountry);
       }
 
@@ -201,14 +202,17 @@ export class CountriesService {
   async remove(id: number, user: User): Promise<string> {
     const existingCountry = await this.checkExistCountry(id);
 
-    if (!existingCountry.createdBy && !user.isSuperAdmin) {
+    if (!existingCountry.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(
         CountriesMessages.OnlySuperAdminCanRemoveCountry
       );
     }
 
     if (existingCountry.createdBy)
-      if (user.id !== existingCountry.createdBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== existingCountry.createdBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(CountriesMessages.CannotRemoveCountry);
       }
 

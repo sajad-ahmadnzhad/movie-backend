@@ -9,13 +9,14 @@ import {
   ApiOperation,
   ApiParam,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { Role } from "./role.decorator";
 
 //* Create comment decorator
 export const CreateCommentDecorator = applyDecorators(
-  UseGuards(AuthGuard),
-
+  UseGuards(JwtGuard),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiOperation({ summary: "create a comment" }),
@@ -24,7 +25,7 @@ export const CreateCommentDecorator = applyDecorators(
 
 //* Reply comment decorator
 export const ReplyCommentDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({ description: "Comment not Found" }),
   ApiConflictResponse({ description: "Not Accepted comment" }),
@@ -37,7 +38,7 @@ export const ReplyCommentDecorator = applyDecorators(
 
 //* Accept comment decorator
 export const AcceptCommentDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
   ApiCookieAuth(),
   ApiNotFoundResponse({ description: "Comment not Found" }),
   ApiForbiddenResponse({
@@ -52,7 +53,7 @@ export const AcceptCommentDecorator = applyDecorators(
 
 //* Reject comment decorator
 export const RejectCommentDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({ description: "Comment not Found" }),
   ApiForbiddenResponse({
@@ -67,7 +68,7 @@ export const RejectCommentDecorator = applyDecorators(
 
 //* Update comment decorator
 export const UpdateCommentDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiInternalServerErrorResponse({ description: "Jwt expired" }),
   ApiParam({ name: "id", description: "Comment id" }),
   ApiNotFoundResponse({ description: "Comment not Found | Movie not found" }),

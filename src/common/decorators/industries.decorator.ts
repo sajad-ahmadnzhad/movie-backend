@@ -1,6 +1,4 @@
 import { UseGuards, applyDecorators } from "@nestjs/common";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import {
   ApiOperation,
   ApiConflictResponse,
@@ -29,10 +27,15 @@ import {
   GetAllIndustriesSchema,
   GetOneIndustrySchema,
 } from "../swagger/schemas/industry.schema";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Role } from "./role.decorator";
 
 //* Create industry decorator
 export const CreateIndustryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiOperation({ summary: "create new industry" }),
   ApiTooManyRequestsResponse({
@@ -117,7 +120,8 @@ export const GetOneIndustryDecorator = applyDecorators(
 
 //* Update industry decorator
 export const UpdateIndustryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Industry not found | Country not found",
@@ -154,7 +158,8 @@ export const UpdateIndustryDecorator = applyDecorators(
 
 //* Remove industry decorator
 export const RemoveIndustryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Industry not found",
@@ -224,4 +229,3 @@ export const SearchIndustriesDecorator = applyDecorators(
     schema: TooManyRequests,
   })
 );
-

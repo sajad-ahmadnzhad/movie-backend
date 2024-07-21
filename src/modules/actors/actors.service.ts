@@ -26,6 +26,7 @@ import { Industry } from "../industries/entities/industry.entity";
 import { User } from "../auth/entities/user.entity";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Roles } from "../../common/enums/roles.enum";
 
 @Injectable()
 export class ActorsService {
@@ -191,12 +192,15 @@ export class ActorsService {
 
     const existingActor = await this.checkExistActor(id);
 
-    if (!existingActor.createdBy && !user.isSuperAdmin) {
+    if (!existingActor.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(ActorsMessages.OnlySuperAdminCanUpdateActor);
     }
 
     if (existingActor.createdBy)
-      if (user.id !== existingActor.createdBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== existingActor.createdBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(ActorsMessages.CannotUpdateActor);
       }
 
@@ -241,12 +245,15 @@ export class ActorsService {
   async remove(id: number, user: User): Promise<string> {
     const existingActor = await this.checkExistActor(id);
 
-    if (!existingActor.createdBy && !user.isSuperAdmin) {
+    if (!existingActor.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(ActorsMessages.OnlySuperAdminCanRemoveActor);
     }
 
     if (existingActor.createdBy)
-      if (user.id !== existingActor.createdBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== existingActor.createdBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(ActorsMessages.CannotRemoveActor);
       }
 

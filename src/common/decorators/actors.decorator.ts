@@ -15,8 +15,6 @@ import {
   ApiQuery,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { fileFilter } from "../utils/upload-file.util";
 import { memoryStorage } from "multer";
 import {
@@ -33,10 +31,15 @@ import {
   GetAllActorsSchema,
   GetOneActorSchema,
 } from "../swagger/schemas/actor.schema";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Role } from "./role.decorator";
 
 //* Create actor decorator
 export const CreateActorDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -123,7 +126,7 @@ export const GetOneActorDecorator = applyDecorators(
     schema: NotFoundSchema,
   }),
   ApiBadRequestResponse({
-    description: 'Invalid id',
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
   ApiParam({ name: "id", description: "The id of the actor" }),
@@ -143,18 +146,18 @@ export const SearchActorsDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "actor",
-    type: 'string',
+    type: "string",
     description: "The name of the actor",
   }),
   ApiQuery({
     name: "limit",
-    type: 'string',
+    type: "string",
     description: "The count of the actors",
     required: false,
   }),
   ApiQuery({
     name: "page",
-    type: 'string',
+    type: "string",
     description: "The page of the actors",
     required: false,
   }),
@@ -163,7 +166,8 @@ export const SearchActorsDecorator = applyDecorators(
 
 //* Update actor decorator
 export const UpdateActorDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -206,7 +210,8 @@ export const UpdateActorDecorator = applyDecorators(
 
 //* Remove actor decorator
 export const RemoveActorDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,

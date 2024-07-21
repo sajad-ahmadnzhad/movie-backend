@@ -1,6 +1,4 @@
 import { UseGuards, applyDecorators } from "@nestjs/common";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -28,10 +26,15 @@ import {
   NotFoundSchema,
   TooManyRequests,
 } from "../swagger/schemas/public.schema";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Role } from "./role.decorator";
 
 //* Create Genre decorator
 export const CreateGenreDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -62,7 +65,8 @@ export const CreateGenreDecorator = applyDecorators(
 
 //* Update Genre decorator
 export const UpdateGenreDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -88,7 +92,7 @@ export const UpdateGenreDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" , type: 'number' }),
+  ApiParam({ name: "id", description: "The id of the genre", type: "number" }),
   ApiBadRequestResponse({
     description: "Body validation error",
     schema: BadRequestBodySchema,
@@ -98,7 +102,8 @@ export const UpdateGenreDecorator = applyDecorators(
 
 //* Remove genre decorator
 export const RemoveGenreDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Genre not found",
@@ -108,7 +113,7 @@ export const RemoveGenreDecorator = applyDecorators(
     description: "Cannot Remove genre | Forbidden resource",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" , type: 'number'}),
+  ApiParam({ name: "id", description: "The id of the genre", type: "number" }),
   ApiBadRequestResponse({
     description: "Param validation error",
     schema: BadRequestParamSchema,
@@ -141,10 +146,10 @@ export const GetOneGenreDecorator = applyDecorators(
   }),
   ApiNotFoundResponse({ schema: NotFoundSchema }),
   ApiBadRequestResponse({
-    description: 'Invalid id',
+    description: "Invalid id",
     schema: BadRequestParamSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the genre" , type: 'number'}),
+  ApiParam({ name: "id", description: "The id of the genre", type: "number" }),
   ApiOkResponse({ schema: GetOneGenreSchema })
 );
 
@@ -157,14 +162,14 @@ export const GetAllGenresDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the genres",
     example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the genre",
     example: 10,
@@ -185,21 +190,21 @@ export const SearchGenresDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the genres",
-    example: 1
+    example: 1,
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the genre",
-    example: 10
+    example: 10,
   }),
   ApiQuery({
     name: "genre",
-    type: 'string',
+    type: "string",
     description: "the name of the genre",
   }),
   ApiOkResponse({ schema: GetAllGenresSchema })

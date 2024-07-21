@@ -20,8 +20,6 @@ import {
   ApiQuery,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
-import { IsAdminGuard } from "../../modules/auth/guards/isAdmin.guard";
 import { memoryStorage } from "multer";
 import { movieFileFilter } from "../utils/upload-file.util";
 import {
@@ -38,10 +36,15 @@ import {
   GetAllMoviesSchema,
   GetOneMovie,
 } from "../swagger/schemas/movie.schema";
+import { Roles } from "../enums/roles.enum";
+import { RoleGuard } from "../guards/auth.guard";
+import { JwtGuard } from "../guards/jwt.guard";
+import { Role } from "./role.decorator";
 
 //* Create movie decorator
 export const CreateMovieDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -203,7 +206,8 @@ export const SearchMoviesDecorator = applyDecorators(
 
 //* Remove movie decorator
 export const RemoveMovieDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiNotFoundResponse({
     description: "Movie not found",
@@ -236,7 +240,8 @@ export const RemoveMovieDecorator = applyDecorators(
 
 //* Update movie decorator
 export const UpdateMovieDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiConsumes("multipart/form-data"),
   UseInterceptors(
@@ -279,7 +284,7 @@ export const UpdateMovieDecorator = applyDecorators(
 //* Like movie decorator
 export const LikeMovieDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiCookieAuth(),
   ApiForbiddenResponse({
     description: "Forbidden resource",
@@ -313,7 +318,7 @@ export const LikeMovieDecorator = applyDecorators(
 //* Bookmark movie decorator
 export const BookmarkMovieDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiCookieAuth(),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -346,7 +351,8 @@ export const BookmarkMovieDecorator = applyDecorators(
 
 //* Get bookmark history decorator
 export const GetBookmarkHistoryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiQuery({
     name: "page",
     type: "string",
@@ -381,7 +387,8 @@ export const GetBookmarkHistoryDecorator = applyDecorators(
 
 //* Get like history decorator
 export const GetLikeHistoryDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
   ApiQuery({
     name: "page",
