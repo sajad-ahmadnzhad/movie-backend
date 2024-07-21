@@ -27,6 +27,8 @@ import { FindManyOptions, Like, Repository } from "typeorm";
 import { AuthMessages } from "../../common/enums/authMessages.enum";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Bookmark } from "../movies/entities/bookmark.entity";
+import { Roles } from "../../common/enums/roles.enum";
+import { ChangeRoleDto } from "./dto/change-role.dto";
 
 @Injectable()
 export class UsersService {
@@ -115,11 +117,11 @@ export class UsersService {
 
     if (!foundUser) throw new NotFoundException(UsersMessages.NotFound);
 
-    if (foundUser.isAdmin && !user.isSuperAdmin) {
+    if (foundUser.role == Roles.ADMIN && user.role !== Roles.SUPER_ADMIN) {
       throw new BadRequestException(UsersMessages.CannotRemoveAdmin);
     }
 
-    if (foundUser.isSuperAdmin) {
+    if (foundUser.role == Roles.SUPER_ADMIN) {
       throw new BadRequestException(UsersMessages.CannotRemoveSuperAdmin);
     }
 
@@ -129,19 +131,25 @@ export class UsersService {
     return UsersMessages.RemovedSuccess;
   }
 
-  async changeRoleUser(userId: number): Promise<string> {
+  async changeRoleUser(
+    userId: number,
+    changeRoleDto: ChangeRoleDto
+  ): Promise<string> {
     const user = await this.userRepository.findOneBy({ id: userId });
 
     if (!user) throw new NotFoundException(UsersMessages.NotFound);
 
-    if (user.isSuperAdmin) {
+    if (user.role == Roles.SUPER_ADMIN) {
       throw new BadRequestException(UsersMessages.CannotChangeRoleSuperAdmin);
     }
 
-    await this.userRepository.update(
-      { id: user.id },
-      { isAdmin: !user.isAdmin }
-    );
+    if (changeRoleDto.role === Roles.SUPER_ADMIN) {
+      throw new ForbiddenException(UsersMessages.SuperAdminRoleNotAllowed);
+    }
+
+    user.role = changeRoleDto.role;
+
+    await this.userRepository.save(user);
 
     return UsersMessages.ChangeRoleSuccess;
   }
@@ -198,7 +206,7 @@ export class UsersService {
       select: ["id", "password"],
     })) as User;
 
-    if (user.isSuperAdmin) {
+    if (user.role == Roles.SUPER_ADMIN) {
       throw new BadRequestException(
         UsersMessages.TransferOwnershipForDeleteAccount
       );
@@ -235,7 +243,7 @@ export class UsersService {
       select: ["id", "password"],
     })) as User;
 
-    if (existingUser.isSuperAdmin) {
+    if (existingUser.role == Roles.SUPER_ADMIN) {
       throw new BadRequestException(UsersMessages.EnteredIdIsSuperAdmin);
     }
 
@@ -250,11 +258,12 @@ export class UsersService {
 
     await this.userRepository.update(
       { id: userId },
-      { isAdmin: true, isSuperAdmin: true }
+      { role: Roles.SUPER_ADMIN }
     );
+
     await this.userRepository.update(
       { id: currentSuperAdmin.id },
-      { isSuperAdmin: false }
+      { role: Roles.ADMIN }
     );
 
     return UsersMessages.OwnershipTransferSuccess;
@@ -267,11 +276,11 @@ export class UsersService {
       throw new NotFoundException(UsersMessages.NotFound);
     }
 
-    if (existingUser.isSuperAdmin) {
+    if (existingUser.role == Roles.SUPER_ADMIN) {
       throw new ForbiddenException(UsersMessages.CannotBanSuperAdmin);
     }
 
-    if (!user.isSuperAdmin && existingUser.isAdmin) {
+    if (user.role !== Roles.SUPER_ADMIN && existingUser.role == Roles.ADMIN) {
       throw new ForbiddenException(UsersMessages.CannotBanAdmin);
     }
 
@@ -301,12 +310,15 @@ export class UsersService {
       throw new NotFoundException(UsersMessages.NotFound);
     }
 
-    if (!existingBanUser.bannedBy && !user.isSuperAdmin) {
+    if (!existingBanUser.bannedBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(UsersMessages.OnlySuperAdminCanUnbanUser);
     }
 
     if (existingBanUser.bannedBy)
-      if (user.id !== existingBanUser.bannedBy.id && !user.isSuperAdmin) {
+      if (
+        user.id !== existingBanUser.bannedBy.id &&
+        user.role !== Roles.SUPER_ADMIN
+      ) {
         throw new ForbiddenException(UsersMessages.CannotUnbanUser);
       }
 

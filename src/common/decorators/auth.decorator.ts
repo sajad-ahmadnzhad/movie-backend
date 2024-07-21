@@ -17,7 +17,6 @@ import {
   ApiParam,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger";
-import { AuthGuard } from "../../modules/auth/guards/auth.guard";
 import {
   BadRequestBodySchema,
   BadRequestParamSchema,
@@ -28,6 +27,7 @@ import {
   SuccessSchema,
   TooManyRequests,
 } from "../swagger/schemas/public.schema";
+import { JwtGuard } from "../guards/jwt.guard";
 
 //* Signup user decorator
 export const SignUpUserDecorator = applyDecorators(
@@ -76,7 +76,7 @@ export const SignInUserDecorator = applyDecorators(
 
 //* Signout user decorator
 export const SignoutUserDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiCookieAuth(),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -95,7 +95,7 @@ export const SignoutUserDecorator = applyDecorators(
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
-  }),
+  })
 );
 
 //* Refresh token decorator
@@ -160,8 +160,12 @@ export const ResetPasswordDecorator = applyDecorators(
     description: "Reset password success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: "userId", description: "The userId of the token", type: 'number' }),
-  ApiParam({ name: "token", description: "The token" , type: 'string' }),
+  ApiParam({
+    name: "userId",
+    description: "The userId of the token",
+    type: "number",
+  }),
+  ApiParam({ name: "token", description: "The token", type: "string" }),
   ApiOperation({ summary: "User reset password" }),
   HttpCode(HttpStatus.OK)
 );
@@ -210,7 +214,11 @@ export const VerifyEmailDecorator = applyDecorators(
     description: "Verified email success",
     schema: SuccessSchema,
   }),
-  ApiParam({ name: "userId", description: "The userId of the token" , type: 'number' }),
-  ApiParam({ name: "token", description: "The token" , type: 'string' }),
+  ApiParam({
+    name: "userId",
+    description: "The userId of the token",
+    type: "number",
+  }),
+  ApiParam({ name: "token", description: "The token", type: "string" }),
   ApiOperation({ summary: "Verified user by token" })
 );

@@ -29,6 +29,7 @@ import { LessThan, LessThanOrEqual, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BanUser } from "./entities/banUser.entity";
 import { Token } from "./entities/token.entity";
+import { Roles } from "../../common/enums/roles.enum";
 
 @Injectable()
 export class AuthService {
@@ -78,9 +79,8 @@ export class AuthService {
 
     let user = this.userRepository.create({
       ...dto,
-      isAdmin: isFirstUser,
-      isSuperAdmin: isFirstUser,
       password: hashPassword,
+      role: isFirstUser ? Roles.SUPER_ADMIN : Roles.USER,
     });
 
     user = await this.userRepository.save(user);
@@ -233,7 +233,7 @@ export class AuthService {
       try {
         await this.mailerService.sendMail(mailOptions);
         await this.tokenRepository.save(token);
-      } catch (error: any) {
+      } catch (error) {
         await this.tokenRepository.delete({ id: token.id });
         throw new InternalServerErrorException(error.message);
       }

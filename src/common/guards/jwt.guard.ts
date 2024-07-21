@@ -30,9 +30,7 @@ export class JwtGuard implements CanActivate {
 
     const { accessToken } = req.cookies;
 
-    if (!accessToken) {
-      throw new ForbiddenException("This path is protected !!");
-    }
+    if (!accessToken) return false
 
     let jwtPayload: null | { id: number } = null;
 

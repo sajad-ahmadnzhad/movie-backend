@@ -38,6 +38,8 @@ import { BanUserDto } from "./dto/ban-user.dto";
 import { User } from "../auth/entities/user.entity";
 import { BanUser } from "../auth/entities/banUser.entity";
 import { Bookmark } from "../movies/entities/bookmark.entity";
+import { Roles } from "../../common/enums/roles.enum";
+import { ChangeRoleDto } from "./dto/change-role.dto";
 
 @Controller({
   path: "users",
@@ -161,9 +163,13 @@ export class UsersController {
   @Patch("change-role/:userId")
   @ChangeRoleUserDecorator
   async changeRoleUser(
-    @Param("userId", ParseIntPipe) userId: number
+    @Param("userId", ParseIntPipe) userId: number,
+    @Body() changeRoleDto: ChangeRoleDto
   ): Promise<{ message: string }> {
-    const success = await this.usersService.changeRoleUser(userId);
+    const success = await this.usersService.changeRoleUser(
+      userId,
+      changeRoleDto
+    );
 
     return { message: success };
   }

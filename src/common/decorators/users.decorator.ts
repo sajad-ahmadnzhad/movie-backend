@@ -34,10 +34,14 @@ import {
   TooManyRequests,
 } from "../swagger/schemas/public.schema";
 import { GetMyBookmarksSchema } from "../swagger/schemas/movie.schema";
+import { JwtGuard } from "../guards/jwt.guard";
+import { RoleGuard } from "../guards/auth.guard";
+import { Roles } from "../enums/roles.enum";
+import { Role } from "./role.decorator";
 
 //* Get me decorator
 export const GetMeDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -56,7 +60,8 @@ export const GetMeDecorator = applyDecorators(
 
 //* Get all users decorator
 export const GetAllUsersDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiOkResponse({
     description: "Return all users for admins",
     schema: GetAllUsersSchema,
@@ -76,13 +81,13 @@ export const GetAllUsersDecorator = applyDecorators(
   ApiOperation({ summary: "get all users" }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the user",
   })
@@ -90,7 +95,8 @@ export const GetAllUsersDecorator = applyDecorators(
 
 //* Get one user decorator
 export const GetOneUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiBadRequestResponse({
     description: "Invalid id",
     schema: BadRequestParamSchema,
@@ -99,7 +105,11 @@ export const GetOneUserDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
-  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
+  ApiParam({
+    name: "userId",
+    description: "The id of the user",
+    type: "number",
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -118,7 +128,7 @@ export const GetOneUserDecorator = applyDecorators(
 
 //* Update user decorator
 export const UpdateUserDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   UseInterceptors(
     FileInterceptor("avatar", {
       fileFilter,
@@ -149,7 +159,8 @@ export const UpdateUserDecorator = applyDecorators(
 
 //* Remove user decorator
 export const RemoveUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -166,7 +177,11 @@ export const RemoveUserDecorator = applyDecorators(
     description: "Jwt expired",
     schema: JwtExpiredSchema,
   }),
-  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
+  ApiParam({
+    name: "userId",
+    description: "The id of the user",
+    type: "number",
+  }),
   ApiOkResponse({ description: "Removed user success", schema: SuccessSchema }),
   ApiOperation({ summary: "remove user" }),
   ApiForbiddenResponse({
@@ -177,7 +192,8 @@ export const RemoveUserDecorator = applyDecorators(
 
 //* Change role user decorator
 export const ChangeRoleUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard, IsSuperAdminGuard),
+  Role(Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -194,19 +210,34 @@ export const ChangeRoleUserDecorator = applyDecorators(
     description: "Cannot change role super admin",
     schema: BadRequestParamSchema,
   }),
+  ApiBadRequestResponse({
+    description: "Super admin role is not allowed",
+    schema: ForbiddenSchema,
+  }),
   ApiOkResponse({ description: "Changed role success", schema: SuccessSchema }),
-  ApiParam({ name: "userId", description: "The id of the user" , type: 'number' }),
-  ApiOperation({ summary: "change role to admin or user" })
+  ApiParam({
+    name: "userId",
+    description: "The id of the user",
+    type: "number",
+  }),
+
+  ApiConsumes("application/x-www-form-urlencoded", "application/json"),
+  ApiOperation({ summary: "change role by super admin" })
 );
 
 //* Search user decorator
 export const SearchUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiOperation({ summary: "search in users list" }),
-  ApiQuery({ name: "user", description: "The query of the user"  , type: 'string'}),
+  ApiQuery({
+    name: "user",
+    description: "The query of the user",
+    type: "string",
+  }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the users",
   }),
@@ -216,7 +247,7 @@ export const SearchUserDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the user",
   }),
@@ -237,7 +268,7 @@ export const SearchUserDecorator = applyDecorators(
 
 //* Delete account user decorator
 export const DeleteAccountUserDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiBadRequestResponse({
     description: "Invalid Password | cannot delete account super admin",
     schema: BadRequestParamSchema,
@@ -263,11 +294,12 @@ export const DeleteAccountUserDecorator = applyDecorators(
 
 //* Change super admin decorator
 export const ChangeSuperAdminDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard, IsSuperAdminGuard),
+  Role(Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiParam({
     name: "userId",
     description: "ID of the person who becomes the owner",
-    type: 'number'
+    type: "number",
   }),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
@@ -298,7 +330,8 @@ export const ChangeSuperAdminDecorator = applyDecorators(
 
 //* Ban User Decorator
 export const BanUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiForbiddenResponse({
     description: "Cannot ban admin or super admin",
     schema: ForbiddenSchema,
@@ -329,7 +362,8 @@ export const BanUserDecorator = applyDecorators(
 
 //* Unban User Decorator
 export const UnbanUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -354,7 +388,11 @@ export const UnbanUserDecorator = applyDecorators(
     description: "This path is protected !!",
     schema: ForbiddenSchema,
   }),
-  ApiParam({ name: "id", description: "The id of the banned user" , type: 'string' }),
+  ApiParam({
+    name: "id",
+    description: "The id of the banned user",
+    type: "string",
+  }),
   ApiBadRequestResponse({
     description: "Invalid id",
     schema: BadRequestParamSchema,
@@ -364,7 +402,8 @@ export const UnbanUserDecorator = applyDecorators(
 
 //* Get all ban user Decorator
 export const GetAllBanUserDecorator = applyDecorators(
-  UseGuards(AuthGuard, IsAdminGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -375,13 +414,13 @@ export const GetAllBanUserDecorator = applyDecorators(
   }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the user",
   }),
@@ -391,20 +430,20 @@ export const GetAllBanUserDecorator = applyDecorators(
 
 //* Get my bookmarks decorator
 export const GetMyBookmarksDecorator = applyDecorators(
-  UseGuards(AuthGuard),
+  UseGuards(JwtGuard),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
   }),
   ApiQuery({
     name: "page",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The page of the users",
   }),
   ApiQuery({
     name: "limit",
-    type: 'number',
+    type: "number",
     required: false,
     description: "The count of the user",
   }),
