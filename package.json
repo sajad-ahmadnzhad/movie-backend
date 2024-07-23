@@ -7,10 +7,16 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "start": "cross-env NODE_ENV=dev node dist/main",
+    "start": "npm run migration-prod:run && cross-env NODE_ENV=prod node dist/main",
     "start:dev": "cross-env NODE_ENV=dev nest start --watch",
     "start:debug": "cross-env NODE_ENV=dev start --debug --watch",
-    "start:prod": "cross-env NODE_ENV=prod node dist/main"
+    "start:prod": "cross-env NODE_ENV=prod node dist/main",
+    "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "migration-dev:run": "cross-env NODE_ENV=dev npm run typeorm migration:run -- -d ./src/config/typeorm.ts",
+    "migration-prod:run": "cross-env NODE_ENV=prod npm run typeorm migration:run -- -d ./src/config/typeorm.ts",
+    "migration:revert": "npm run typeorm -- -d ./src/config/typeorm.ts migration:revert",
+    "migration:generate": "npm run typeorm -- -d ./src/config/typeorm.ts migration:generate ./src/migrations/$npm_config_name",
+    "migration:create": "npm run typeorm migration:create ./src/migrations/$npm_config_name"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -32,6 +38,7 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
     "cross-env": "^7.0.3",
+    "dotenv": "^16.4.5",
     "express-basic-auth": "^1.2.1",
     "helmet": "^7.1.0",
     "mysql2": "^3.10.2",

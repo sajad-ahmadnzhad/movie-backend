@@ -179,7 +179,6 @@ export class CommentsService {
 
     const acceptedCommentsTree = await Promise.all(
       rootComments.map(async (rootComment) => {
-        // ساختن QueryBuilder برای یافتن نوادگان
         const qb = this.commentRepository.manager
           .getTreeRepository(Comment)
           .createDescendantsQueryBuilder(
