@@ -4,8 +4,6 @@ import { Country } from "../../countries/entities/country.entity";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -13,17 +11,14 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Bookmark } from "./bookmark.entity";
 import { Like } from "./like.entity";
 import { Comment } from "./comment.entity";
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 
 @Entity({ name: "movies" })
-export class Movie {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Movie extends BaseEntity {
   @Column({ type: "varchar", nullable: false, length: 100 })
   title: string;
 
@@ -71,20 +66,4 @@ export class Movie {
 
   @OneToMany(() => Comment, (comment) => comment.movie)
   comments: Comment[];
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  createdAt: Date;
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  setCreatedAt() {
-    this.createdAt = new Date();
-  }
-
-  @BeforeUpdate()
-  setUpdatedAt() {
-    this.updatedAt = new Date();
-  }
 }

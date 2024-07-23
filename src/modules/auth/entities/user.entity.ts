@@ -1,13 +1,4 @@
-import {
-  AfterRemove,
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { AfterRemove, Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { Token } from "./token.entity";
 import { BanUser } from "./banUser.entity";
 import { Genre } from "../../genres/entities/genre.entity";
@@ -20,12 +11,10 @@ import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
 import { removeFile } from "../../../common/utils/functions.util";
 import { Roles } from "../../../common/enums/roles.enum";
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 
 @Entity({ name: "users" })
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class User extends BaseEntity {
   @Column({ type: "varchar", length: 40, nullable: false })
   name: string;
 
@@ -85,21 +74,5 @@ export class User {
     //* Remove user avatar
     if (!this.avatarURL.includes("custom-avatar.jpg"))
       removeFile(this.avatarURL);
-  }
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  createdAt: Date;
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  setCreatedAt() {
-    this.createdAt = new Date();
-  }
-
-  @BeforeUpdate()
-  setUpdatedAt() {
-    this.updatedAt = new Date();
   }
 }

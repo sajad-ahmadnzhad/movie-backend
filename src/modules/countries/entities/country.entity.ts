@@ -1,24 +1,19 @@
 import { Industry } from "../../industries/entities/industry.entity";
 import { User } from "../../auth/entities/user.entity";
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
   JoinColumn,
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
 } from "typeorm";
 import { Actor } from "../../actors/entities/actor.entity";
 import { Movie } from "../../movies/entities/movie.entity";
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 
 @Entity({ name: "countries" })
-export class Country {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Country extends BaseEntity {
   @Column({ type: "varchar", unique: true, nullable: false, length: 50 })
   name: string;
 
@@ -40,20 +35,4 @@ export class Country {
 
   @ManyToMany(() => Movie, (movie) => movie.countries, { onDelete: "CASCADE" })
   movies: Movie[];
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  createdAt: Date;
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  setCreatedAt() {
-    this.createdAt = new Date();
-  }
-
-  @BeforeUpdate()
-  setUpdatedAt() {
-    this.updatedAt = new Date();
-  }
 }

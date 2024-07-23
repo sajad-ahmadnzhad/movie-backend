@@ -1,20 +1,10 @@
 import { User } from "../../auth/entities/user.entity";
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Entity, JoinColumn, ManyToOne } from "typeorm";
 import { Movie } from "./movie.entity";
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 
 @Entity({ name: "bookmarks" })
-export class Bookmark {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Bookmark extends BaseEntity {
   @ManyToOne(() => User, (user) => user.bookmarks, {
     onDelete: "CASCADE",
     eager: true,
@@ -25,21 +15,4 @@ export class Bookmark {
   @ManyToOne(() => Movie, (movie) => movie.bookmarks, { onDelete: "CASCADE" })
   @JoinColumn()
   movie: Movie;
-
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  createdAt: Date;
-
-  @Column({ type: "datetime", default: () => "CURRENT_TIMESTAMP" })
-  updatedAt: Date;
-
-  @BeforeInsert()
-  setCreatedAt() {
-    this.createdAt = new Date();
-  }
-
-  @BeforeUpdate()
-  setUpdatedAt() {
-    this.updatedAt = new Date();
-  }
 }
