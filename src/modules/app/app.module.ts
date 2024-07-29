@@ -24,6 +24,9 @@ import { LoggerMiddleware } from "../../common/middlewares/application.log";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { typeormConfig } from "../../config/typeorm.config";
 import { BasicAuthMiddleware } from "../../common/middlewares/basicAuth.middleware";
+import { S3Module } from "../s3/s3.module";
+import { AwsSdkModule } from "nest-aws-sdk";
+import { S3 } from "aws-sdk";
 
 @Module({
   imports: [
@@ -42,6 +45,18 @@ import { BasicAuthMiddleware } from "../../common/middlewares/basicAuth.middlewa
     ActorsModule,
     GenresModule,
     MoviesModule,
+    S3Module,
+    AwsSdkModule.forRoot({
+      defaultServiceOptions: {
+        region: "default",
+        credentials: {
+          accessKeyId: process.env.S3_ACCESS_KEY,
+          secretAccessKey: process.env.S3_SECRET_KEY,
+        },
+        endpoint: process.env.S3_ENDPOINT,
+      },
+      services: [S3],
+    }),
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },

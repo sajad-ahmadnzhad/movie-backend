@@ -27,6 +27,7 @@ import { User } from "../auth/entities/user.entity";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Roles } from "../../common/enums/roles.enum";
+import { S3Service } from "../s3/s3.service";
 
 @Injectable()
 export class ActorsService {
@@ -34,6 +35,8 @@ export class ActorsService {
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
     @Inject(forwardRef(() => IndustriesService))
     private readonly industriesService: IndustriesService,
+    @Inject(forwardRef(() => S3Service))
+    private readonly s3Service: S3Service,
     @InjectRepository(Industry)
     private readonly industryRepository: Repository<Industry>,
     @InjectRepository(Actor)
@@ -62,15 +65,18 @@ export class ActorsService {
       throw new NotFoundException(IndustriesMessages.NotFoundIndustry);
     }
 
-    let filePath = file && saveFile(file, "actor-photo");
+    let filePath: string | null = null;
 
-    if (filePath) filePath = `/uploads/actor-photo/${filePath}`;
+    if (file) {
+      const actorPhoto = await this.s3Service.uploadFile(file, "actors-photo");
+      filePath = actorPhoto.Location;
+    }
 
     const actor = this.actorRepository.create({
       name,
       createdBy: user,
       country: industry.country,
-      photo: filePath,
+      photo: filePath || undefined,
       bio,
       industry,
     });

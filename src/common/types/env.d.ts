@@ -31,5 +31,11 @@ namespace NodeJS {
 
     //NODE ENV
     NODE_ENV: "dev" | "prod";
+
+    //S3 config env
+    S3_ACCESS_KEY: string;
+    S3_SECRET_KEY: string;
+    S3_ENDPOINT: string;
+    S3_BUCKET_NAME: string;
   }
 }
