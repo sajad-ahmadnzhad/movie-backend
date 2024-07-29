@@ -19,6 +19,6 @@ import { S3Service } from "../s3/s3.service";
     AwsSdkModule.forFeatures([S3]),
   ],
   controllers: [ActorsController],
-  providers: [ActorsService, IndustriesService, CountriesService , S3Service],
+  providers: [ActorsService, IndustriesService, CountriesService, S3Service],
 })
 export class ActorsModule {}

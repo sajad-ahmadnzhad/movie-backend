@@ -26,7 +26,7 @@ import { typeormConfig } from "../../config/typeorm.config";
 import { BasicAuthMiddleware } from "../../common/middlewares/basicAuth.middleware";
 import { S3Module } from "../s3/s3.module";
 import { AwsSdkModule } from "nest-aws-sdk";
-import { S3 } from "aws-sdk";
+import { awsSdkConfig } from "../../config/awsSdk.config";
 
 @Module({
   imports: [
@@ -38,6 +38,7 @@ import { S3 } from "aws-sdk";
     AuthModule,
     CacheModule.registerAsync(cacheConfig()),
     TypeOrmModule.forRootAsync(typeormConfig()),
+    AwsSdkModule.forRoot(awsSdkConfig()),
     UsersModule,
     MailModule,
     CountriesModule,
@@ -46,17 +47,6 @@ import { S3 } from "aws-sdk";
     GenresModule,
     MoviesModule,
     S3Module,
-    AwsSdkModule.forRoot({
-      defaultServiceOptions: {
-        region: "default",
-        credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY,
-          secretAccessKey: process.env.S3_SECRET_KEY,
-        },
-        endpoint: process.env.S3_ENDPOINT,
-      },
-      services: [S3],
-    }),
   ],
   providers: [
     { provide: APP_PIPE, useValue: new ValidationPipe({ whitelist: true }) },
