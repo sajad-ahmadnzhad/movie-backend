@@ -26,13 +26,23 @@ export class S3Service {
   }
 
   async deleteFile(
-    key: string
+    url: string
   ): Promise<PromiseResult<S3.DeleteObjectOutput, AWSError>> {
+    const key = this.extractKeyFromUrl(url);
+
     return this.s3
       .deleteObject({
         Bucket: process.env.S3_BUCKET_NAME,
         Key: decodeURI(key),
       })
       .promise();
+  }
+
+  extractKeyFromUrl(url: string): string {
+    const urlParts = url.split("/");
+
+    const key = urlParts.slice(3).join("/");
+
+    return decodeURI(key);
   }
 }

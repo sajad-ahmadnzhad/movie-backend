@@ -9,11 +9,9 @@ import {
 } from "@nestjs/common";
 import { CreateActorDto } from "./dto/create-actor.dto";
 import { UpdateActorDto } from "./dto/update-actor.dto";
-import { removeFile } from "../../common/utils/functions.util";
 import { ActorsMessages } from "../../common/enums/actorsMessages.enum";
 import { IndustriesMessages } from "../../common/enums/industriesMessages.enum";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import { saveFile } from "../../common/utils/upload-file.util";
 import {
   cachePagination,
   typeORMPagination,
@@ -218,19 +216,22 @@ export class ActorsService {
       );
     }
 
-    const findDuplicatedKey = await this.actorRepository
+    const findDuplicatedActor = await this.actorRepository
       .createQueryBuilder("actors")
       .where("actors.name = :name", { name })
       .andWhere("actors.id != :id", { id })
       .getOne();
 
-    if (findDuplicatedKey) {
+    if (findDuplicatedActor) {
       throw new ConflictException(ActorsMessages.AlreadyExistsActor);
     }
 
-    let filePath = file && saveFile(file, "actor-photo");
+    let filePath: string | null = null;
 
-    if (file) filePath = `/uploads/actor-photo/${filePath}`;
+    if (file) {
+      const actorPhoto = await this.s3Service.uploadFile(file, "actors-photo");
+      filePath = actorPhoto.Location;
+    }
 
     await this.actorRepository.update(
       { id },
@@ -239,11 +240,11 @@ export class ActorsService {
         bio,
         industry: existingIndustry || undefined,
         country: existingIndustry?.country,
-        photo: filePath,
+        photo: filePath || existingActor.photo,
       }
     );
 
-    if (file) removeFile(filePath);
+    if (file) await this.s3Service.deleteFile(existingActor.photo);
 
     return ActorsMessages.UpdatedActorSuccess;
   }
@@ -264,7 +265,9 @@ export class ActorsService {
       }
 
     await this.actorRepository.delete({ id });
-    removeFile(existingActor.photo);
+    if (existingActor.photo) {
+      await this.s3Service.deleteFile(existingActor.photo);
+    }
 
     return ActorsMessages.RemoveActorSuccess;
   }
