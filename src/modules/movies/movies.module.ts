@@ -15,6 +15,9 @@ import { Comment } from "./entities/comment.entity";
 import { Like } from "./entities/like.entity";
 import { Genre } from "../genres/entities/genre.entity";
 import { Country } from "../countries/entities/country.entity";
+import { AwsSdkModule } from "nest-aws-sdk";
+import { S3 } from "aws-sdk";
+import { S3Service } from "../s3/s3.service";
 
 @Module({
   imports: [
@@ -29,10 +32,11 @@ import { Country } from "../countries/entities/country.entity";
       Comment,
       Like,
       Genre,
-      Country
+      Country,
     ]),
+    AwsSdkModule.forFeatures([S3]),
   ],
   controllers: [MoviesController],
-  providers: [MoviesService],
+  providers: [MoviesService, S3Service],
 })
 export class MoviesModule {}

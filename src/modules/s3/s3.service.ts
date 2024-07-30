@@ -38,7 +38,7 @@ export class S3Service {
       .promise();
   }
 
-  extractKeyFromUrl(url: string): string {
+ private extractKeyFromUrl(url: string): string {
     const urlParts = url.split("/");
 
     const key = urlParts.slice(3).join("/");

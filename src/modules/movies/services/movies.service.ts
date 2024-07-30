@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -9,11 +10,7 @@ import {
 import { CreateMovieDto } from "../dto/movies/create-movie.dto";
 import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
 import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
-import {
-  saveFile,
-  saveMovieFile,
-} from "../../../common/utils/upload-file.util";
-import { existingIds, removeFile } from "../../../common/utils/functions.util";
+import { existingIds } from "../../../common/utils/functions.util";
 import {
   cachePagination,
   typeORMPagination,
@@ -37,7 +34,8 @@ import { Movie } from "../entities/movie.entity";
 import { Like as LikeEntity } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Bookmark } from "../entities/bookmark.entity";
-import { Roles } from '../../../common/enums/roles.enum';
+import { Roles } from "../../../common/enums/roles.enum";
+import { S3Service } from "../../../modules/s3/s3.service";
 
 @Injectable()
 export class MoviesService {
@@ -56,7 +54,8 @@ export class MoviesService {
     @InjectRepository(Bookmark)
     private readonly bookmarkRepository: Repository<Bookmark>,
     @InjectRepository(Movie)
-    private readonly movieRepository: Repository<Movie>
+    private readonly movieRepository: Repository<Movie>,
+    @Inject(forwardRef(() => S3Service)) private readonly s3Service: S3Service
   ) {}
   async create(
     createMovieDto: CreateMovieDto,
@@ -90,10 +89,11 @@ export class MoviesService {
       throw error;
     }
 
-    const paths = saveMovieFile(files, {
-      videoPath: "movies",
-      posterPath: "posters",
-    });
+    const videoPath = await this.s3Service.uploadFile(files.video[0], "movies");
+    const posterPath = await this.s3Service.uploadFile(
+      files.video[0],
+      "posters"
+    );
 
     const countries = await this.countryRepository
       .createQueryBuilder("country")
@@ -102,8 +102,8 @@ export class MoviesService {
       .getMany();
 
     const movie = this.movieRepository.create({
-      video_URL: `/uploads/movies/${paths.videoName}`,
-      poster_URL: `/uploads/posters/${paths.posterName}`,
+      video_URL: videoPath.Location,
+      poster_URL: posterPath.Location,
       createdBy: user,
       countries,
       release_year,
@@ -452,8 +452,18 @@ export class MoviesService {
     }
 
     const filePaths: Partial<{ poster: string; video: string }> = {};
-    if (files.poster) filePaths.poster = saveFile(files.poster[0], "posters");
-    if (files.video) filePaths.video = saveFile(files.video[0], "movies");
+    if (files.poster) {
+      const poster = await this.s3Service.uploadFile(
+        files.poster[0],
+        "posters"
+      );
+      filePaths.poster = poster.Location;
+    }
+
+    if (files.video) {
+      const video = await this.s3Service.uploadFile(files.video[0], "movies");
+      filePaths.video = video.Location;
+    }
 
     await this.movieRepository.update(
       { id },
@@ -461,13 +471,13 @@ export class MoviesService {
         title,
         description,
         release_year,
-        video_URL: filePaths.video && `/uploads/movies/${filePaths.video}`,
-        poster_URL: filePaths.poster && `/uploads/posters/${filePaths.poster}`,
+        video_URL: filePaths.video,
+        poster_URL: filePaths.poster,
       }
     );
 
-    if (files.poster) removeFile(movie.poster_URL);
-    if (files.video) removeFile(movie.video_URL);
+    if (files.poster) await this.s3Service.deleteFile(movie.poster_URL);
+    if (files.video) await this.s3Service.deleteFile(movie.video_URL);
 
     return MoviesMessages.UpdatedMovieSuccess;
   }
@@ -486,8 +496,8 @@ export class MoviesService {
 
     await this.movieRepository.remove(movie);
 
-    removeFile(movie.video_URL);
-    removeFile(movie.poster_URL);
+    await this.s3Service.deleteFile(movie.video_URL);
+    await this.s3Service.deleteFile(movie.poster_URL);
 
     return MoviesMessages.RemovedMovieSuccess;
   }
