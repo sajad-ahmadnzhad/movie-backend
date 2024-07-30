@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -17,8 +18,6 @@ import {
 import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
-import { saveFile } from "../../common/utils/upload-file.util";
-import { removeFile } from "../../common/utils/functions.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { BanUserDto } from "./dto/ban-user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -29,6 +28,7 @@ import { BanUser } from "../auth/entities/banUser.entity";
 import { Bookmark } from "../movies/entities/bookmark.entity";
 import { Roles } from "../../common/enums/roles.enum";
 import { ChangeRoleDto } from "./dto/change-role.dto";
+import { S3Service } from "../s3/s3.service";
 
 @Injectable()
 export class UsersService {
@@ -38,7 +38,8 @@ export class UsersService {
     @InjectRepository(BanUser)
     private readonly banUserRepository: Repository<BanUser>,
     @InjectRepository(Bookmark)
-    private readonly bookmarkRepository: Repository<Bookmark>
+    private readonly bookmarkRepository: Repository<Bookmark>,
+    @Inject(forwardRef(() => S3Service)) private readonly s3Service: S3Service
   ) {}
 
   async findAllUsers(
@@ -95,19 +96,24 @@ export class UsersService {
       throw new ConflictException(AuthMessages.AlreadyRegistered);
     }
 
-    let avatarURL: string | undefined = file && saveFile(file, "user-avatar");
+    let avatarURL: string | null = null;
 
-    if (avatarURL) avatarURL = `/uploads/user-avatar/${avatarURL}`;
+    if (file) {
+      const avatar = await this.s3Service.uploadFile(file, "users-avatar");
+      avatarURL = avatar.Location;
+    }
 
     await this.userRepository.update(
       { id: user.id },
       {
         ...updateUserDto,
-        avatarURL,
+        avatarURL: avatarURL || undefined,
       }
     );
 
-    if (file) removeFile(user.avatarURL);
+    if (file && !user.avatarURL.includes("custom-avatar")) {
+      await this.s3Service.deleteFile(user.avatarURL);
+    }
 
     return UsersMessages.UpdatedSuccess;
   }
@@ -126,6 +132,11 @@ export class UsersService {
     }
 
     await this.userRepository.remove(foundUser);
+
+    if (!user.avatarURL.includes("custom-avatar")) {
+      await this.s3Service.deleteFile(user.avatarURL);
+    }
+
     await this.redisCache.del(`userRefreshToken:${userId}`);
 
     return UsersMessages.RemovedSuccess;
@@ -222,6 +233,9 @@ export class UsersService {
     }
 
     await this.userRepository.remove(user);
+    if (!user.avatarURL.includes("custom-avatar")) {
+      await this.s3Service.deleteFile(user.avatarURL);
+    }
     await this.redisCache.del(`userRefreshToken:${user.id}`);
 
     return UsersMessages.DeletedAccountSuccess;

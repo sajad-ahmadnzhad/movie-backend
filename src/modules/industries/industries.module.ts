@@ -11,6 +11,7 @@ import { Movie } from "../movies/entities/movie.entity";
 import { Bookmark } from "../movies/entities/bookmark.entity";
 import { Like } from "../movies/entities/like.entity";
 import { Comment } from "../movies/entities/comment.entity";
+import { S3Service } from "../s3/s3.service";
 
 @Module({
   imports: [
@@ -26,6 +27,6 @@ import { Comment } from "../movies/entities/comment.entity";
     ]),
   ],
   controllers: [IndustriesController],
-  providers: [IndustriesService, CountriesService],
+  providers: [IndustriesService, CountriesService , S3Service],
 })
 export class IndustriesModule {}

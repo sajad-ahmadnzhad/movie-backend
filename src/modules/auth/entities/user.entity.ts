@@ -1,4 +1,4 @@
-import { AfterRemove, Column, Entity, OneToMany, OneToOne } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { Token } from "./token.entity";
 import { BanUser } from "./banUser.entity";
 import { Genre } from "../../genres/entities/genre.entity";
@@ -9,7 +9,6 @@ import { Movie } from "../../movies/entities/movie.entity";
 import { Bookmark } from "../../movies/entities/bookmark.entity";
 import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
-import { removeFile } from "../../../common/utils/functions.util";
 import { Roles } from "../../../common/enums/roles.enum";
 import { BaseEntity } from "../../../common/abstracts/base.entity";
 
@@ -68,11 +67,4 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Comment, (comment) => comment.creator)
   comments: Comment[];
-
-  @AfterRemove()
-  removeAvatar() {
-    //* Remove user avatar
-    if (!this.avatarURL.includes("custom-avatar.jpg"))
-      removeFile(this.avatarURL);
-  }
 }

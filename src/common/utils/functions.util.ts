@@ -1,18 +1,8 @@
 import * as bcrypt from "bcrypt";
-import * as path from "path";
-import { rimrafSync } from "rimraf";
 import { ObjectLiteral, Repository } from "typeorm";
 
 export const hashData = (data: string, salt: number): string => {
   return bcrypt.hashSync(data, salt);
-};
-
-export const removeFile = (filePath: string | undefined): void => {
-  if (!filePath) return;
-
-  const removeFilePath = path.join(process.cwd(), "public", filePath);
-
-  rimrafSync(removeFilePath);
 };
 
 export const transformIds = ({ value }: { value: string | string[] }) => {

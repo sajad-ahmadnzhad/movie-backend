@@ -2,14 +2,13 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
 import { CreateCountryDto } from "./dto/create-country.dto";
 import { UpdateCountryDto } from "./dto/update-country.dto";
-import { saveFile } from "../../common/utils/upload-file.util";
-import { removeFile } from "../../common/utils/functions.util";
 import { CountriesMessages } from "../../common/enums/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
@@ -23,13 +22,15 @@ import { Country } from "./entities/country.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
 import { User } from "../auth/entities/user.entity";
 import { Roles } from "../../common/enums/roles.enum";
+import { S3Service } from "../s3/s3.service";
 
 @Injectable()
 export class CountriesService {
   constructor(
     @Inject(CACHE_MANAGER) private redisCache: RedisCache,
     @InjectRepository(Country)
-    private readonly countryRepository: Repository<Country>
+    private readonly countryRepository: Repository<Country>,
+    @Inject(forwardRef(() => S3Service)) private readonly s3Service: S3Service
   ) {}
 
   async create(
@@ -45,14 +46,16 @@ export class CountriesService {
       throw new ConflictException(CountriesMessages.AlreadyExistsCountry);
     }
 
-    let filePath = file && saveFile(file, "country-flag");
-
-    if (file) filePath = `/uploads/country-flag/${filePath}`;
+    let flagImageUrl: string | null = null;
+    if (file) {
+      const flag = await this.s3Service.uploadFile(file, "countries-flag");
+      flagImageUrl = flag.Location;
+    }
 
     const country = this.countryRepository.create({
       ...createCountryDto,
       createdBy: user,
-      flag_image_URL: filePath,
+      flag_image_URL: flagImageUrl || undefined,
     });
 
     await this.countryRepository.save(country);
@@ -182,19 +185,23 @@ export class CountriesService {
       throw new ConflictException(CountriesMessages.AlreadyExistsCountry);
     }
 
-    let filePath = file && saveFile(file, "country-flag");
-
-    if (file) filePath = `/uploads/country-flag/${filePath}`;
+    let flagImageUrl: string | null = null;
+    if (file) {
+      const flag = await this.s3Service.uploadFile(file, "countries-flag");
+      flagImageUrl = flag.Location;
+    }
 
     await this.countryRepository.update(
       { id },
       {
         ...updateCountryDto,
-        flag_image_URL: filePath,
+        flag_image_URL: flagImageUrl || undefined,
       }
     );
 
-    if (file) removeFile(country.flag_image_URL);
+    if (file) {
+      await this.s3Service.deleteFile(country.flag_image_URL);
+    }
 
     return CountriesMessages.UpdatedCountrySuccess;
   }
@@ -218,7 +225,9 @@ export class CountriesService {
 
     await this.countryRepository.delete({ id });
 
-    removeFile(existingCountry.flag_image_URL);
+    if (existingCountry.flag_image_URL) {
+      await this.s3Service.deleteFile(existingCountry.flag_image_URL);
+    }
 
     return CountriesMessages.RemoveCountrySuccess;
   }
