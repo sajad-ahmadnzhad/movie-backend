@@ -3,10 +3,6 @@
   "port": 4000,
   "disks": [
     {
-      "name": "uploads-disk",
-      "mountTo": "public"
-    },
-    {
       "name": "logs-disk",
       "mountTo": "dist/common/logs"
     }

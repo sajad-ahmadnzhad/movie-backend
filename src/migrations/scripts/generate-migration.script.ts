@@ -7,7 +7,7 @@ if (!migrationName) {
   process.exit(1);
 }
 
-const command = `npm run typeorm migration:generate ./src/migrations/${migrationName}`;
+const command = `npx yarn typeorm migration:generate ./src/migrations/${migrationName} -d ./src/config/typeorm.ts`;
 
 exec(command, (error, stdout, stderr) => {
   if (error) {
