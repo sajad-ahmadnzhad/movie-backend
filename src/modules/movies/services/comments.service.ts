@@ -12,14 +12,20 @@ import { CommentsMessages } from "../../../common/enums/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
-import { typeORMPagination } from "../../../common/utils/pagination.util";
+import {
+  cachePagination,
+  typeORMPagination,
+  typeormQueryBuilderPagination,
+} from "../../../common/utils/pagination.util";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Comment } from "../entities/comment.entity";
-import { Repository } from "typeorm";
+import { FindManyOptions, Repository } from "typeorm";
 import { User } from "../../auth/entities/user.entity";
 import { Movie } from "../entities/movie.entity";
 import { Roles } from "../../../common/enums/roles.enum";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { RedisCache } from "cache-manager-redis-yet";
 
 @Injectable()
 export class CommentsService {
@@ -27,7 +33,8 @@ export class CommentsService {
     @Inject(forwardRef(() => MoviesService))
     private readonly moviesService: MoviesService,
     @InjectRepository(Comment)
-    private readonly commentRepository: Repository<Comment>
+    private readonly commentRepository: Repository<Comment>,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
   async create(
     createCommentDto: CreateCommentDto,
@@ -72,7 +79,7 @@ export class CommentsService {
 
     const reply = this.commentRepository.create({
       ...replyCommentDto,
-      parentComment: existingComment,
+      parent: existingComment,
       creator: user,
       movie,
       isAccept: isAdminMovie || user.role == Roles.SUPER_ADMIN,
@@ -136,7 +143,7 @@ export class CommentsService {
     updateCommentDto: UpdateCommentDto,
     user: User
   ): Promise<string> {
-    const { body, movieId, rating } = updateCommentDto;
+    const { body, rating } = updateCommentDto;
 
     const comment = await this.checkExistCommentById(id);
 
@@ -145,17 +152,15 @@ export class CommentsService {
         throw new ForbiddenException(CommentsMessages.CannotUpdateComment);
       }
 
-    const movie: null | Movie = null;
-
-    if (movieId) await this.moviesService.checkExistMovieById(movieId);
+    const isAdminMovie = comment.movie.createdBy.id == user.id;
+    const isSuperAdmin = user.role == Roles.SUPER_ADMIN;
 
     await this.commentRepository.update(
       { id },
       {
-        movie: movie || undefined,
         body,
         rating,
-        isAccept: false,
+        isAccept: isAdminMovie || isSuperAdmin,
         isEdit: true,
       }
     );
@@ -165,37 +170,45 @@ export class CommentsService {
 
   async getMovieComments(
     movieId: number,
-    limit?: number,
-    page?: number
+    limit: number,
+    page: number 
   ): Promise<any> {
-    const movie = await this.moviesService.checkExistMovieById(movieId);
+    await this.moviesService.checkExistMovieById(movieId);
 
-    const rootComments = await this.commentRepository
-      .createQueryBuilder("comment")
-      .where("comment.movie.id = :movieId", { movieId })
-      .andWhere("comment.isAccept = :isAccept", { isAccept: true })
-      .andWhere("comment.parentCommentId IS NULL")
-      .getMany();
+    const redisKey = `Comments_movie_${movieId}_${limit}_${page}`;
 
-    const acceptedCommentsTree = await Promise.all(
-      rootComments.map(async (rootComment) => {
-        const qb = this.commentRepository.manager
-          .getTreeRepository(Comment)
-          .createDescendantsQueryBuilder(
-            "comment",
-            "commentClosure",
-            rootComment
-          )
-          .andWhere("comment.isAccept = :isAccept", { isAccept: true })
-          .leftJoinAndSelect("comment.creator", "creator");
-
-        const descendants = await qb.getMany();
-        rootComment.replies = descendants;
-        return rootComment;
-      })
+    const cachePaginated = await this.redisCache.get<Comment[] | undefined>(
+      redisKey
     );
 
-    return acceptedCommentsTree;
+    if (cachePaginated) {
+      return cachePagination(limit, page, cachePaginated);
+    }
+
+    const qb = this.commentRepository
+      .createQueryBuilder("comment")
+      .leftJoinAndSelect(
+        "comment.replies",
+        "replies",
+        "replies.isAccept = :isAccept",
+        { isAccept: true }
+      )
+      .leftJoinAndSelect("comment.creator", "creator")
+      .leftJoinAndSelect("replies.creator", "replyCreator")
+      .leftJoinAndSelect("comment.movie", "movie")
+      .leftJoinAndSelect("comment.parent", "parent")
+      .where("comment.isAccept = :isAccept", { isAccept: true })
+      .andWhere("comment.movie.id = :movieId", { movieId });
+
+    const commentPaginated = await typeormQueryBuilderPagination(
+      limit,
+      page,
+      this.commentRepository,
+      qb
+    );
+
+    await this.redisCache.set(redisKey, commentPaginated.data, 30_000);
+    return commentPaginated;
   }
 
   // async getUnacceptedComments(

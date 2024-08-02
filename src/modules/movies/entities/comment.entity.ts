@@ -1,18 +1,9 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  Tree,
-  TreeChildren,
-  TreeParent,
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { Movie } from "./movie.entity";
 import { User } from "../../auth/entities/user.entity";
 import { BaseEntity } from "../../../common/abstracts/base.entity";
 
 @Entity({ name: "comments" })
-@Tree("closure-table")
 export class Comment extends BaseEntity {
   @Column({ type: "varchar", nullable: false })
   body: string;
@@ -32,10 +23,12 @@ export class Comment extends BaseEntity {
   @Column({ type: "boolean", default: false })
   isReviewed: boolean;
 
-  @TreeParent({ onDelete: "CASCADE" })
-  parentComment: Comment;
+  @ManyToOne(() => Comment, (comment) => comment.replies)
+  parent: Comment;
 
-  @TreeChildren({ cascade: true })
+  @OneToMany(() => Comment, (comment) => comment.parent, {
+    onDelete: "CASCADE",
+  })
   replies: Comment[];
 
   @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })

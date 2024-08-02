@@ -9,7 +9,7 @@ export class S3Service {
   //@ts-ignore
   constructor(@InjectAwsService(S3) private readonly s3: S3) {}
 
-  async uploadFile(
+  uploadFile(
     file: Express.Multer.File,
     folderName: string
   ): Promise<S3.ManagedUpload.SendData> {
@@ -25,7 +25,7 @@ export class S3Service {
       .promise();
   }
 
-  async deleteFile(
+  deleteFile(
     url: string
   ): Promise<PromiseResult<S3.DeleteObjectOutput, AWSError>> {
     const key = this.extractKeyFromUrl(url);
@@ -38,7 +38,7 @@ export class S3Service {
       .promise();
   }
 
- private extractKeyFromUrl(url: string): string {
+  private extractKeyFromUrl(url: string): string {
     const urlParts = url.split("/");
 
     const key = urlParts.slice(3).join("/");

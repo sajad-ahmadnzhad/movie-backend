@@ -36,7 +36,7 @@ import { S3Service } from "../s3/s3.service";
     ]),
     AwsSdkModule.forFeatures([S3]),
   ],
-  controllers: [MoviesController],
-  providers: [MoviesService, S3Service],
+  controllers: [MoviesController , CommentsController],
+  providers: [MoviesService, S3Service , CommentsService],
 })
 export class MoviesModule {}

@@ -1,4 +1,9 @@
-import { FindManyOptions, ObjectLiteral, Repository } from "typeorm";
+import {
+  FindManyOptions,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from "typeorm";
 
 interface OutputPagination<T> {
   count: number;
@@ -45,6 +50,37 @@ export const typeORMPagination = async <T extends ObjectLiteral>(
     skip,
     take: pageSize,
   });
+
+  const pages = Math.ceil(total / pageSize);
+
+  return {
+    count: result.length,
+    page,
+    pages,
+    data: result,
+  };
+};
+
+export const typeormQueryBuilderPagination = async <T extends ObjectLiteral>(
+  limitQuery: number = 20,
+  pageQuery: number = 1,
+  repository: Repository<T>,
+  options?: SelectQueryBuilder<T>
+): Promise<OutputPagination<T>> => {
+  const page = pageQuery || 1;
+  const pageSize = limitQuery || 20;
+  const skip = (page - 1) * pageSize;
+
+  let queryBuilder = repository.createQueryBuilder("entity");
+
+  if (options) {
+    queryBuilder = options
+  }
+
+  const [result, total] = await queryBuilder
+    .skip(skip)
+    .take(pageSize)
+    .getManyAndCount();
 
   const pages = Math.ceil(total / pageSize);
 
