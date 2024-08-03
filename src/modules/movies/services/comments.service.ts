@@ -14,15 +14,12 @@ import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import {
   cachePagination,
-  typeORMPagination,
   typeormQueryBuilderPagination,
 } from "../../../common/utils/pagination.util";
-import { Cron, CronExpression } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Comment } from "../entities/comment.entity";
-import { FindManyOptions, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { User } from "../../auth/entities/user.entity";
-import { Movie } from "../entities/movie.entity";
 import { Roles } from "../../../common/enums/roles.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
@@ -171,11 +168,11 @@ export class CommentsService {
   async getMovieComments(
     movieId: number,
     limit: number,
-    page: number 
-  ): Promise<any> {
+    page: number
+  ): Promise<PaginatedList<Comment>> {
     await this.moviesService.checkExistMovieById(movieId);
 
-    const redisKey = `Comments_movie_${movieId}_${limit}_${page}`;
+    const redisKey = `Comments_movie_${movieId}`;
 
     const cachePaginated = await this.redisCache.get<Comment[] | undefined>(
       redisKey
@@ -200,6 +197,9 @@ export class CommentsService {
       .where("comment.isAccept = :isAccept", { isAccept: true })
       .andWhere("comment.movie.id = :movieId", { movieId });
 
+    const comments = await qb.getMany();
+    await this.redisCache.set(redisKey, comments, 30_000);
+
     const commentPaginated = await typeormQueryBuilderPagination(
       limit,
       page,
@@ -207,47 +207,52 @@ export class CommentsService {
       qb
     );
 
-    await this.redisCache.set(redisKey, commentPaginated.data, 30_000);
     return commentPaginated;
   }
 
-  // async getUnacceptedComments(
-  //   user: User,
-  //   limit?: number,
-  //   page?: number
-  // ): Promise<PaginatedList<Comment>> {
-  //   const movies = await this.movieModel.find({ createdBy: user._id });
+  async getUnacceptedComments(
+    user: User,
+    limit?: number,
+    page?: number
+  ): Promise<PaginatedList<Comment>> {
+    const redisKey = `UnacceptedComment`;
 
-  //   const movieIds = movies.map((movie) => String(movie._id));
+    const cachePaginated = await this.redisCache.get<Comment[] | undefined>(
+      redisKey
+    );
 
-  //   const query = this.populateComments(
-  //     this.commentModel.find({ isAccept: false, movieId: { $in: movieIds } })
-  //   );
+    if (cachePaginated) {
+      return cachePagination(limit, page, cachePaginated);
+    }
 
-  //   const paginatedComments = await mongoosePagination(
-  //     limit,
-  //     page,
-  //     query,
-  //     this.commentModel
-  //   );
+    const qb = this.commentRepository
+      .createQueryBuilder("comment")
+      .leftJoinAndSelect(
+        "comment.replies",
+        "replies",
+        "replies.isAccept = :isAccept",
+        { isAccept: false }
+      )
+      .leftJoinAndSelect("comment.creator", "creator")
+      .leftJoinAndSelect("replies.creator", "replyCreator")
+      .leftJoinAndSelect("comment.movie", "movie")
+      .leftJoinAndSelect("comment.parent", "parent")
+      .where("comment.isAccept = :isAccept", { isAccept: false })
+      .andWhere("comment.isReject = :isReject", { isReject: false })
+      .andWhere("movie.createdBy.id = :createdById", { createdById: user.id });
 
-  //   const commentIds = paginatedComments.data.map((comment) =>
-  //     String(comment._id)
-  //   );
+    const comments = await qb.getMany();
+    await this.redisCache.set(redisKey, comments, 30_000);
 
-  //   await this.commentModel.updateMany(
-  //     {
-  //       _id: {
-  //         $in: commentIds,
-  //       },
-  //     },
-  //     {
-  //       isReviewed: true,
-  //     }
-  //   );
+    const commentPaginated = await typeormQueryBuilderPagination(
+      limit,
+      page,
+      this.commentRepository,
+      qb
+    );
 
-  //   return paginatedComments;
-  // }
+    return commentPaginated;
+  }
 
   async remove(id: number, user: User): Promise<string> {
     const comment = await this.checkExistCommentById(id);
@@ -257,15 +262,19 @@ export class CommentsService {
         throw new ForbiddenException(CommentsMessages.CannotRemoveComment);
       }
 
-    await this.commentRepository.remove(comment);
+    await this.commentRepository.delete({ id });
 
     return CommentsMessages.RemovedCommentSuccess;
   }
 
-  private async checkExistCommentById(id: number): Promise<Comment> {
+  async checkExistCommentById(id: number): Promise<Comment> {
     const existingComment = await this.commentRepository.findOne({
       where: { id },
-      relations: ["movie"],
+      relations: {
+        movie: {
+          createdBy: true,
+        },
+      },
     });
 
     if (!existingComment) {

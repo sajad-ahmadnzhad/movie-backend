@@ -21,6 +21,8 @@ import {
   ReplyCommentDecorator,
   RejectCommentDecorator,
   UpdateCommentDecorator,
+  GetUnacceptedCommentDecorator,
+  RemoveCommentDecorator,
 } from "../../../common/decorators/comments.decorator";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
@@ -67,16 +69,16 @@ export class CommentsController {
     return { message: success };
   }
 
-  // @Put("reject/:id")
-  // @RejectCommentDecorator
-  // async reject(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.reject(id, user);
+  @Put("reject/:id")
+  @RejectCommentDecorator
+  async reject(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.reject(id, user);
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
   @Get("movie-comments/:id")
   getMoviesComments(
@@ -87,39 +89,39 @@ export class CommentsController {
     return this.commentsService.getMovieComments(id, limit, page);
   }
 
-  // @Get("unaccepted-comments/:id")
-  // @UseGuards(AuthGuard, IsAdminGuard)
-  // getUnacceptedComments(
-  //   @Query("page", new ParseIntPipe({ optional: true })) page: number,
-  //   @Query("limit", new ParseIntPipe({ optional: true })) limit: number,
-  //   @UserDecorator() user: User
-  // ) {
-  //   return this.commentsService.getUnacceptedComments(user, limit, page);
-  // }
+  @Get("unaccepted-comments")
+  @GetUnacceptedCommentDecorator
+  getUnacceptedComments(
+    @Query("page", new ParseIntPipe({ optional: true })) page: number,
+    @Query("limit", new ParseIntPipe({ optional: true })) limit: number,
+    @UserDecorator() user: User
+  ) {
+    return this.commentsService.getUnacceptedComments(user, limit, page);
+  }
 
-  // @Patch(":id")
-  // @UpdateCommentDecorator
-  // async update(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User,
-  //   @Body() updateCommentDto: UpdateCommentDto
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.update(
-  //     id,
-  //     updateCommentDto,
-  //     user
-  //   );
+  @Patch(":id")
+  @UpdateCommentDecorator
+  async update(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User,
+    @Body() updateCommentDto: UpdateCommentDto
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.update(
+      id,
+      updateCommentDto,
+      user
+    );
 
-  //   return { message: success };
-  // }
+    return { message: success };
+  }
 
-  // @Delete(":id")
-  // @UseGuards(AuthGuard)
-  // async remove(
-  //   @Param("id", IsValidObjectIdPipe) id: string,
-  //   @UserDecorator() user: User
-  // ): Promise<{ message: string }> {
-  //   const success = await this.commentsService.remove(id, user);
-  //   return { message: success };
-  // }
+  @Delete(":id")
+  @RemoveCommentDecorator
+  async remove(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ): Promise<{ message: string }> {
+    const success = await this.commentsService.remove(id, user);
+    return { message: success };
+  }
 }

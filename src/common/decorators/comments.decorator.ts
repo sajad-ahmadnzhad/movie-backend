@@ -54,6 +54,7 @@ export const AcceptCommentDecorator = applyDecorators(
 //* Reject comment decorator
 export const RejectCommentDecorator = applyDecorators(
   UseGuards(JwtGuard, RoleGuard),
+  Role(Roles.SUPER_ADMIN, Roles.ADMIN),
   ApiCookieAuth(),
   ApiNotFoundResponse({ description: "Comment not Found" }),
   ApiForbiddenResponse({
@@ -75,4 +76,16 @@ export const UpdateCommentDecorator = applyDecorators(
   ApiOperation({ summary: "update a comment" }),
   ApiForbiddenResponse({ description: "Forbidden resource" }),
   ApiOkResponse({ description: "Updated comment success" })
+);
+
+//* Get unaccepted comment decorator
+export const GetUnacceptedCommentDecorator = applyDecorators(
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard)
+);
+
+//* Remove comment decorator
+export const RemoveCommentDecorator = applyDecorators(
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  UseGuards(JwtGuard, RoleGuard)
 );

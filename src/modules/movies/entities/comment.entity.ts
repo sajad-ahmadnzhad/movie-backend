@@ -23,12 +23,12 @@ export class Comment extends BaseEntity {
   @Column({ type: "boolean", default: false })
   isReviewed: boolean;
 
-  @ManyToOne(() => Comment, (comment) => comment.replies)
-  parent: Comment;
-
-  @OneToMany(() => Comment, (comment) => comment.parent, {
+  @ManyToOne(() => Comment, (comment) => comment.replies, {
     onDelete: "CASCADE",
   })
+  parent: Comment;
+
+  @OneToMany(() => Comment, (comment) => comment.parent)
   replies: Comment[];
 
   @ManyToOne(() => User, (user) => user.comments, { onDelete: "CASCADE" })
