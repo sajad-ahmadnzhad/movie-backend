@@ -16,6 +16,7 @@ export class CreateCommentDto {
   @IsNumber()
   @IsInt()
   @ApiProperty({ default: 1, type: "number" })
+  @Transform(({ value }) => value)
   movieId: number;
   @IsString()
   @IsNotEmpty()

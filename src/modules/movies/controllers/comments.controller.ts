@@ -9,7 +9,6 @@ import {
   Post,
   Put,
   Query,
-  UseGuards,
 } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { CreateCommentDto } from "../dto/comments/create-comment.dot";
@@ -23,20 +22,24 @@ import {
   UpdateCommentDecorator,
   GetUnacceptedCommentDecorator,
   RemoveCommentDecorator,
+  GetMovieCommentsDecorator,
 } from "../../../common/decorators/comments.decorator";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import { User } from "../../auth/entities/user.entity";
+import { Throttle } from "@nestjs/throttler";
 
 @Controller({
   path: "comments",
   version: "1",
 })
 @ApiTags("comments")
+@Throttle({ default: { ttl: 60_000, limit: 50 } })
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
   @Post()
   @CreateCommentDecorator
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
   async createComment(
     @Body() createCommentDto: CreateCommentDto,
     @UserDecorator() user: User
@@ -47,6 +50,7 @@ export class CommentsController {
   }
 
   @Post("reply/:id")
+  @Throttle({ default: { ttl: 60_000, limit: 20 } })
   @ReplyCommentDecorator
   async reply(
     @Param("id", ParseIntPipe) id: number,
@@ -81,6 +85,7 @@ export class CommentsController {
   }
 
   @Get("movie-comments/:id")
+  @GetMovieCommentsDecorator
   getMoviesComments(
     @Param("id", ParseIntPipe) id: number,
     @Query("page", new ParseIntPipe({ optional: true })) page: number,

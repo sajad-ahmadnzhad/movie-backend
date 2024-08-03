@@ -1,5 +1,7 @@
 .env.dev
 .env.prod
+fetch-apis
+
 public
 # compiled output
 /dist

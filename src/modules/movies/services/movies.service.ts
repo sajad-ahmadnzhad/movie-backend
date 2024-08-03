@@ -91,7 +91,7 @@ export class MoviesService {
 
     const videoPath = await this.s3Service.uploadFile(files.video[0], "movies");
     const posterPath = await this.s3Service.uploadFile(
-      files.video[0],
+      files.poster[0],
       "posters"
     );
 

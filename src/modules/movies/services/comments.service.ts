@@ -190,8 +190,20 @@ export class CommentsService {
         "replies.isAccept = :isAccept",
         { isAccept: true }
       )
-      .leftJoinAndSelect("comment.creator", "creator")
-      .leftJoinAndSelect("replies.creator", "replyCreator")
+      .leftJoin("comment.creator", "creator")
+      .addSelect([
+        "creator.id",
+        "creator.name",
+        "creator.avatarURL",
+        "creator.username",
+      ])
+      .leftJoin("replies.creator", "replyCreator")
+      .addSelect([
+        "replyCreator.id",
+        "replyCreator.name",
+        "replyCreator.avatarURL",
+        "replyCreator.username",
+      ])
       .leftJoinAndSelect("comment.movie", "movie")
       .leftJoinAndSelect("comment.parent", "parent")
       .where("comment.isAccept = :isAccept", { isAccept: true })
@@ -233,8 +245,20 @@ export class CommentsService {
         "replies.isAccept = :isAccept",
         { isAccept: false }
       )
-      .leftJoinAndSelect("comment.creator", "creator")
-      .leftJoinAndSelect("replies.creator", "replyCreator")
+      .leftJoin("comment.creator", "creator")
+      .addSelect([
+        "creator.id",
+        "creator.name",
+        "creator.avatarURL",
+        "creator.username",
+      ])
+      .leftJoin("replies.creator", "replyCreator")
+      .addSelect([
+        "replyCreator.id",
+        "replyCreator.name",
+        "replyCreator.avatarURL",
+        "replyCreator.username",
+      ])
       .leftJoinAndSelect("comment.movie", "movie")
       .leftJoinAndSelect("comment.parent", "parent")
       .where("comment.isAccept = :isAccept", { isAccept: false })
@@ -258,7 +282,7 @@ export class CommentsService {
     const comment = await this.checkExistCommentById(id);
 
     if (user.id !== comment.movie.createdBy.id)
-      if (user.id !== comment.creator.id && user.role == Roles.SUPER_ADMIN) {
+      if (user.id !== comment.creator.id && user.role !== Roles.SUPER_ADMIN) {
         throw new ForbiddenException(CommentsMessages.CannotRemoveComment);
       }
 
@@ -274,6 +298,7 @@ export class CommentsService {
         movie: {
           createdBy: true,
         },
+        creator: true,
       },
     });
 

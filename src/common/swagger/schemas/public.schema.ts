@@ -149,7 +149,8 @@ export const CreatedBySchema: SchemaObject = {
     },
     avatarURL: {
       type: "string",
-      example: "/uploads/user-avatar/custom-avatar.jpg",
+      example:
+        " https://movie-backend-bucket.storage.c2.liara.space/users-avatar/custom-avatar.jpg",
     },
   },
 };
