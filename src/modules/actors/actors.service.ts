@@ -90,7 +90,7 @@ export class ActorsService {
     page?: number,
     limit?: number
   ): Promise<PaginatedList<Actor>> {
-    const cacheKey = `actors_${countryId}_${industryId}_${page}_${limit}`;
+    const cacheKey = `actors_${countryId ?? ''}_${industryId ?? ''}`;
 
     const actorsCache = await this.redisCache.get<Actor[] | undefined>(
       cacheKey
@@ -125,7 +125,8 @@ export class ActorsService {
       options
     );
 
-    await this.redisCache.set(cacheKey, actorsPagination.data, 30_000);
+    const actors = await this.actorRepository.find(options)
+    await this.redisCache.set(cacheKey, actors, 30_000);
 
     return actorsPagination;
   }

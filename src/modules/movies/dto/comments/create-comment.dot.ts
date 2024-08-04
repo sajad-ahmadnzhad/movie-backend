@@ -13,10 +13,10 @@ import {
 
 export class CreateCommentDto {
   @IsNotEmpty()
+  @Transform(({ value }) => +value)
   @IsNumber()
   @IsInt()
   @ApiProperty({ default: 1, type: "number" })
-  @Transform(({ value }) => value)
   movieId: number;
   @IsString()
   @IsNotEmpty()

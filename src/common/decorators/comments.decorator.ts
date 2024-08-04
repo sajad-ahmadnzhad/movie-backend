@@ -295,3 +295,41 @@ export const RemoveCommentDecorator = applyDecorators(
     schema: BadRequestParamSchema,
   })
 );
+
+//* Mark as reviewed comment decorator
+export const MarkAsReviewedDecorator = applyDecorators(
+  UseGuards(JwtGuard, RoleGuard),
+  Role(Roles.ADMIN, Roles.SUPER_ADMIN),
+  ApiCookieAuth(),
+  ApiNotFoundResponse({
+    description: "Comment not found",
+    schema: NotFoundSchema,
+  }),
+  ApiConflictResponse({
+    description: "Already reviewed comment",
+    schema: ConflictSchema,
+  }),
+  ApiParam({
+    name: "id",
+    description: "The id of the comment",
+    type: "number",
+  }),
+  ApiOperation({ summary: "review a comment" }),
+  ApiOkResponse({ description: "Reviewed success", schema: SuccessSchema }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  }),
+  ApiInternalServerErrorResponse({
+    description: "Jwt expired",
+    schema: JwtExpiredSchema,
+  }),
+  ApiForbiddenResponse({
+    description: "Forbidden resource",
+    schema: ForbiddenSchema,
+  }),
+  ApiBadRequestResponse({
+    description: "Validation error",
+    schema: BadRequestParamSchema,
+  })
+);

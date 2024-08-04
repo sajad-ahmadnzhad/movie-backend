@@ -23,6 +23,7 @@ import {
   GetUnacceptedCommentDecorator,
   RemoveCommentDecorator,
   GetMovieCommentsDecorator,
+  MarkAsReviewedDecorator,
 } from "../../../common/decorators/comments.decorator";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
@@ -116,6 +117,17 @@ export class CommentsController {
       updateCommentDto,
       user
     );
+
+    return { message: success };
+  }
+
+  @Patch(":id/review")
+  @MarkAsReviewedDecorator
+  async markAsReviewed(
+    @Param("id", ParseIntPipe) id: number,
+    @UserDecorator() user: User
+  ) {
+    const success = await this.commentsService.markAsReviewed(id, user);
 
     return { message: success };
   }

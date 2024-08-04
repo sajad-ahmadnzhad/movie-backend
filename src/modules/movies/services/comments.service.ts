@@ -207,7 +207,8 @@ export class CommentsService {
       .leftJoinAndSelect("comment.movie", "movie")
       .leftJoinAndSelect("comment.parent", "parent")
       .where("comment.isAccept = :isAccept", { isAccept: true })
-      .andWhere("comment.movie.id = :movieId", { movieId });
+      .andWhere("comment.movie.id = :movieId", { movieId })
+      .orderBy("comment.createdAt", "DESC");
 
     const comments = await qb.getMany();
     await this.redisCache.set(redisKey, comments, 30_000);
@@ -263,7 +264,9 @@ export class CommentsService {
       .leftJoinAndSelect("comment.parent", "parent")
       .where("comment.isAccept = :isAccept", { isAccept: false })
       .andWhere("comment.isReject = :isReject", { isReject: false })
-      .andWhere("movie.createdBy.id = :createdById", { createdById: user.id });
+      .andWhere("movie.createdBy.id = :createdById", { createdById: user.id })
+      .orderBy("comment.isReviewed", "ASC")
+      .addOrderBy("comment.createdAt", "DESC");
 
     const comments = await qb.getMany();
     await this.redisCache.set(redisKey, comments, 30_000);
@@ -289,6 +292,27 @@ export class CommentsService {
     await this.commentRepository.delete({ id });
 
     return CommentsMessages.RemovedCommentSuccess;
+  }
+
+  async markAsReviewed(id: number, user: User) {
+    const comment = await this.commentRepository.findOneBy({
+      id,
+      movie: { createdBy: { id: user.id } },
+    });
+
+    if (!comment) {
+      throw new NotFoundException(CommentsMessages.NotFoundComment);
+    }
+
+    if (comment.isReviewed) {
+      throw new ConflictException(CommentsMessages.AlreadyReviewedComment);
+    }
+
+    comment.isReviewed = true;
+
+    await this.commentRepository.save(comment);
+
+    return CommentsMessages.ReviewedCommentSuccess;
   }
 
   async checkExistCommentById(id: number): Promise<Comment> {

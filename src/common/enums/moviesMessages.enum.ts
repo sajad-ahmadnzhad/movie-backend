@@ -21,6 +21,7 @@ export enum CommentsMessages {
   ReplyCommentSuccess = "Comment replied successfully",
   NotAcceptedComment = "This comment is not accepted",
   AlreadyAcceptedComment = "This comment already accepted",
+  AlreadyReviewedComment = "This comment already reviewed",
   AcceptedCommentSuccess = "Comment accepted successfully",
   CannotAcceptComment = "You cannot accept this comment",
   CannotRejectComment = "You cannot reject this comment",
@@ -30,4 +31,5 @@ export enum CommentsMessages {
   CannotRemoveComment = "You are not allowed to remove this comment",
   CannotUpdateComment = "You are not allowed to update this comment",
   RemovedCommentSuccess = "Comment removed successfully",
+  ReviewedCommentSuccess = "The comment was successfully reviewed",
 }
