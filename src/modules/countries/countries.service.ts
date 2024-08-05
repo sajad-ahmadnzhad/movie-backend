@@ -95,7 +95,8 @@ export class CountriesService {
       options
     );
 
-    await this.redisCache.set("countries", paginatedCountries.data, 30_000);
+    const countries = await this.countryRepository.find(options);
+    await this.redisCache.set("countries", countries, 30_000);
 
     return paginatedCountries;
   }
@@ -113,7 +114,7 @@ export class CountriesService {
       throw new BadRequestException(CountriesMessages.RequiredCountryQuery);
     }
 
-    const cacheKey = `searchCountry_${countryQuery}_${limit}_${page}`;
+    const cacheKey = `searchCountry_${countryQuery}`;
 
     const countriesCache = await this.redisCache.get<Country[] | undefined>(
       cacheKey
@@ -151,7 +152,8 @@ export class CountriesService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedCountries.data, 30_000);
+    const countries = await this.countryRepository.find(options);
+    await this.redisCache.set(cacheKey, countries, 30_000);
 
     return paginatedCountries;
   }

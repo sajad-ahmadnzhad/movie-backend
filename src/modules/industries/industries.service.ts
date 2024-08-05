@@ -77,7 +77,7 @@ export class IndustriesService {
     limit?: number,
     countryId?: number
   ): Promise<PaginatedList<Industry>> {
-    const redisKey = `Industries_${page}_${limit}_${countryId}`;
+    const redisKey = `Industries_${countryId}`;
 
     const industriesCache = await this.redisCache.get<Industry[] | undefined>(
       redisKey
@@ -110,7 +110,8 @@ export class IndustriesService {
       options
     );
 
-    await this.redisCache.set(redisKey, paginatedIndustries.data, 30_000);
+    const industries = await this.industryRepository.find(options);
+    await this.redisCache.set(redisKey, industries, 30_000);
 
     return paginatedIndustries;
   }
@@ -128,7 +129,7 @@ export class IndustriesService {
       throw new BadRequestException(IndustriesMessages.RequiredIndustryQuery);
     }
 
-    const cacheKey = `searchIndustries_${industryQuery}_${limit}_${page}`;
+    const cacheKey = `searchIndustries_${industryQuery}`;
 
     const industriesCache = await this.redisCache.get<Industry[] | undefined>(
       cacheKey
@@ -163,7 +164,8 @@ export class IndustriesService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedIndustries.data, 30_000);
+    const industries = await this.industryRepository.find(options);
+    await this.redisCache.set(cacheKey, industries, 30_000);
 
     return paginatedIndustries;
   }

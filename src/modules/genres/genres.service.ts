@@ -76,7 +76,8 @@ export class GenresService {
       options
     );
 
-    await this.redisCache.set("genres", paginatedGenres.data, 30_000);
+    const genres = await this.genreRepository.find(options);
+    await this.redisCache.set("genres", genres, 30_000);
 
     return paginatedGenres;
   }
@@ -90,7 +91,7 @@ export class GenresService {
       throw new BadRequestException(GenresMessages.RequiredGenreQuery);
     }
 
-    const cacheKey = `searchGenres_${genreQuery}_${limit}_${page}`;
+    const cacheKey = `searchGenres_${genreQuery}`;
 
     const genresCache = await this.redisCache.get<Genre[] | undefined>(
       cacheKey
@@ -128,7 +129,8 @@ export class GenresService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedGenres.data, 30_000);
+    const genres = await this.genreRepository.find(options);
+    await this.redisCache.set(cacheKey, genres, 30_000);
 
     return paginatedGenres;
   }

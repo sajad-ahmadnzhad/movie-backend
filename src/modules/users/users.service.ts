@@ -63,7 +63,8 @@ export class UsersService {
       options
     );
 
-    await this.redisCache.set("users", paginatedUsers.data, 30_000);
+    const users = await this.userRepository.find(options);
+    await this.redisCache.set("users", users, 30_000);
 
     return paginatedUsers;
   }
@@ -174,7 +175,7 @@ export class UsersService {
       throw new BadRequestException(UsersMessages.RequiredUser);
     }
 
-    const cacheKey = `searchUsers_${userQuery}_${limit}_${page}`;
+    const cacheKey = `searchUsers_${userQuery}`;
 
     const usersCache = await this.redisCache.get<User[] | undefined>(cacheKey);
 
@@ -204,7 +205,8 @@ export class UsersService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedUsers.data, 30_000);
+    const users = await this.userRepository.find(options);
+    await this.redisCache.set(cacheKey, users, 30_000);
 
     return paginatedUsers;
   }

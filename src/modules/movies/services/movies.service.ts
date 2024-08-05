@@ -123,7 +123,7 @@ export class MoviesService {
     const { limit, page, genre, country, actor, industry, release_year } =
       filterMoviesDto;
 
-    const cacheKey = `movies_${limit}_${page}_${genre}_${country}_${actor}_${industry}_${release_year}`;
+    const cacheKey = `movies_${genre}_${country}_${actor}_${industry}_${release_year}`;
 
     const moviesCache = await this.redisCache.get<Movie[] | undefined>(
       cacheKey
@@ -163,22 +163,17 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
-    let paginatedMovies = await typeORMPagination(
-      limit,
-      page,
-      this.movieRepository,
-      options
-    );
+    let movies = await this.movieRepository.find(options);
 
     //* Calculate bookmarks count and likes count
-    const calculatedResult = this.calculateMoviesCounts(paginatedMovies.data);
+    const calculatedResult = this.calculateMoviesCounts(movies);
 
-    (paginatedMovies as any).data = calculatedResult;
-    await this.calculateMovieVisits(paginatedMovies.data);
+    (movies as any) = calculatedResult;
+    await this.calculateMovieVisits(movies);
 
-    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
+    await this.redisCache.set(cacheKey, movies, 30_000);
 
-    return paginatedMovies;
+    return cachePagination(limit, page, movies);
   }
 
   async findOne(id: number) {
@@ -209,7 +204,7 @@ export class MoviesService {
       throw new BadRequestException(MoviesMessages.RequiredMovieQuery);
     }
 
-    const cacheKey = `searchMovie_${movieQuery}_${limit}_${page}`;
+    const cacheKey = `searchMovie_${movieQuery}`;
 
     const moviesCache = await this.redisCache.get<Movie[] | undefined>(
       cacheKey
@@ -257,17 +252,17 @@ export class MoviesService {
       options
     );
 
-    await this.redisCache.set(cacheKey, paginatedMovies.data, 30_000);
-
-    //* Calculate visits movies
-    await this.calculateMovieVisits(paginatedMovies.data);
+    let movies = await this.movieRepository.find(options);
 
     //* Calculate bookmarks count and likes count
-    const calculatedResult = this.calculateMoviesCounts(paginatedMovies.data);
+    const calculatedResult = this.calculateMoviesCounts(movies);
 
-    (paginatedMovies as any).data = calculatedResult;
+    (movies as any) = calculatedResult;
+    await this.calculateMovieVisits(movies);
 
-    return paginatedMovies;
+    await this.redisCache.set(cacheKey, movies, 30_000);
+
+    return cachePagination(limit, page, movies);
   }
 
   async likeToggle(id: number, user: User): Promise<string> {
