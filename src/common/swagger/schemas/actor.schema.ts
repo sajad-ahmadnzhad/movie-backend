@@ -17,7 +17,8 @@ export const GetOneActorSchema: SchemaObject = {
     },
     photo: {
       type: "string",
-      example: "/uploads/actor-photo/16.9090929--photo_2023-04-08_15-18-36.jpg",
+      example:
+        "https://movie-backend-bucket.storage.c2.liara.space/actors-photo/my-actor.jpg",
     },
     country: {
       type: "object",

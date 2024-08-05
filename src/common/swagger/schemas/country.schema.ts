@@ -17,7 +17,8 @@ export const GetOneCountrySchema: SchemaObject = {
     },
     flag_image_URL: {
       type: "string",
-      example: "/uploads/country-flag/171742.1145530829754--movie-backend.png",
+      example:
+        " https://movie-backend-bucket.storage.c2.liara.space/countries-flag/my-country.jpg",
     },
     createdBy: CreatedBySchema,
     createdAt: {

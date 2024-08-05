@@ -33,7 +33,8 @@ export const GetOneUserSchema: SchemaObject = {
     },
     avatarURL: {
       type: "string",
-      example: "/uploads/user-avatar/2890.2938233496407--71iPN1z3PXL.png",
+      example:
+        "https://movie-backend-bucket.storage.c2.liara.space/users-avatar/custom-avatar.jpg",
     },
     isAdmin: {
       type: "boolean",

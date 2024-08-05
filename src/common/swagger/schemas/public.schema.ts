@@ -150,7 +150,7 @@ export const CreatedBySchema: SchemaObject = {
     avatarURL: {
       type: "string",
       example:
-        " https://movie-backend-bucket.storage.c2.liara.space/users-avatar/custom-avatar.jpg",
+        "https://movie-backend-bucket.storage.c2.liara.space/users-avatar/custom-avatar.jpg",
     },
   },
 };

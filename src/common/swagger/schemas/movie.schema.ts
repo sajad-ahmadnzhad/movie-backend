@@ -59,11 +59,13 @@ export const GetOneMovie: SchemaObject = {
     },
     poster_URL: {
       type: "string",
-      example: "/uploads/posters/24555.51533071671--photo-09-22_22-58.jpg",
+      example:
+        "https://movie-backend-bucket.storage.c2.liara.space/posters/my-poster.jpg",
     },
     video_URL: {
       type: "string",
-      example: "/uploads/movies/1717433950785T68ci0AlwaymCxwCkjB2.mp4",
+      example:
+        "https://movie-backend-bucket.storage.c2.liara.space/movies/my-movie.mp4",
     },
     countries: {
       type: "array",
@@ -83,7 +85,8 @@ export const GetOneMovie: SchemaObject = {
           },
           flag_image_URL: {
             type: "string",
-            example: "uploads/country-flag/3071671--photo2_22-58-57.jpg",
+            example:
+              " https://movie-backend-bucket.storage.c2.liara.space/countries-flag/my-country.jpg",
           },
           createdAt: {
             type: "string",
@@ -138,7 +141,8 @@ export const GetOneMovie: SchemaObject = {
           },
           photo: {
             type: "string",
-            example: "uploads/actor-photo/3071671--photo2_22-58-57.jpg",
+            example:
+              " https://movie-backend-bucket.storage.c2.liara.space/actors-photo/my-actor.jpg",
           },
           bio: {
             type: "string",
