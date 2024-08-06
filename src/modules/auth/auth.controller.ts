@@ -43,7 +43,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
     const { success, accessToken } = await this.authService.signupUser(body);
-    res.cookie("accessToken", accessToken, { secure: true, httpOnly: true });
+    res.cookie("accessToken", accessToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
     return { message: success };
   }
 
@@ -54,7 +58,11 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
     const { success, accessToken } = await this.authService.signinUser(body);
-    res.cookie("accessToken", accessToken);
+    res.cookie("accessToken", accessToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return { message: success };
   }
@@ -67,10 +75,15 @@ export class AuthController {
   ) {
     const { accessToken } = req.cookies || {};
 
-    const { success, newAccessToken } =
-      await this.authService.refreshToken(accessToken);
+    const { success, newAccessToken } = await this.authService.refreshToken(
+      accessToken
+    );
 
-    res.cookie("accessToken", newAccessToken);
+    res.cookie("accessToken", newAccessToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     return { message: success };
   }
@@ -111,7 +124,6 @@ export class AuthController {
   @SendVerifyEmailDecorator
   async sendVerifyMail(@Body() body: SendVerifyEmailDto) {
     const success = await this.authService.sendVerifyEmail(body);
-
 
     return { message: success };
   }
