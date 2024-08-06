@@ -42,11 +42,19 @@ export class AuthController {
     @Body() body: SignupUserDto,
     @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
-    const { success, accessToken } = await this.authService.signupUser(body);
+    const { success, accessToken, refreshToken } =
+      await this.authService.signupUser(body);
+
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { message: success };
   }
@@ -57,11 +65,18 @@ export class AuthController {
     @Body() body: SigninUserDto,
     @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
-    const { success, accessToken } = await this.authService.signinUser(body);
+    const { success, accessToken, refreshToken } =
+      await this.authService.signinUser(body);
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      secure: true,
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return { message: success };
@@ -73,16 +88,16 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {
-    const { accessToken } = req.cookies || {};
+    const { refreshToken } = req.cookies || {};
 
     const { success, newAccessToken } = await this.authService.refreshToken(
-      accessToken
+      refreshToken
     );
 
     res.cookie("accessToken", newAccessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 1000,
     });
 
     return { message: success };
@@ -94,9 +109,10 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {
-    const { accessToken } = req.cookies;
-    const success = await this.authService.signout(accessToken);
+    const { accessToken, refreshToken } = req.cookies;
+    const success = await this.authService.signout(accessToken, refreshToken);
     res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
     return { message: success };
   }
 

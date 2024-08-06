@@ -6,13 +6,19 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  UnauthorizedException,
   forwardRef,
 } from "@nestjs/common";
 import { SignupUserDto } from "./dto/signupUser.dto";
 import { AuthMessages } from "../../common/enums/authMessages.enum";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
-import { RefreshToken, SigninUser, SignupUser } from "./auth.interface";
+import {
+  GenerateTokens,
+  RefreshToken,
+  SigninUser,
+  SignupUser,
+} from "./auth.interface";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import { SigninUserDto } from "./dto/signinUser.dot";
@@ -47,15 +53,37 @@ export class AuthService {
     private readonly configService: ConfigService
   ) {}
 
-  private generateToken(
-    payload: object,
-    expireTime: number | string,
-    secretKey: string
-  ) {
-    return this.jwtService.sign(payload, {
-      expiresIn: expireTime,
-      secret: secretKey,
+  async generateTokens(user: User): Promise<GenerateTokens> {
+    const payload = { id: user.id };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: process.env.REFRESH_TOKEN_EXPIRE_TIME,
     });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME,
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    });
+
+    await this.redisCache.set(
+      `refreshToken_${user.id}_${refreshToken}`,
+      refreshToken,
+      60 * 60 * 24 * 30
+    );
+
+    return { accessToken, refreshToken };
+  }
+
+  async validateRefreshToken(refreshToken: string): Promise<boolean> {
+    const { id } = this.jwtService.decode<{ id: number }>(refreshToken) || {};
+
+    const storedToken = await this.redisCache.get(
+      `refreshToken_${id}_${refreshToken}`
+    );
+
+    if (!storedToken || storedToken !== refreshToken) {
+      throw new UnauthorizedException(AuthMessages.InvalidRefreshToken);
+    }
+
+    return true;
   }
 
   private async deleteExpiredTokens(): Promise<void> {
@@ -85,21 +113,9 @@ export class AuthService {
 
     user = await this.userRepository.save(user);
 
-    const accessToken = this.generateToken(
-      { id: user.id },
-      process.env.ACCESS_TOKEN_EXPIRE_TIME as string,
-      process.env.ACCESS_TOKEN_SECRET as string
-    );
+    const tokens = await this.generateTokens(user);
 
-    const refreshToken = this.generateToken(
-      { id: user.id },
-      process.env.REFRESH_TOKEN_EXPIRE_TIME as string,
-      process.env.REFRESH_TOKEN_SECRET as string
-    );
-
-    await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
-
-    return { success: AuthMessages.SignupUserSuccess, accessToken };
+    return { success: AuthMessages.SignupUserSuccess, ...tokens };
   }
 
   async signinUser(dto: SigninUserDto): Promise<SigninUser> {
@@ -127,51 +143,20 @@ export class AuthService {
     if (!comparePassword) {
       throw new ForbiddenException(AuthMessages.InvalidPassword);
     }
-    const accessToken = this.generateToken(
-      { id: user.id },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
-      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
-    );
 
-    const refreshToken = this.generateToken(
-      { id: user.id },
-      this.configService.get<string>("REFRESH_TOKEN_EXPIRE_TIME") as string,
-      this.configService.get<string>("REFRESH_TOKEN_SECRET") as string
-    );
+    const tokens = await this.generateTokens(user);
 
-    await this.redisCache.set(`userRefreshToken:${user.id}`, refreshToken);
-
-    return { success: AuthMessages.SigninUserSuccess, accessToken };
+    return { success: AuthMessages.SigninUserSuccess, ...tokens };
   }
 
-  async refreshToken(accessToken: string): Promise<RefreshToken> {
-    const decodeToken = this.jwtService.decode<{ id: number }>(accessToken);
+  async refreshToken(refreshToken: string): Promise<RefreshToken> {
+    await this.validateRefreshToken(refreshToken);
 
-    if (!decodeToken) {
-      throw new BadRequestException(AuthMessages.InvalidAccessToken);
-    }
+    const payload = this.jwtService.verify<{ id: number }>(refreshToken, {
+      secret: process.env.REFRESH_TOKEN_SECRET,
+    });
 
-    const refreshToken = await this.redisCache.get<string>(
-      `userRefreshToken:${decodeToken.id}`
-    );
-
-    if (!refreshToken) {
-      throw new NotFoundException(AuthMessages.NotFoundRefreshToken);
-    }
-
-    try {
-      this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>("REFRESH_TOKEN_SECRET"),
-      });
-    } catch (error: any) {
-      throw new InternalServerErrorException(error.message);
-    }
-
-    const newAccessToken = this.generateToken(
-      { id: decodeToken.id },
-      this.configService.get<string>("ACCESS_TOKEN_EXPIRE_TIME") as string,
-      this.configService.get<string>("ACCESS_TOKEN_SECRET") as string
-    );
+    const newAccessToken = this.jwtService.sign(payload);
 
     return {
       newAccessToken,
@@ -179,14 +164,16 @@ export class AuthService {
     };
   }
 
-  async signout(accessToken: string): Promise<string> {
+  async signout(accessToken: string, refreshToken: string): Promise<string> {
     const decodeToken = this.jwtService.decode<{ id: number }>(accessToken);
 
     if (!decodeToken) {
       throw new BadRequestException(AuthMessages.InvalidAccessToken);
     }
 
-    await this.redisCache.del(`userRefreshToken:${decodeToken.id}`);
+    await this.validateRefreshToken(refreshToken);
+
+    await this.redisCache.del(`refreshToken_${decodeToken.id}_${refreshToken}`);
 
     return AuthMessages.SignoutSuccess;
   }

@@ -11,7 +11,7 @@ import { MailModule } from "../mail/mail.module";
 
 @Module({
   imports: [
-    JwtModule.register({ global: true }),
+    JwtModule.register({ global: true,secret: process.env.JWT_ACCESS_TOKEN_SECRET }),
     ScheduleModule.forRoot(),
     MailModule,
     TypeOrmModule.forFeature([User, BanUser, Token]),
