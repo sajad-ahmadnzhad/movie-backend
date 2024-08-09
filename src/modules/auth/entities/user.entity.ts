@@ -23,8 +23,8 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", nullable: false, unique: true })
   email: string;
 
-  @Column({ type: "varchar", select: false, nullable: false })
-  password: string;
+  @Column({ type: "varchar", select: false, nullable: true })
+  password?: string;
 
   @Column({
     type: "varchar",

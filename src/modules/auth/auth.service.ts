@@ -15,6 +15,7 @@ import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import {
   GenerateTokens,
+  GoogleOAuthUser,
   RefreshToken,
   SigninUser,
   SignupUser,
@@ -56,7 +57,8 @@ export class AuthService {
   async generateTokens(user: User): Promise<GenerateTokens> {
     const payload = { id: user.id };
     const accessToken = this.jwtService.sign(payload, {
-      secret: process.env.REFRESH_TOKEN_EXPIRE_TIME,
+      secret: process.env.ACCESS_TOKEN_SECRET,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME,
     });
     const refreshToken = this.jwtService.sign(payload, {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRE_TIME,
@@ -88,6 +90,30 @@ export class AuthService {
 
   private async deleteExpiredTokens(): Promise<void> {
     await this.tokenRepository.delete({ createdAt: LessThan(new Date()) });
+  }
+
+  async googleAuth(
+    user: GoogleOAuthUser | undefined
+  ): Promise<GenerateTokens & { success: string }> {
+    if (!user) {
+      throw new UnauthorizedException(AuthMessages.GoogleUnauthorized);
+    }
+
+    let existingUser = await this.userRepository.findOneBy({
+      email: user.email,
+    });
+
+    if (!existingUser) {
+      const newUser = this.userRepository.create(user);
+      existingUser = await this.userRepository.save(newUser);
+    }
+
+    const tokens = await this.generateTokens(existingUser);
+
+    return {
+      ...tokens,
+      success: AuthMessages.AuthenticatedSuccess,
+    };
   }
 
   async signupUser(dto: SignupUserDto): Promise<SignupUser> {
@@ -152,11 +178,17 @@ export class AuthService {
   async refreshToken(refreshToken: string): Promise<RefreshToken> {
     await this.validateRefreshToken(refreshToken);
 
-    const payload = this.jwtService.verify<{ id: number }>(refreshToken, {
+    const { id } = this.jwtService.verify<{ id: number }>(refreshToken, {
       secret: process.env.REFRESH_TOKEN_SECRET,
     });
 
-    const newAccessToken = this.jwtService.sign(payload);
+    const newAccessToken = this.jwtService.sign(
+      { id },
+      {
+        secret: process.env.ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME,
+      }
+    );
 
     return {
       newAccessToken,

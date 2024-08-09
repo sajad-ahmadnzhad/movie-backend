@@ -8,15 +8,16 @@ import { User } from "./entities/user.entity";
 import { BanUser } from "./entities/banUser.entity";
 import { Token } from "./entities/token.entity";
 import { MailModule } from "../mail/mail.module";
+import { Oauth2Strategy } from "./strategies/google.strategy";
 
 @Module({
   imports: [
-    JwtModule.register({ global: true,secret: process.env.JWT_ACCESS_TOKEN_SECRET }),
+    JwtModule.register({ global: true }),
     ScheduleModule.forRoot(),
     MailModule,
     TypeOrmModule.forFeature([User, BanUser, Token]),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, Oauth2Strategy],
 })
 export class AuthModule {}

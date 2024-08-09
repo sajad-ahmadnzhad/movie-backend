@@ -17,6 +17,7 @@ import { ResetPasswordDto } from "./dto/resetPassword.dto";
 import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { Throttle } from "@nestjs/throttler";
 import { ApiTags } from "@nestjs/swagger";
+import { UseGuards } from "@nestjs/common";
 import {
   SignInUserDecorator,
   RefreshTokenDecorator,
@@ -27,6 +28,8 @@ import {
   VerifyEmailDecorator,
   SignUpUserDecorator,
 } from "../../common/decorators/auth.decorator";
+import { AuthGuard } from "@nestjs/passport";
+import { GoogleOAuthUser } from "./auth.interface";
 
 @Throttle({ default: { ttl: 60_000, limit: 5 } })
 @ApiTags("auth")
@@ -48,13 +51,11 @@ export class AuthController {
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 5 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { message: success };
   }
@@ -70,13 +71,11 @@ export class AuthController {
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 5 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return { message: success };
@@ -97,7 +96,6 @@ export class AuthController {
     res.cookie("accessToken", newAccessToken, {
       secure: true,
       httpOnly: true,
-      maxAge: 5 * 60 * 1000,
     });
 
     return { message: success };
@@ -113,6 +111,32 @@ export class AuthController {
     const success = await this.authService.signout(accessToken, refreshToken);
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
+    return { message: success };
+  }
+
+  @Get("google/login")
+  @UseGuards(AuthGuard("google"))
+  googleAuth() {}
+
+  @Get("google/redirect")
+  @UseGuards(AuthGuard("google"))
+  async googleHandleRedirect(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { accessToken, refreshToken, success } =
+      await this.authService.googleAuth(req.user as GoogleOAuthUser);
+
+    res.cookie("accessToken", accessToken, {
+      secure: true,
+      httpOnly: true,
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      secure: true,
+      httpOnly: true,
+    });
+
     return { message: success };
   }
 
