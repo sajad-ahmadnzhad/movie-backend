@@ -11,6 +11,10 @@ import { Like } from "../../movies/entities/like.entity";
 import { Comment } from "../../movies/entities/comment.entity";
 import { Roles } from "../../../common/enums/roles.enum";
 import { BaseEntity } from "../../../common/abstracts/base.entity";
+import { config } from "dotenv";
+import * as path from "path";
+
+config({ path: path.join(process.cwd(), `/.env.${process.env.NODE_ENV}`) });
 
 @Entity({ name: "users" })
 export class User extends BaseEntity {
@@ -26,10 +30,7 @@ export class User extends BaseEntity {
   @Column({ type: "varchar", select: false, nullable: true })
   password?: string;
 
-  @Column({
-    type: "varchar",
-    default: "/uploads/user-avatar/custom-avatar.jpg",
-  })
+  @Column({ type: "varchar", default: process.env.CUSTOM_AVATAR })
   avatarURL: string;
 
   @Column({ type: "boolean", default: false })

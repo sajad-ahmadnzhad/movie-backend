@@ -84,6 +84,10 @@ export class UsersService {
     updateUserDto: UpdateUserDto,
     file?: Express.Multer.File
   ): Promise<string> {
+    if (!Object.keys(updateUserDto).length && !file) {
+      throw new BadRequestException(AuthMessages.BodyCannotBeEmpty);
+    }
+
     const findDuplicatedKey = await this.userRepository
       .createQueryBuilder("user")
       .where("user.email = :email OR user.username = :username", {
@@ -227,7 +231,7 @@ export class UsersService {
 
     const comparePassword = bcrypt.compareSync(
       dto.password,
-      foundUser.password
+      foundUser.password ?? ""
     );
 
     if (!comparePassword) {
@@ -265,7 +269,7 @@ export class UsersService {
 
     const comparePassword = bcrypt.compareSync(
       dto.password,
-      currentSuperAdmin.password
+      currentSuperAdmin.password ?? ""
     );
 
     if (!comparePassword) {

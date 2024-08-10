@@ -134,6 +134,34 @@ export const TooManyRequests: SchemaObject = {
   },
 };
 
+export const UnauthorizedSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "Unauthorized",
+    },
+    statusCode: {
+      type: "number",
+      example: 401,
+    },
+  },
+};
+
+export const InternalServerErrorSchema: SchemaObject = {
+  type: "object",
+  properties: {
+    message: {
+      type: "string",
+      example: "Internal Server Error",
+    },
+    statusCode: {
+      type: "number",
+      example: 500,
+    },
+  },
+};
+
 export const CreatedBySchema: SchemaObject = {
   type: "object",
   properties: {

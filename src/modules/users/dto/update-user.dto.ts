@@ -47,6 +47,8 @@ export class UpdateUserDto {
   email: string;
 
   @IsOptional()
+  @IsNotEmpty()
+  @Transform(({ value }) => value?.trim())
   @ApiProperty({ type: "string", format: "binary", required: false })
-  avatar: any;
+  avatar?: any;
 }

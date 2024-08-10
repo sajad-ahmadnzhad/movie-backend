@@ -17,7 +17,6 @@ import { ResetPasswordDto } from "./dto/resetPassword.dto";
 import { SendVerifyEmailDto } from "./dto/sendVerifyEmail.dto";
 import { Throttle } from "@nestjs/throttler";
 import { ApiTags } from "@nestjs/swagger";
-import { UseGuards } from "@nestjs/common";
 import {
   SignInUserDecorator,
   RefreshTokenDecorator,
@@ -27,8 +26,9 @@ import {
   SendVerifyEmailDecorator,
   VerifyEmailDecorator,
   SignUpUserDecorator,
+  GoogleAuthDecorator,
+  GoogleRedirectDecorator,
 } from "../../common/decorators/auth.decorator";
-import { AuthGuard } from "@nestjs/passport";
 import { GoogleOAuthUser } from "./auth.interface";
 
 @Throttle({ default: { ttl: 60_000, limit: 5 } })
@@ -115,12 +115,12 @@ export class AuthController {
   }
 
   @Get("google/login")
-  @UseGuards(AuthGuard("google"))
+  @GoogleAuthDecorator
   googleAuth() {}
 
   @Get("google/redirect")
-  @UseGuards(AuthGuard("google"))
-  async googleHandleRedirect(
+  @GoogleRedirectDecorator
+  async googleRedirect(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {

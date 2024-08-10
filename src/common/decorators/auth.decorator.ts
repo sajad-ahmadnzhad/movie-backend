@@ -16,18 +16,22 @@ import {
   ApiOperation,
   ApiParam,
   ApiTooManyRequestsResponse,
+  ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 import {
   BadRequestBodySchema,
   BadRequestParamSchema,
   ConflictSchema,
   ForbiddenSchema,
+  InternalServerErrorSchema,
   JwtExpiredSchema,
   NotFoundSchema,
   SuccessSchema,
   TooManyRequests,
+  UnauthorizedSchema,
 } from "../swagger/schemas/public.schema";
 import { JwtGuard } from "../guards/jwt.guard";
+import { AuthGuard } from "@nestjs/passport";
 
 //* Signup user decorator
 export const SignUpUserDecorator = applyDecorators(
@@ -221,4 +225,33 @@ export const VerifyEmailDecorator = applyDecorators(
   }),
   ApiParam({ name: "token", description: "The token", type: "string" }),
   ApiOperation({ summary: "Verified user by token" })
+);
+
+//* Google auth decorator
+export const GoogleAuthDecorator = applyDecorators(
+  UseGuards(AuthGuard("google")),
+  ApiOperation({ summary: "authentication with google" }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
+);
+
+//* Google redirect decorator
+export const GoogleRedirectDecorator = applyDecorators(
+  UseGuards(AuthGuard("google")),
+  ApiUnauthorizedResponse({
+    schema: UnauthorizedSchema,
+    description: "unauthorized",
+  }),
+  ApiInternalServerErrorResponse({
+    schema: InternalServerErrorSchema,
+    description: "Internal Server Error",
+  }),
+  ApiOkResponse({ description: "Authorized success", schema: SuccessSchema }),
+  ApiOperation({ summary: "redirect user from google" }),
+  ApiTooManyRequestsResponse({
+    description: "Too many requests",
+    schema: TooManyRequests,
+  })
 );

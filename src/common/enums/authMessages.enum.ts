@@ -20,4 +20,5 @@ export enum AuthMessages {
   InvalidRefreshToken = "Invalid refresh token",
   AuthenticatedSuccess = "Authenticated success",
   GoogleUnauthorized = "The information entered is insufficient",
+  BodyCannotBeEmpty = "Body cannot be empty",
 }

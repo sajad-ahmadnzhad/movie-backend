@@ -164,7 +164,7 @@ export class AuthService {
       throw new ForbiddenException(AuthMessages.BannedAccount);
     }
 
-    const comparePassword = bcrypt.compareSync(password, user.password);
+    const comparePassword = bcrypt.compareSync(password, user.password ?? '');
 
     if (!comparePassword) {
       throw new ForbiddenException(AuthMessages.InvalidPassword);
