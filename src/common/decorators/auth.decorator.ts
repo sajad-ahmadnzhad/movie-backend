@@ -7,6 +7,7 @@ import {
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
+  ApiConsumes,
   ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
@@ -52,7 +53,8 @@ export const SignUpUserDecorator = applyDecorators(
     description: "Signin validation error",
     schema: BadRequestBodySchema,
   }),
-  ApiOperation({ summary: "Sign Up new user" })
+  ApiConsumes('application/json' , 'application/x-www-form-urlencoded'),
+  ApiOperation({ summary: "signup" })
 );
 
 //* Signin user decorator
@@ -75,7 +77,8 @@ export const SignInUserDecorator = applyDecorators(
     description: "Signin validation error",
     schema: BadRequestBodySchema,
   }),
-  ApiOperation({ summary: "User signin" })
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
+  ApiOperation({ summary: "signin" })
 );
 
 //* Signout user decorator
@@ -86,16 +89,16 @@ export const SignoutUserDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
-  ApiBadRequestResponse({
-    description: "Invalid access token",
-    schema: BadRequestParamSchema,
-  }),
   ApiForbiddenResponse({
     description: "This path is protected !!",
     schema: ForbiddenSchema,
   }),
+  ApiUnauthorizedResponse({
+    schema: UnauthorizedSchema,
+    description: "Invalid refresh token",
+  }),
   ApiOkResponse({ description: "Sign out success", schema: SuccessSchema }),
-  ApiOperation({ summary: "User signout" }),
+  ApiOperation({ summary: "signout" }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -109,23 +112,19 @@ export const RefreshTokenDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
+  ApiUnauthorizedResponse({
+    schema: UnauthorizedSchema,
+    description: "Invalid refresh token",
+  }),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
-  }),
-  ApiBadRequestResponse({
-    description: "Invalid access token",
-    schema: BadRequestParamSchema,
-  }),
-  ApiNotFoundResponse({
-    description: "Refresh token not found",
-    schema: NotFoundSchema,
   }),
   ApiOkResponse({
     description: "Refreshed token success",
     schema: SuccessSchema,
   }),
-  ApiOperation({ summary: "Refresh access token" })
+  ApiOperation({ summary: "refresh access token" })
 );
 
 //* Forgot password Decorator
@@ -135,6 +134,7 @@ export const ForgotPasswordDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiNotFoundResponse({
     description: "User not found",
     schema: NotFoundSchema,
@@ -147,7 +147,7 @@ export const ForgotPasswordDecorator = applyDecorators(
     description: "Sended reset password",
     schema: SuccessSchema,
   }),
-  ApiOperation({ summary: "User forgot password" })
+  ApiOperation({ summary: "forgot password" })
 );
 
 //* Reset password decorator
@@ -156,6 +156,7 @@ export const ResetPasswordDecorator = applyDecorators(
     description: "Token not found",
     schema: NotFoundSchema,
   }),
+    ApiConsumes('application/json' , 'application/x-www-form-urlencoded'),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -170,7 +171,7 @@ export const ResetPasswordDecorator = applyDecorators(
     type: "number",
   }),
   ApiParam({ name: "token", description: "The token", type: "string" }),
-  ApiOperation({ summary: "User reset password" }),
+  ApiOperation({ summary: "reset password" }),
   HttpCode(HttpStatus.OK)
 );
 
@@ -180,6 +181,7 @@ export const SendVerifyEmailDecorator = applyDecorators(
     description: "User not found",
     schema: NotFoundSchema,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -196,7 +198,7 @@ export const SendVerifyEmailDecorator = applyDecorators(
     description: "Validation error",
     schema: BadRequestBodySchema,
   }),
-  ApiOperation({ summary: "Send email for verify user" }),
+  ApiOperation({ summary: "verify email" }),
   HttpCode(HttpStatus.OK)
 );
 
@@ -224,7 +226,7 @@ export const VerifyEmailDecorator = applyDecorators(
     type: "number",
   }),
   ApiParam({ name: "token", description: "The token", type: "string" }),
-  ApiOperation({ summary: "Verified user by token" })
+  ApiOperation({ summary: "verified user email by token" })
 );
 
 //* Google auth decorator

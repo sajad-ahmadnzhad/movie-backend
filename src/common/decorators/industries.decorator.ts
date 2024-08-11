@@ -12,6 +12,7 @@ import {
   ApiParam,
   ApiCreatedResponse,
   ApiTooManyRequestsResponse,
+  ApiConsumes,
 } from "@nestjs/swagger";
 import {
   BadRequestBodySchema,
@@ -42,6 +43,7 @@ export const CreateIndustryDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiConflictResponse({
     description: "Already exists industry",
     schema: ConflictSchema,
@@ -123,6 +125,7 @@ export const UpdateIndustryDecorator = applyDecorators(
   Role(Roles.ADMIN, Roles.SUPER_ADMIN),
   UseGuards(JwtGuard, RoleGuard),
   ApiCookieAuth(),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiNotFoundResponse({
     description: "Industry not found | Country not found",
     schema: NotFoundSchema,

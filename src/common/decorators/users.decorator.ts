@@ -270,6 +270,7 @@ export const DeleteAccountUserDecorator = applyDecorators(
     description: "Invalid Password | cannot delete account super admin",
     schema: BadRequestParamSchema,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -298,6 +299,7 @@ export const ChangeSuperAdminDecorator = applyDecorators(
     description: "ID of the person who becomes the owner",
     type: "number",
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -333,6 +335,7 @@ export const BanUserDecorator = applyDecorators(
     description: "Cannot ban admin or super admin",
     schema: ForbiddenSchema,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,

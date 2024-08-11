@@ -11,6 +11,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiTooManyRequestsResponse,
+  ApiConsumes,
 } from "@nestjs/swagger";
 import {
   GetAllGenresSchema,
@@ -40,6 +41,7 @@ export const CreateGenreDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiOperation({ summary: "create new genre" }),
   ApiConflictResponse({
     description: "Already exists genre",
@@ -72,6 +74,7 @@ export const UpdateGenreDecorator = applyDecorators(
     description: "Too many requests",
     schema: TooManyRequests,
   }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiNotFoundResponse({
     description: "Genre not found",
     schema: NotFoundSchema,

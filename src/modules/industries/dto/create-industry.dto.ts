@@ -36,6 +36,7 @@ export class CreateIndustryDto {
   description?: string;
 
   @IsNotEmpty()
+  @Transform(({ value }) => +value)
   @IsNumber()
   @IsInt()
   @ApiProperty({
