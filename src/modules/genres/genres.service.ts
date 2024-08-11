@@ -13,10 +13,7 @@ import { GenresMessages } from "../../common/enums/genresMessages.enum";
 import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../common/utils/pagination.util";
+import { pagination } from "../../common/utils/pagination.util";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Genre } from "./entities/genre.entity";
 import { FindManyOptions, Like, Repository } from "typeorm";
@@ -53,7 +50,7 @@ export class GenresService {
     );
 
     if (genresCache) {
-      return cachePagination(limit, page, genresCache);
+      return pagination(limit, page, genresCache);
     }
 
     const options: FindManyOptions<Genre> = {
@@ -69,17 +66,10 @@ export class GenresService {
       },
     };
 
-    const paginatedGenres = await typeORMPagination(
-      limit,
-      page,
-      this.genreRepository,
-      options
-    );
-
     const genres = await this.genreRepository.find(options);
     await this.redisCache.set("genres", genres, 30_000);
 
-    return paginatedGenres;
+    return pagination(limit, page, genres);
   }
 
   async search(
@@ -98,7 +88,7 @@ export class GenresService {
     );
 
     if (genresCache) {
-      return cachePagination(limit, page, genresCache);
+      return pagination(limit, page, genresCache);
     }
 
     const options: FindManyOptions<Genre> = {
@@ -122,17 +112,10 @@ export class GenresService {
       },
     };
 
-    const paginatedGenres = await typeORMPagination(
-      limit,
-      page,
-      this.genreRepository,
-      options
-    );
-
     const genres = await this.genreRepository.find(options);
     await this.redisCache.set(cacheKey, genres, 30_000);
 
-    return paginatedGenres;
+    return pagination(limit, page, genres);
   }
 
   findOne(id: number): Promise<Genre> {

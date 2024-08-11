@@ -13,10 +13,7 @@ import { IndustriesMessages } from "../../common/enums/industriesMessages.enum";
 import { CountriesMessages } from "../../common/enums/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../common/utils/pagination.util";
+import { pagination } from "../../common/utils/pagination.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Country } from "../countries/entities/country.entity";
@@ -84,7 +81,7 @@ export class IndustriesService {
     );
 
     if (industriesCache) {
-      return cachePagination(limit, page, industriesCache);
+      return pagination(limit, page, industriesCache);
     }
 
     const options: FindManyOptions<Industry> = {
@@ -103,17 +100,10 @@ export class IndustriesService {
       },
     };
 
-    const paginatedIndustries = await typeORMPagination(
-      limit,
-      page,
-      this.industryRepository,
-      options
-    );
-
     const industries = await this.industryRepository.find(options);
     await this.redisCache.set(redisKey, industries, 30_000);
 
-    return paginatedIndustries;
+    return pagination(limit, page, industries);
   }
 
   findOne(id: number): Promise<Industry> {
@@ -136,7 +126,7 @@ export class IndustriesService {
     );
 
     if (industriesCache) {
-      return cachePagination(limit, page, industriesCache);
+      return pagination(limit, page, industriesCache);
     }
 
     const options: FindManyOptions<Industry> = {
@@ -157,17 +147,10 @@ export class IndustriesService {
       },
     };
 
-    const paginatedIndustries = await typeORMPagination(
-      limit,
-      page,
-      this.industryRepository,
-      options
-    );
-
     const industries = await this.industryRepository.find(options);
     await this.redisCache.set(cacheKey, industries, 30_000);
 
-    return paginatedIndustries;
+    return pagination(limit, page, industries);
   }
 
   async update(

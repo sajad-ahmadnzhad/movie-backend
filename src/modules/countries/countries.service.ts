@@ -12,10 +12,7 @@ import { UpdateCountryDto } from "./dto/update-country.dto";
 import { CountriesMessages } from "../../common/enums/countriesMessages.enum";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../common/utils/pagination.util";
+import { pagination } from "../../common/utils/pagination.util";
 import { PaginatedList } from "../../common/interfaces/public.interface";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Country } from "./entities/country.entity";
@@ -72,7 +69,7 @@ export class CountriesService {
     );
 
     if (countriesCache) {
-      return cachePagination(limit, page, countriesCache);
+      return pagination(limit, page, countriesCache);
     }
 
     const options: FindManyOptions<Country> = {
@@ -88,17 +85,10 @@ export class CountriesService {
       },
     };
 
-    const paginatedCountries = await typeORMPagination(
-      limit,
-      page,
-      this.countryRepository,
-      options
-    );
-
     const countries = await this.countryRepository.find(options);
     await this.redisCache.set("countries", countries, 30_000);
 
-    return paginatedCountries;
+    return pagination(limit, page, countries);
   }
 
   findOne(id: number): Promise<Country> {
@@ -121,7 +111,7 @@ export class CountriesService {
     );
 
     if (countriesCache) {
-      return cachePagination(limit, page, countriesCache);
+      return pagination(limit, page, countriesCache);
     }
 
     const options: FindManyOptions<Country> = {
@@ -145,17 +135,10 @@ export class CountriesService {
       },
     };
 
-    const paginatedCountries = await typeORMPagination(
-      limit,
-      page,
-      this.countryRepository,
-      options
-    );
-
     const countries = await this.countryRepository.find(options);
     await this.redisCache.set(cacheKey, countries, 30_000);
 
-    return paginatedCountries;
+    return pagination(limit, page, countries);
   }
 
   async update(

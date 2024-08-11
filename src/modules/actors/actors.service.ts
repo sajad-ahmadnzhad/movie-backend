@@ -12,10 +12,7 @@ import { UpdateActorDto } from "./dto/update-actor.dto";
 import { ActorsMessages } from "../../common/enums/actorsMessages.enum";
 import { IndustriesMessages } from "../../common/enums/industriesMessages.enum";
 import { PaginatedList } from "../../common/interfaces/public.interface";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../common/utils/pagination.util";
+import { pagination } from "../../common/utils/pagination.util";
 import { IndustriesService } from "../industries/industries.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FindManyOptions, Like, Repository } from "typeorm";
@@ -97,7 +94,7 @@ export class ActorsService {
     );
 
     if (actorsCache) {
-      return cachePagination(limit, page, actorsCache);
+      return pagination(limit, page, actorsCache);
     }
 
     const options: FindManyOptions<Actor> = {
@@ -105,7 +102,6 @@ export class ActorsService {
         country: { id: countryId },
         industry: { id: industryId },
       },
-
       relations: ["country", "createdBy", "industry"],
       order: { createdAt: "DESC" },
       select: {
@@ -118,17 +114,10 @@ export class ActorsService {
       },
     };
 
-    const actorsPagination = await typeORMPagination(
-      limit,
-      page,
-      this.actorRepository,
-      options
-    );
-
     const actors = await this.actorRepository.find(options);
     await this.redisCache.set(cacheKey, actors, 30_000);
 
-    return actorsPagination;
+    return pagination(limit, page, actors);
   }
 
   findOne(id: number): Promise<Actor> {
@@ -151,7 +140,7 @@ export class ActorsService {
     );
 
     if (actorsCache) {
-      return cachePagination(limit, page, actorsCache);
+      return pagination(limit, page, actorsCache);
     }
 
     const options: FindManyOptions<Actor> = {
@@ -175,16 +164,10 @@ export class ActorsService {
       },
     };
 
-    const paginatedActors = await typeORMPagination(
-      limit,
-      page,
-      this.actorRepository,
-      options
-    );
-    const actors = await this.actorRepository.find(options)
+    const actors = await this.actorRepository.find(options);
     await this.redisCache.set(cacheKey, actors, 30_000);
 
-    return paginatedActors;
+    return pagination(limit, page, actors);
   }
 
   async update(

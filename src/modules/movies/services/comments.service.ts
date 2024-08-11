@@ -12,10 +12,7 @@ import { CommentsMessages } from "../../../common/enums/moviesMessages.enum";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
-import {
-  cachePagination,
-  typeormQueryBuilderPagination,
-} from "../../../common/utils/pagination.util";
+import { pagination } from "../../../common/utils/pagination.util";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Comment } from "../entities/comment.entity";
 import { Repository } from "typeorm";
@@ -179,10 +176,10 @@ export class CommentsService {
     );
 
     if (cachePaginated) {
-      return cachePagination(limit, page, cachePaginated);
+      return pagination(limit, page, cachePaginated);
     }
 
-    const qb = this.commentRepository
+    const comments = await this.commentRepository
       .createQueryBuilder("comment")
       .leftJoinAndSelect(
         "comment.replies",
@@ -208,19 +205,12 @@ export class CommentsService {
       .leftJoinAndSelect("comment.parent", "parent")
       .where("comment.isAccept = :isAccept", { isAccept: true })
       .andWhere("comment.movie.id = :movieId", { movieId })
-      .orderBy("comment.createdAt", "DESC");
+      .orderBy("comment.createdAt", "DESC")
+      .getMany();
 
-    const comments = await qb.getMany();
     await this.redisCache.set(redisKey, comments, 30_000);
 
-    const commentPaginated = await typeormQueryBuilderPagination(
-      limit,
-      page,
-      this.commentRepository,
-      qb
-    );
-
-    return commentPaginated;
+    return pagination(limit, page, comments);
   }
 
   async getUnacceptedComments(
@@ -235,10 +225,10 @@ export class CommentsService {
     );
 
     if (cachePaginated) {
-      return cachePagination(limit, page, cachePaginated);
+      return pagination(limit, page, cachePaginated);
     }
 
-    const qb = this.commentRepository
+    const comments = await this.commentRepository
       .createQueryBuilder("comment")
       .leftJoinAndSelect(
         "comment.replies",
@@ -266,19 +256,12 @@ export class CommentsService {
       .andWhere("comment.isReject = :isReject", { isReject: false })
       .andWhere("movie.createdBy.id = :createdById", { createdById: user.id })
       .orderBy("comment.isReviewed", "ASC")
-      .addOrderBy("comment.createdAt", "DESC");
+      .addOrderBy("comment.createdAt", "DESC")
+      .getMany();
 
-    const comments = await qb.getMany();
     await this.redisCache.set(redisKey, comments, 30_000);
 
-    const commentPaginated = await typeormQueryBuilderPagination(
-      limit,
-      page,
-      this.commentRepository,
-      qb
-    );
-
-    return commentPaginated;
+    return pagination(limit, page, comments);
   }
 
   async remove(id: number, user: User): Promise<string> {
