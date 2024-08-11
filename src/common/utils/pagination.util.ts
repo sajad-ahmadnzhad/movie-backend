@@ -35,6 +35,29 @@ export const cachePagination = async <T>(
   };
 };
 
+export const pagination = async <T>(
+  limitQuery: number = 20,
+  pageQuery: number = 1,
+  cachedData: T[]
+): Promise<OutputPagination<T>> => {
+  const page = pageQuery || 1;
+  const pageSize = limitQuery || 20;
+  const skip = (page - 1) * pageSize;
+
+  const total = cachedData.length;
+
+  const pages = Math.ceil(total / pageSize);
+
+  const filteredData = cachedData.slice(skip, skip + pageSize);
+
+  return {
+    count: filteredData.length,
+    page,
+    pages,
+    data: filteredData,
+  };
+};
+
 export const typeORMPagination = async <T extends ObjectLiteral>(
   limitQuery: number = 20,
   pageQuery: number = 1,
@@ -74,7 +97,7 @@ export const typeormQueryBuilderPagination = async <T extends ObjectLiteral>(
   let queryBuilder = repository.createQueryBuilder("entity");
 
   if (options) {
-    queryBuilder = options
+    queryBuilder = options;
   }
 
   const [result, total] = await queryBuilder
