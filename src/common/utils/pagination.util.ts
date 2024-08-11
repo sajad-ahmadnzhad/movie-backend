@@ -35,20 +35,20 @@ export const cachePagination = async <T>(
   };
 };
 
-export const pagination = async <T>(
+export const pagination = <T>(
   limitQuery: number = 20,
   pageQuery: number = 1,
-  cachedData: T[]
-): Promise<OutputPagination<T>> => {
+  data: T[]
+): OutputPagination<T> => {
   const page = pageQuery || 1;
   const pageSize = limitQuery || 20;
   const skip = (page - 1) * pageSize;
 
-  const total = cachedData.length;
+  const total = data.length;
 
   const pages = Math.ceil(total / pageSize);
 
-  const filteredData = cachedData.slice(skip, skip + pageSize);
+  const filteredData = data.slice(skip, skip + pageSize);
 
   return {
     count: filteredData.length,

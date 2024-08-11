@@ -11,10 +11,7 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import { UsersMessages } from "../../common/enums/usersMessages.enum";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../common/utils/pagination.util";
+import { pagination } from "../../common/utils/pagination.util";
 import { DeleteAccountDto } from "./dto/delete-account.dto";
 import * as bcrypt from "bcrypt";
 import { ChangeSuperAdminDto } from "./dto/change-super-admin.dto";
@@ -49,24 +46,18 @@ export class UsersService {
     const usersCache: User[] | undefined = await this.redisCache.get("users");
 
     if (usersCache) {
-      return cachePagination(limit, page, usersCache);
+      return pagination(limit, page, usersCache);
     }
 
     const options: FindManyOptions<User> = {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedUsers = await typeORMPagination(
-      limit,
-      page,
-      this.userRepository,
-      options
-    );
-
     const users = await this.userRepository.find(options);
+
     await this.redisCache.set("users", users, 30_000);
 
-    return paginatedUsers;
+    return pagination(limit, page, users);
   }
 
   async findUser(userId: number): Promise<User> {
@@ -184,7 +175,7 @@ export class UsersService {
     const usersCache = await this.redisCache.get<User[] | undefined>(cacheKey);
 
     if (usersCache) {
-      return cachePagination(limit, page, usersCache);
+      return pagination(limit, page, usersCache);
     }
 
     const options: FindManyOptions<User> = {
@@ -202,17 +193,10 @@ export class UsersService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedUsers = await typeORMPagination(
-      limit,
-      page,
-      this.userRepository,
-      options
-    );
-
     const users = await this.userRepository.find(options);
     await this.redisCache.set(cacheKey, users, 30_000);
 
-    return paginatedUsers;
+    return pagination(limit, page, users);
   }
 
   async deleteAccount(user: User, dto: DeleteAccountDto): Promise<string> {
@@ -356,7 +340,7 @@ export class UsersService {
     );
 
     if (usersCache) {
-      return cachePagination(limit, page, usersCache);
+      return pagination(limit, page, usersCache);
     }
 
     const options: FindManyOptions<BanUser> = {
@@ -364,18 +348,11 @@ export class UsersService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedUsers = await typeORMPagination(
-      limit,
-      page,
-      this.banUserRepository,
-      options
-    );
-
     const users = await this.banUserRepository.find(options);
 
     await this.redisCache.set("banUsers", users, 30_000);
 
-    return paginatedUsers;
+    return pagination(limit, page, users);
   }
 
   async getMyBookmarks(
@@ -383,34 +360,21 @@ export class UsersService {
     limit?: number,
     page?: number
   ): Promise<PaginatedList<Bookmark>> {
-    const options: FindManyOptions<Bookmark> = {
-      where: { user: { id: user.id } },
-      relations: ["movie"],
-    };
-
     const bookmarksCache = await this.redisCache.get<Bookmark[] | undefined>(
       `userBookmarks:${user.id}`
     );
 
     if (bookmarksCache) {
-      return cachePagination(limit, page, bookmarksCache);
+      return pagination(limit, page, bookmarksCache);
     }
 
-    const paginatedBookmarks = await typeORMPagination(
-      limit,
-      page,
-      this.bookmarkRepository,
-      options
-    );
+    const bookmarks = await this.bookmarkRepository
+      .createQueryBuilder("bookmarks")
+      .leftJoinAndSelect("bookmarks.movie", "bookmark")
+      .getMany();
 
-    //* Remove user from bookmark object
-    paginatedBookmarks.data.forEach((bookmark: any) => delete bookmark.user);
+    await this.redisCache.set(`userBookmarks:${user.id}`, bookmarks);
 
-    await this.redisCache.set(
-      `userBookmarks:${user.id}`,
-      paginatedBookmarks.data
-    );
-
-    return paginatedBookmarks;
+    return pagination(limit, page, bookmarks);
   }
 }
