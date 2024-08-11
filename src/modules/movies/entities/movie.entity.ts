@@ -4,6 +4,7 @@ import { Country } from "../../countries/entities/country.entity";
 import { Genre } from "../../genres/entities/genre.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import {
+  AfterLoad,
   Column,
   Entity,
   JoinColumn,
@@ -34,6 +35,15 @@ export class Movie extends BaseEntity {
   @Column({ type: "varchar", nullable: false })
   video_URL: string;
 
+  @Column({ type: "integer", default: 0 })
+  visitsCount: number;
+
+  @Column({ type: "integer", default: 0 })
+  likesCount: number;
+
+  @Column({ type: "integer", default: 0 })
+  bookmarksCount: number;
+
   @ManyToMany(() => Country, (country) => country.movies, {
     onDelete: "CASCADE",
   })
@@ -59,11 +69,19 @@ export class Movie extends BaseEntity {
   createdBy: User;
 
   @OneToMany(() => Bookmark, (bookmark) => bookmark.movie)
-  bookmarks: Bookmark[];
+  bookmarks?: Bookmark[];
 
   @OneToMany(() => Like, (like) => like.movie)
-  likes: Like[];
+  likes?: Like[];
 
   @OneToMany(() => Comment, (comment) => comment.movie)
   comments: Comment[];
+
+  @AfterLoad()
+  async calculateLikesCountAndBookmarkCount() {
+    this.likesCount = this.likes?.length || 0;
+    this.bookmarksCount = this.bookmarks?.length || 0;
+    this.likes = undefined;
+    this.bookmarks = undefined;
+  }
 }

@@ -11,10 +11,7 @@ import { CreateMovieDto } from "../dto/movies/create-movie.dto";
 import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
 import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
 import { existingIds } from "../../../common/utils/functions.util";
-import {
-  cachePagination,
-  typeORMPagination,
-} from "../../../common/utils/pagination.util";
+import { cachePagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
@@ -36,6 +33,7 @@ import { Country } from "../../countries/entities/country.entity";
 import { Bookmark } from "../entities/bookmark.entity";
 import { Roles } from "../../../common/enums/roles.enum";
 import { S3Service } from "../../../modules/s3/s3.service";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 @Injectable()
 export class MoviesService {
@@ -130,27 +128,25 @@ export class MoviesService {
     );
 
     if (moviesCache) {
-      const paginatedCache = await cachePagination(limit, page, moviesCache);
-      await this.calculateMovieVisits(paginatedCache.data);
-      return paginatedCache;
+      return cachePagination(limit, page, moviesCache);
     }
 
     const options: FindManyOptions<Movie> = {
       where: {
-        genres: { id: genre },
+        industries: { id: industry },
         countries: { id: country },
         actors: { id: actor },
-        industries: { id: industry },
+        genres: { id: genre },
         release_year,
       },
       relations: [
         "genres",
+        "likes",
+        "bookmarks",
         "countries",
         "actors",
         "industries",
-        "likes",
         "createdBy",
-        "bookmarks",
       ],
       select: {
         createdBy: {
@@ -163,20 +159,14 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
-    let movies = await this.movieRepository.find(options);
-
-    //* Calculate bookmarks count and likes count
-    const calculatedResult = this.calculateMoviesCounts(movies);
-
-    (movies as any) = calculatedResult;
-    await this.calculateMovieVisits(movies);
+    const movies = await this.movieRepository.find(options);
 
     await this.redisCache.set(cacheKey, movies, 30_000);
 
     return cachePagination(limit, page, movies);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number): Promise<Movie> {
     const existingMovie = await this.checkExistMovieById(id);
 
     const existingMovieInCache = (await this.redisCache.get(
@@ -185,14 +175,7 @@ export class MoviesService {
 
     await this.redisCache.set(`visitMovie:${id}`, existingMovieInCache + 1);
 
-    //* Calculate visits in this method
-    await this.calculateMovieVisits(existingMovie);
-
-    return {
-      ...existingMovie,
-      bookmarks: existingMovie.bookmarks.length,
-      likes: existingMovie.likes.length,
-    };
+    return existingMovie;
   }
 
   async search(
@@ -211,9 +194,7 @@ export class MoviesService {
     );
 
     if (moviesCache) {
-      const paginatedCache = await cachePagination(limit, page, moviesCache);
-      await this.calculateMovieVisits(paginatedCache.data);
-      return paginatedCache;
+      return cachePagination(limit, page, moviesCache);
     }
 
     const options: FindManyOptions<Movie> = {
@@ -227,12 +208,12 @@ export class MoviesService {
       ],
       relations: [
         "genres",
+        "likes",
+        "bookmarks",
         "countries",
         "actors",
         "industries",
-        "likes",
         "createdBy",
-        "bookmarks",
       ],
       select: {
         createdBy: {
@@ -245,20 +226,7 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedMovies = await typeORMPagination(
-      limit,
-      page,
-      this.movieRepository,
-      options
-    );
-
-    let movies = await this.movieRepository.find(options);
-
-    //* Calculate bookmarks count and likes count
-    const calculatedResult = this.calculateMoviesCounts(movies);
-
-    (movies as any) = calculatedResult;
-    await this.calculateMovieVisits(movies);
+    const movies = await this.movieRepository.find(options);
 
     await this.redisCache.set(cacheKey, movies, 30_000);
 
@@ -328,20 +296,11 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedBookmarks = await typeORMPagination(
-      limit,
-      page,
-      this.bookmarkRepository,
-      options
-    );
+    const bookmarks = await this.bookmarkRepository.find(options);
 
-    await this.redisCache.set(
-      "bookmark-history",
-      paginatedBookmarks.data,
-      30_000
-    );
+    await this.redisCache.set("bookmark-history", bookmarks, 30_000);
 
-    return paginatedBookmarks;
+    return cachePagination(limit, page, bookmarks);
   }
 
   async getLikeHistory(
@@ -365,16 +324,11 @@ export class MoviesService {
       order: { createdAt: "DESC" },
     };
 
-    const paginatedLikes = await typeORMPagination(
-      limit,
-      page,
-      this.likeRepository,
-      options
-    );
+    const likes = await this.likeRepository.find(options);
 
-    await this.redisCache.set("likes-history", paginatedLikes.data, 30_000);
+    await this.redisCache.set("likes-history", likes, 30_000);
 
-    return paginatedLikes;
+    return cachePagination(limit, page, likes);
   }
 
   async update(
@@ -502,12 +456,12 @@ export class MoviesService {
       where: { id },
       relations: [
         "genres",
+        "likes",
+        "bookmarks",
         "countries",
         "actors",
         "industries",
-        "likes",
         "createdBy",
-        "bookmarks",
       ],
       select: {
         createdBy: {
@@ -525,30 +479,22 @@ export class MoviesService {
     return existingMovie;
   }
 
-  private async calculateMovieVisits(
-    movies: Movie | Movie[]
-  ): Promise<Movie[] | Movie> {
-    if (Array.isArray(movies)) {
-      const calculatedMovies = movies.map((m) => this.calculateMovieVisits(m));
-      return Promise.all(calculatedMovies) as Promise<Movie[]>;
-    }
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async calculateMovieVisits(): Promise<void> {
+    const movies = await this.movieRepository.find();
 
-    const visitMovie = await this.redisCache.get<number>(
-      `visitMovie:${movies.id}`
-    );
+    const moviesVisits = movies.flatMap(async (movie) => {
+      const visitMovie = await this.redisCache.get<number>(
+        `visitMovie:${movie.id}`
+      );
+      if (visitMovie) movie.visitsCount += visitMovie;
 
-    (movies as any).countVisits = visitMovie ? visitMovie : +!!visitMovie;
-
-    return movies;
-  }
-
-  private calculateMoviesCounts(movies: Movie[]) {
-    return movies.map((movie) => {
-      return {
-        ...movie,
-        bookmarks: movie.bookmarks.length,
-        likes: movie.likes.length,
-      };
+      return [
+        this.movieRepository.save(movie),
+        this.redisCache.del(`visitMovie:${movie.id}`),
+      ];
     });
+
+    await Promise.all(moviesVisits);
   }
 }
