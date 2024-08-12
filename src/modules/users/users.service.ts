@@ -373,7 +373,7 @@ export class UsersService {
       .leftJoinAndSelect("bookmarks.movie", "bookmark")
       .getMany();
 
-    await this.redisCache.set(`userBookmarks:${user.id}`, bookmarks);
+    await this.redisCache.set(`userBookmarks:${user.id}`, bookmarks, 30_000);
 
     return pagination(limit, page, bookmarks);
   }

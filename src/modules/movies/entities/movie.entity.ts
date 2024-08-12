@@ -23,8 +23,8 @@ export class Movie extends BaseEntity {
   @Column({ type: "varchar", nullable: false, length: 100 })
   title: string;
 
-  @Column({ type: "text", nullable: true })
-  description?: string;
+  @Column({ type: "text", nullable: false })
+  description: string;
 
   @Column({ type: "integer", nullable: false })
   release_year: number;
@@ -78,7 +78,7 @@ export class Movie extends BaseEntity {
   comments: Comment[];
 
   @AfterLoad()
-  async calculateLikesCountAndBookmarkCount() {
+  updateCountsAfterLoad() {
     this.likesCount = this.likes?.length || 0;
     this.bookmarksCount = this.bookmarks?.length || 0;
     this.likes = undefined;

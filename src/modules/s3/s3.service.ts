@@ -3,6 +3,7 @@ import { AWSError, S3 } from "aws-sdk";
 import { PromiseResult } from "aws-sdk/lib/request";
 import { InjectAwsService } from "nest-aws-sdk";
 import * as path from "path";
+import { lookup } from "mime-types";
 
 @Injectable()
 export class S3Service {
@@ -13,14 +14,16 @@ export class S3Service {
     file: Express.Multer.File,
     folderName: string
   ): Promise<S3.ManagedUpload.SendData> {
-    const ext = path.extname(file.originalname);
-    const fileName = `${folderName}/${Date.now()}-${file.originalname}-${ext}`;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const fileName = `${folderName}/${Date.now()}-${file.originalname}`;
+    const contentType = lookup(ext) || "application/octet-stream";
+
     return this.s3
       .upload({
         Bucket: process.env.S3_BUCKET_NAME,
         Key: fileName,
         Body: file.buffer,
-        ContentType: "image/png",
+        ContentType: contentType,
       })
       .promise();
   }

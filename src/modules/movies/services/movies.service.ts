@@ -11,7 +11,7 @@ import { CreateMovieDto } from "../dto/movies/create-movie.dto";
 import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
 import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
 import { existingIds } from "../../../common/utils/functions.util";
-import { cachePagination } from "../../../common/utils/pagination.util";
+import { pagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
@@ -128,7 +128,7 @@ export class MoviesService {
     );
 
     if (moviesCache) {
-      return cachePagination(limit, page, moviesCache);
+      return pagination(limit, page, moviesCache);
     }
 
     const options: FindManyOptions<Movie> = {
@@ -163,7 +163,7 @@ export class MoviesService {
 
     await this.redisCache.set(cacheKey, movies, 30_000);
 
-    return cachePagination(limit, page, movies);
+    return pagination(limit, page, movies);
   }
 
   async findOne(id: number): Promise<Movie> {
@@ -194,7 +194,7 @@ export class MoviesService {
     );
 
     if (moviesCache) {
-      return cachePagination(limit, page, moviesCache);
+      return pagination(limit, page, moviesCache);
     }
 
     const options: FindManyOptions<Movie> = {
@@ -230,7 +230,7 @@ export class MoviesService {
 
     await this.redisCache.set(cacheKey, movies, 30_000);
 
-    return cachePagination(limit, page, movies);
+    return pagination(limit, page, movies);
   }
 
   async likeToggle(id: number, user: User): Promise<string> {
@@ -285,7 +285,7 @@ export class MoviesService {
     );
 
     if (bookmarksCache) {
-      return cachePagination(limit, page, bookmarksCache);
+      return pagination(limit, page, bookmarksCache);
     }
 
     const options: FindManyOptions<Bookmark> = {
@@ -300,7 +300,7 @@ export class MoviesService {
 
     await this.redisCache.set("bookmark-history", bookmarks, 30_000);
 
-    return cachePagination(limit, page, bookmarks);
+    return pagination(limit, page, bookmarks);
   }
 
   async getLikeHistory(
@@ -313,7 +313,7 @@ export class MoviesService {
     );
 
     if (likesCache) {
-      return cachePagination(limit, page, likesCache);
+      return pagination(limit, page, likesCache);
     }
 
     const options: FindManyOptions<LikeEntity> = {
@@ -328,7 +328,7 @@ export class MoviesService {
 
     await this.redisCache.set("likes-history", likes, 30_000);
 
-    return cachePagination(limit, page, likes);
+    return pagination(limit, page, likes);
   }
 
   async update(
@@ -479,7 +479,7 @@ export class MoviesService {
     return existingMovie;
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async calculateMovieVisits(): Promise<void> {
     const movies = await this.movieRepository.find();
 
@@ -487,12 +487,14 @@ export class MoviesService {
       const visitMovie = await this.redisCache.get<number>(
         `visitMovie:${movie.id}`
       );
-      if (visitMovie) movie.visitsCount += visitMovie;
 
-      return [
-        this.movieRepository.save(movie),
-        this.redisCache.del(`visitMovie:${movie.id}`),
-      ];
+      if (visitMovie) {
+        movie.visitsCount += visitMovie;
+        return [
+          this.redisCache.del(`visitMovie:${movie.id}`),
+          this.movieRepository.save(movie),
+        ];
+      }
     });
 
     await Promise.all(moviesVisits);

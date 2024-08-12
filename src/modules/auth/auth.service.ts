@@ -68,7 +68,7 @@ export class AuthService {
     await this.redisCache.set(
       `refreshToken_${user.id}_${refreshToken}`,
       refreshToken,
-      60 * 60 * 24 * 30
+      60 * 60 * 24 * 30 * 1000
     );
 
     return { accessToken, refreshToken };
