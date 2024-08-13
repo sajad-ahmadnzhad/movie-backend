@@ -51,11 +51,13 @@ export class AuthController {
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 5 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
     return { message: success };
   }
@@ -71,13 +73,14 @@ export class AuthController {
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 5 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
-
     return { message: success };
   }
 
@@ -96,6 +99,7 @@ export class AuthController {
     res.cookie("accessToken", newAccessToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 5 * 60 * 1000,
     });
 
     return { message: success };
@@ -130,11 +134,13 @@ export class AuthController {
     res.cookie("accessToken", accessToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 5 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       secure: true,
       httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return { message: success };

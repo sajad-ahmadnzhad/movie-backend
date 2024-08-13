@@ -87,7 +87,10 @@ export class MoviesService {
       throw error;
     }
 
-    const videoPath = await this.s3Service.uploadFile(files.video[0], "movies");
+    const videoPath = await this.s3Service.multipartUploadFile(
+      files.video[0],
+      "movies"
+    );
     const posterPath = await this.s3Service.uploadFile(
       files.poster[0],
       "posters"
