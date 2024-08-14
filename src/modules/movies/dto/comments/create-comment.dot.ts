@@ -20,6 +20,7 @@ export class CreateCommentDto {
   movieId: number;
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => value?.trim())
   @ApiProperty({ type: "string" })
   @Length(5, 300)
   body: string;

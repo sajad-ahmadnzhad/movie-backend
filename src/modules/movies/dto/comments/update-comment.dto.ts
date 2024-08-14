@@ -7,6 +7,7 @@ import {
   Max,
   Min,
   IsNumber,
+  IsInt,
 } from "class-validator";
 import { Transform } from "class-transformer";
 
@@ -29,4 +30,10 @@ export class UpdateCommentDto {
   @Min(1)
   @IsNumber()
   rating?: number;
+
+  @IsNotEmpty()
+  @IsInt()
+  @IsNumber()
+  @Transform(({ value }) => +value)
+  commentId: number;
 }
