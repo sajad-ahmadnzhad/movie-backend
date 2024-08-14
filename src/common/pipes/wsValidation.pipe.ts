@@ -4,6 +4,11 @@ import { ValidationError } from "class-validator";
 
 @Injectable()
 export class WsValidationPipe extends ValidationPipe {
+  constructor() {
+    super({
+      whitelist: true,
+    });
+  }
   createExceptionFactory() {
     return (validationErrors: ValidationError[] = []) => {
       if (this.isDetailedOutputDisabled) {
