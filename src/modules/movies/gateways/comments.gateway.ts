@@ -98,4 +98,43 @@ export class CommentsGateway {
 
     this.server.emit("removedComment", { commentId: comment.id });
   }
+
+  @SubscribeMessage("updateComment")
+  async handleUpdateComment(
+    @MessageBody() updateCommentDto: UpdateCommentDto & { user: User }
+  ) {
+    const { commentId, body, rating, user } = updateCommentDto;
+
+    const comment = await this.commentRepository.findOne({
+      where: {
+        id: commentId,
+        creator: user,
+      },
+      relations: { movie: { createdBy: true }, creator: true },
+    });
+
+    if (!comment) {
+      throw new WsException(CommentsMessages.NotFoundComment);
+    }
+
+    if (user.id !== comment.movie.createdBy.id)
+      if (user.id !== comment.creator.id && user.role !== Roles.SUPER_ADMIN) {
+        throw new WsException(CommentsMessages.CannotUpdateComment);
+      }
+
+    const isAdminMovie = comment.movie.createdBy.id == user.id;
+    const isSuperAdmin = user.role == Roles.SUPER_ADMIN;
+
+    const updatedComment = await this.commentRepository.update(
+      { id: commentId },
+      {
+        body,
+        rating,
+        isAccept: isAdminMovie || isSuperAdmin,
+        isEdit: true,
+      }
+    );
+
+    this.server.emit("UpdatedComment", updatedComment);
+  }
 }
