@@ -18,6 +18,7 @@ import { Country } from "../countries/entities/country.entity";
 import { AwsSdkModule } from "nest-aws-sdk";
 import { S3 } from "aws-sdk";
 import { S3Service } from "../s3/s3.service";
+import { MoviesGateway } from "./movies.gateway";
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { S3Service } from "../s3/s3.service";
     ]),
     AwsSdkModule.forFeatures([S3]),
   ],
-  controllers: [MoviesController , CommentsController],
-  providers: [MoviesService, S3Service , CommentsService],
+  controllers: [MoviesController, CommentsController],
+  providers: [MoviesService, S3Service, CommentsService, MoviesGateway],
 })
 export class MoviesModule {}
