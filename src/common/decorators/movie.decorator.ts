@@ -281,40 +281,6 @@ export const UpdateMovieDecorator = applyDecorators(
   ApiOperation({ summary: "update a movie" })
 );
 
-//* Like movie decorator
-export const LikeMovieDecorator = applyDecorators(
-  HttpCode(HttpStatus.OK),
-  UseGuards(JwtGuard),
-  ApiCookieAuth(),
-  ApiForbiddenResponse({
-    description: "Forbidden resource",
-    schema: ForbiddenSchema,
-  }),
-  ApiParam({
-    name: "id",
-    description: "The id of the movie",
-    type: "number",
-    example: 1,
-  }),
-  ApiTooManyRequestsResponse({
-    description: "Too many requests",
-    schema: TooManyRequests,
-  }),
-  ApiOkResponse({
-    description: "Liked success | Unliked success",
-    schema: SuccessSchema,
-  }),
-  ApiInternalServerErrorResponse({
-    description: "Jwt expired",
-    schema: JwtExpiredSchema,
-  }),
-  ApiBadRequestResponse({
-    description: "Invalid id",
-    schema: BadRequestParamSchema,
-  }),
-  ApiOperation({ summary: "like a movie" })
-);
-
 //* Bookmark movie decorator
 export const BookmarkMovieDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),

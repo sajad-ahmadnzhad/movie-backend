@@ -7,8 +7,6 @@ export enum MoviesMessages {
   RemovedMovieSuccess = "Movie removed successfully",
   UpdatedMovieSuccess = "Movie updated successfully",
   RequiredPosterAndVideo = "Poster and video is required",
-  LikedMovieSuccess = "Movie liked successfully",
-  UnlikedMovieSuccess = "Movie unliked successfully",
   UnBookmarkMovieSuccess = "Movie unBookmarked successfully",
   BookmarkMovieSuccess = "Movie bookmarked successfully",
   OnlySuperAdminCanUpdateMovie = "Only a super admin can update a movie when the main admin has been deleted",

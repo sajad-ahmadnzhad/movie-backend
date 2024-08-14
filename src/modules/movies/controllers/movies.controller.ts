@@ -21,7 +21,6 @@ import {
   SearchMoviesDecorator,
   RemoveMovieDecorator,
   UpdateMovieDecorator,
-  LikeMovieDecorator,
   BookmarkMovieDecorator,
   GetBookmarkHistoryDecorator,
   GetLikeHistoryDecorator,
@@ -76,17 +75,6 @@ export class MoviesController {
     @Query("limit", new ParseIntPipe({ optional: true })) limit?: number
   ): Promise<PaginatedList<Movie>> {
     return this.moviesService.search(movie, limit, page);
-  }
-
-  @Post("like/:id")
-  @LikeMovieDecorator
-  async likeToggle(
-    @Param("id", ParseIntPipe) id: number,
-    @UserDecorator() user: User
-  ): Promise<{ message: string }> {
-    const success = await this.moviesService.likeToggle(id, user);
-
-    return { message: success };
   }
 
   @Post("bookmark/:id")

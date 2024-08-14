@@ -236,27 +236,6 @@ export class MoviesService {
     return pagination(limit, page, movies);
   }
 
-  async likeToggle(id: number, user: User): Promise<string> {
-    const movie = await this.checkExistMovieById(id);
-
-    const likedMovie = await this.likeRepository
-      .createQueryBuilder("like")
-      .where("like.movie.id = :movieId", { movieId: movie.id })
-      .andWhere("like.user.id = :userId", { userId: user.id })
-      .getOne();
-
-    if (likedMovie) {
-      await this.likeRepository.remove(likedMovie);
-      return MoviesMessages.UnlikedMovieSuccess;
-    }
-
-    const like = this.likeRepository.create({ movie, user });
-
-    await this.likeRepository.save(like);
-
-    return MoviesMessages.LikedMovieSuccess;
-  }
-
   async bookmarkToggle(id: number, user: User): Promise<string> {
     const movie = await this.checkExistMovieById(id);
 
