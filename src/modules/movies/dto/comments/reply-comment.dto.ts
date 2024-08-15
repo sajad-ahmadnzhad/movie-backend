@@ -8,6 +8,8 @@ import {
   Max,
   Min,
   IsNumber,
+  isNumber,
+  IsInt,
 } from "class-validator";
 
 export class ReplyCommentDto {
@@ -29,4 +31,10 @@ export class ReplyCommentDto {
   @Min(1)
   @IsNumber()
   rating?: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @IsInt()
+  @Transform(({ value }) => +value)
+  commentId: number;
 }

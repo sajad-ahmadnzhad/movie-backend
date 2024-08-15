@@ -27,6 +27,7 @@ import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import { pagination } from "../../../common/utils/pagination.util";
 import { MovieCommentDto } from "../dto/comments/movie-comments.dto";
 import { ReviewCommentDto } from "../dto/comments/review-comment.dto";
+import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
@@ -268,5 +269,50 @@ export class CommentsGateway {
     await this.commentRepository.save(comment);
 
     client.emit("reviewedComment", comment);
+  }
+
+  @SubscribeMessage("replyComment")
+  @UseGuards(WsJwtGuard)
+  async handleReplyComment(
+    @MessageBody() replyCommentDto: ReplyCommentDto & { user: User }
+  ) {
+    const { body, rating, user, commentId } = replyCommentDto;
+
+    const comment = await this.commentRepository.findOne({
+      where: { id: commentId },
+      relations: {
+        movie: true,
+      },
+    });
+
+    if (!comment) {
+      throw new WsException(CommentsMessages.NotFoundComment);
+    }
+
+    if (!comment.isAccept) {
+      throw new WsException(CommentsMessages.NotAcceptedComment);
+    }
+
+    const movie = await this.movieRepository.findOne({
+      where: { id: comment.movie.id },
+    });
+
+    if (!movie) throw new WsException(MoviesMessages.NotFoundMovie);
+
+    const isAdminMovie = movie.createdBy.id == user.id;
+
+    const reply = this.commentRepository.create({
+      body,
+      rating,
+      parent: comment,
+      creator: user,
+      movie,
+      isAccept: isAdminMovie || user.role == Roles.SUPER_ADMIN,
+      isReviewed: isAdminMovie || user.role == Roles.SUPER_ADMIN,
+    });
+
+    const repliedComment = await this.commentRepository.save(reply);
+
+    this.server.emit("repliedComment", repliedComment);
   }
 }
