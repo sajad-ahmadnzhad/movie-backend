@@ -5,8 +5,9 @@ import {
   MessageBody,
   WebSocketServer,
   WsException,
+  ConnectedSocket,
 } from "@nestjs/websockets";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { AllExceptionsFilter } from "../../../common/filters/wsException.filter";
 import { WsJwtGuard } from "../../../common/guards/wsJwt.guard";
 import { WsValidationPipe } from "../../../common/pipes/wsValidation.pipe";
@@ -23,9 +24,10 @@ import { RemoveCommentDto } from "../dto/comments/remove-comment.dto";
 import { User } from "../../auth/entities/user.entity";
 import { Roles } from "../../../common/enums/roles.enum";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
+import { pagination } from "../../../common/utils/pagination.util";
+import { MovieCommentDto } from "../dto/comments/movie-comments.dto";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
-@UseGuards(WsJwtGuard)
 @UseFilters(AllExceptionsFilter)
 @UsePipes(WsValidationPipe)
 export class CommentsGateway {
@@ -39,6 +41,7 @@ export class CommentsGateway {
   @WebSocketServer() server: Server;
 
   @SubscribeMessage("addComment")
+  @UseGuards(WsJwtGuard)
   async handleAddComment(
     @MessageBody() createCommentDto: CreateCommentDto & { user: User }
   ): Promise<void> {
@@ -71,6 +74,7 @@ export class CommentsGateway {
     this.server.emit("commentAdded", newComment);
   }
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage("removeComment")
   async handleRemoveComment(
     @MessageBody() removeCommentDto: RemoveCommentDto & { user: User }
@@ -99,12 +103,13 @@ export class CommentsGateway {
     this.server.emit("removedComment", { commentId: comment.id });
   }
 
+  @UseGuards(WsJwtGuard)
   @SubscribeMessage("updateComment")
   async handleUpdateComment(
     @MessageBody() updateCommentDto: UpdateCommentDto & { user: User }
   ) {
     const { commentId, body, rating, user } = updateCommentDto;
-
+    console.log(updateCommentDto);
     const comment = await this.commentRepository.findOne({
       where: {
         id: commentId,
@@ -136,5 +141,52 @@ export class CommentsGateway {
     );
 
     this.server.emit("UpdatedComment", updatedComment);
+  }
+
+  @SubscribeMessage("getMovieComments")
+  async handleAcceptComment(
+    @MessageBody() movieCommentDto: MovieCommentDto,
+    @ConnectedSocket() client: Socket
+  ): Promise<void> {
+    const { limit, page, movieId } = movieCommentDto;
+
+    const movie = await this.movieRepository.findOneBy({ id: movieId });
+
+    if (!movie) {
+      throw new WsException(MoviesMessages.NotFoundMovie);
+    }
+
+    const comments = await this.commentRepository
+      .createQueryBuilder("comment")
+      .leftJoinAndSelect(
+        "comment.replies",
+        "replies",
+        "replies.isAccept = :isAccept",
+        { isAccept: true }
+      )
+      .leftJoin("comment.creator", "creator")
+      .addSelect([
+        "creator.id",
+        "creator.name",
+        "creator.avatarURL",
+        "creator.username",
+      ])
+      .leftJoin("replies.creator", "replyCreator")
+      .addSelect([
+        "replyCreator.id",
+        "replyCreator.name",
+        "replyCreator.avatarURL",
+        "replyCreator.username",
+      ])
+      .leftJoinAndSelect("comment.movie", "movie")
+      .leftJoinAndSelect("comment.parent", "parent")
+      .where("comment.isAccept = :isAccept", { isAccept: true })
+      .andWhere("comment.movie.id = :movieId", { movieId })
+      .orderBy("comment.createdAt", "DESC")
+      .getMany();
+
+    const paginatedComments = pagination(limit, page, comments);
+
+    client.emit("movieComments", paginatedComments);
   }
 }

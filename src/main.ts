@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./modules/app/app.module";
-import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
+import { Logger, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { swaggerConfigInit } from "./config/swagger.config";

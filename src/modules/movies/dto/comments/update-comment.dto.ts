@@ -31,9 +31,9 @@ export class UpdateCommentDto {
   @IsNumber()
   rating?: number;
 
+  @Transform(({ value }) => +value)
   @IsNotEmpty()
   @IsInt()
   @IsNumber()
-  @Transform(({ value }) => +value)
   commentId: number;
 }
