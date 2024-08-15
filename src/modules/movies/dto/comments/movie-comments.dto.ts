@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsInt } from "class-validator";
+import { IsNotEmpty, IsInt, IsOptional } from "class-validator";
 import { Transform } from "class-transformer";
 
 export class MovieCommentDto {
@@ -8,12 +8,14 @@ export class MovieCommentDto {
   movieId: number;
 
   @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Transform(({ value }) => +value)
-  limit: number;
+  limit?: number;
 
   @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   @Transform(({ value }) => +value)
-  page: number;
+  page?: number;
 }

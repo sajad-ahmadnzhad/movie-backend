@@ -189,4 +189,56 @@ export class CommentsGateway {
 
     client.emit("movieComments", paginatedComments);
   }
+
+  @SubscribeMessage("getUnacceptedComments")
+  @UseGuards(WsJwtGuard)
+  async handleUnacceptedComments(
+    @MessageBody() movieCommentDto: MovieCommentDto & { user: User },
+    @ConnectedSocket() client: Socket
+  ): Promise<void> {
+    const { limit, page, movieId, user } = movieCommentDto;
+
+    const movie = await this.movieRepository.findOneBy({ id: movieId });
+
+    if (!movie) {
+      throw new WsException(MoviesMessages.NotFoundMovie);
+    }
+
+    const comments = await this.commentRepository
+      .createQueryBuilder("comment")
+      .leftJoinAndSelect(
+        "comment.replies",
+        "replies",
+        "replies.isAccept = :isAccept",
+        { isAccept: false }
+      )
+      .leftJoin("comment.creator", "creator")
+      .addSelect([
+        "creator.id",
+        "creator.name",
+        "creator.avatarURL",
+        "creator.username",
+      ])
+      .leftJoin("replies.creator", "replyCreator")
+      .addSelect([
+        "replyCreator.id",
+        "replyCreator.name",
+        "replyCreator.avatarURL",
+        "replyCreator.username",
+      ])
+      .leftJoinAndSelect("comment.movie", "movie")
+      .leftJoinAndSelect("comment.parent", "parent")
+      .where("comment.isAccept = :isAccept", { isAccept: false })
+      .andWhere("comment.isReject = :isReject", { isReject: false })
+      .andWhere("movie.createdBy.id = :createdById", {
+        createdById: user.id,
+      })
+      .orderBy("comment.isReviewed", "ASC")
+      .addOrderBy("comment.createdAt", "DESC")
+      .getMany();
+
+    const paginatedComments = pagination(limit, page, comments);
+
+    client.emit("unacceptedComments", paginatedComments);
+  }
 }
