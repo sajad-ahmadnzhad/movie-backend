@@ -26,6 +26,7 @@ import { Roles } from "../../../common/enums/roles.enum";
 import { UpdateCommentDto } from "../dto/comments/update-comment.dto";
 import { pagination } from "../../../common/utils/pagination.util";
 import { MovieCommentDto } from "../dto/comments/movie-comments.dto";
+import { ReviewCommentDto } from "../dto/comments/review-comment.dto";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
@@ -240,5 +241,32 @@ export class CommentsGateway {
     const paginatedComments = pagination(limit, page, comments);
 
     client.emit("unacceptedComments", paginatedComments);
+  }
+
+  @SubscribeMessage("reviewComment")
+  @UseGuards(WsJwtGuard)
+  async handleReviewComment(
+    @MessageBody() reviewCommentDto: ReviewCommentDto & { user: User },
+    @ConnectedSocket() client: Socket
+  ) {
+    const { commentId, user } = reviewCommentDto;
+    const comment = await this.commentRepository.findOneBy({
+      id: commentId,
+      movie: { createdBy: { id: user.id } },
+    });
+
+    if (!comment) {
+      throw new WsException(CommentsMessages.NotFoundComment);
+    }
+
+    if (comment.isReviewed) {
+      throw new WsException(CommentsMessages.AlreadyReviewedComment);
+    }
+
+    comment.isReviewed = true;
+
+    await this.commentRepository.save(comment);
+
+    client.emit("reviewedComment", comment);
   }
 }
