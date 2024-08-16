@@ -30,6 +30,8 @@ import { ReviewCommentDto } from "../dto/comments/review-comment.dto";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
 import { AcceptCommentDto } from "../dto/comments/accept-comment.dto";
 import { RejectCommentDto } from "../dto/comments/reject-comment.dto";
+import { RoleGuard } from "../../../common/guards/auth.guard";
+import { Role } from "../../../common/decorators/role.decorator";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
@@ -194,9 +196,9 @@ export class CommentsGateway {
     client.emit("movieComments", paginatedComments);
   }
 
-  // TODO: Handle for admins
   @SubscribeMessage("getUnacceptedComments")
-  @UseGuards(WsJwtGuard)
+  @UseGuards(WsJwtGuard, RoleGuard)
+  @Role(Roles.ADMIN, Roles.SUPER_ADMIN)
   async handleGetUnacceptedComments(
     @MessageBody() movieCommentDto: MovieCommentDto & { user: User },
     @ConnectedSocket() client: Socket
@@ -247,9 +249,9 @@ export class CommentsGateway {
     client.emit("unacceptedComments", paginatedComments);
   }
 
-  // TODO: Handle for admins
   @SubscribeMessage("reviewComment")
-  @UseGuards(WsJwtGuard)
+  @UseGuards(WsJwtGuard, RoleGuard)
+  @Role(Roles.ADMIN, Roles.SUPER_ADMIN)
   async handleReviewComment(
     @MessageBody() reviewCommentDto: ReviewCommentDto & { user: User },
     @ConnectedSocket() client: Socket
@@ -321,9 +323,9 @@ export class CommentsGateway {
     this.server.emit("repliedComment", repliedComment);
   }
 
-  // TODO: Handle for admins
   @SubscribeMessage("acceptComment")
-  @UseGuards(WsJwtGuard)
+  @UseGuards(WsJwtGuard, RoleGuard)
+  @Role(Roles.ADMIN, Roles.SUPER_ADMIN)
   async handleAcceptComment(
     @MessageBody() acceptCommentDto: AcceptCommentDto & { user: User },
     @ConnectedSocket() client: Socket
@@ -360,9 +362,9 @@ export class CommentsGateway {
     client.emit("acceptedComment", comment);
   }
 
-  // TODO: Handle for admins
   @SubscribeMessage("rejectComment")
-  @UseGuards(WsJwtGuard)
+  @UseGuards(WsJwtGuard, RoleGuard)
+  @Role(Roles.ADMIN, Roles.SUPER_ADMIN)
   async handleRejectComment(
     @MessageBody() rejectCommentDto: RejectCommentDto & { user: User },
     @ConnectedSocket() client: Socket
@@ -389,8 +391,8 @@ export class CommentsGateway {
       throw new WsException(CommentsMessages.CannotRejectComment);
     }
 
-    comment.isAccept = false
-    comment.isReject = true
+    comment.isAccept = false;
+    comment.isReject = true;
 
     await this.commentRepository.update(
       {
