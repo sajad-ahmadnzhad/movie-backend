@@ -28,6 +28,7 @@ import { pagination } from "../../../common/utils/pagination.util";
 import { MovieCommentDto } from "../dto/comments/movie-comments.dto";
 import { ReviewCommentDto } from "../dto/comments/review-comment.dto";
 import { ReplyCommentDto } from "../dto/comments/reply-comment.dto";
+import { AcceptCommentDto } from "../dto/comments/accept-comment.dto";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
@@ -146,7 +147,7 @@ export class CommentsGateway {
   }
 
   @SubscribeMessage("getMovieComments")
-  async handleAcceptComment(
+  async handleGetMovieComments(
     @MessageBody() movieCommentDto: MovieCommentDto,
     @ConnectedSocket() client: Socket
   ): Promise<void> {
@@ -192,9 +193,10 @@ export class CommentsGateway {
     client.emit("movieComments", paginatedComments);
   }
 
+  // TODO: Handle for admins
   @SubscribeMessage("getUnacceptedComments")
   @UseGuards(WsJwtGuard)
-  async handleUnacceptedComments(
+  async handleGetUnacceptedComments(
     @MessageBody() movieCommentDto: MovieCommentDto & { user: User },
     @ConnectedSocket() client: Socket
   ): Promise<void> {
@@ -244,6 +246,7 @@ export class CommentsGateway {
     client.emit("unacceptedComments", paginatedComments);
   }
 
+  // TODO: Handle for admins
   @SubscribeMessage("reviewComment")
   @UseGuards(WsJwtGuard)
   async handleReviewComment(
@@ -295,6 +298,7 @@ export class CommentsGateway {
 
     const movie = await this.movieRepository.findOne({
       where: { id: comment.movie.id },
+      relations: { createdBy: true },
     });
 
     if (!movie) throw new WsException(MoviesMessages.NotFoundMovie);
@@ -314,5 +318,44 @@ export class CommentsGateway {
     const repliedComment = await this.commentRepository.save(reply);
 
     this.server.emit("repliedComment", repliedComment);
+  }
+
+  // TODO: Handle for admins
+  @SubscribeMessage("acceptComment")
+  @UseGuards(WsJwtGuard)
+  async handleAcceptComment(
+    @MessageBody() acceptCommentDto: AcceptCommentDto & { user: User },
+    @ConnectedSocket() client: Socket
+  ) {
+    const { commentId, user } = acceptCommentDto;
+
+    const comment = await this.commentRepository.findOne({
+      where: { id: commentId },
+      relations: { movie: { createdBy: true } },
+    });
+
+    if (!comment) {
+      throw new WsException(CommentsMessages.NotFoundComment);
+    }
+
+    if (comment.isAccept) {
+      throw new WsException(CommentsMessages.AlreadyAcceptedComment);
+    }
+
+    if (
+      user.id !== comment.movie?.createdBy.id &&
+      user.role !== Roles.SUPER_ADMIN
+    ) {
+      throw new WsException(CommentsMessages.CannotAcceptComment);
+    }
+
+    await this.commentRepository.update(
+      {
+        id: commentId,
+      },
+      { isReject: false, isAccept: true }
+    );
+
+    client.emit("acceptedComment", comment);
   }
 }
