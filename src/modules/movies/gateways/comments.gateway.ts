@@ -1,4 +1,4 @@
-import { UseFilters, UseGuards, UsePipes } from "@nestjs/common";
+import { Inject, UseFilters, UseGuards, UsePipes } from "@nestjs/common";
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -32,6 +32,8 @@ import { AcceptCommentDto } from "../dto/comments/accept-comment.dto";
 import { RejectCommentDto } from "../dto/comments/reject-comment.dto";
 import { RoleGuard } from "../../../common/guards/auth.guard";
 import { Role } from "../../../common/decorators/role.decorator";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { RedisCache } from "cache-manager-redis-yet";
 
 @WebSocketGateway(81, { cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
@@ -41,7 +43,8 @@ export class CommentsGateway {
     @InjectRepository(Comment)
     private readonly commentRepository: Repository<Comment>,
     @InjectRepository(Movie)
-    private readonly movieRepository: Repository<Movie>
+    private readonly movieRepository: Repository<Movie>,
+    @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache
   ) {}
 
   @WebSocketServer() server: Server;
@@ -77,6 +80,13 @@ export class CommentsGateway {
 
     newComment = await this.commentRepository.save(newComment);
 
+    const cacheKeys = [
+      `getAllUnacceptedComments_${movieId}`,
+      `getAllComments_${movieId}`,
+    ];
+
+    await this.removeCommentsFromCache(cacheKeys);
+
     this.server.emit("commentAdded", newComment);
   }
 
@@ -106,6 +116,10 @@ export class CommentsGateway {
 
     await this.commentRepository.delete({ id: comment.id });
 
+    const cacheKey = `getAllComments_${comment.movie.id}`
+
+    await this.removeCommentsFromCache(cacheKey);
+
     this.server.emit("removedComment", { commentId: comment.id });
   }
 
@@ -115,7 +129,7 @@ export class CommentsGateway {
     @MessageBody() updateCommentDto: UpdateCommentDto & { user: User }
   ) {
     const { commentId, body, rating, user } = updateCommentDto;
-    console.log(updateCommentDto);
+
     const comment = await this.commentRepository.findOne({
       where: {
         id: commentId,
@@ -146,6 +160,13 @@ export class CommentsGateway {
       }
     );
 
+    const cacheKeys = [
+      `getAllUnacceptedComments_${comment.movie.id}`,
+      `getAllComments_${comment.movie.id}`,
+    ];
+
+    await this.removeCommentsFromCache(cacheKeys);
+
     this.server.emit("UpdatedComment", updatedComment);
   }
 
@@ -155,6 +176,16 @@ export class CommentsGateway {
     @ConnectedSocket() client: Socket
   ): Promise<void> {
     const { limit, page, movieId } = movieCommentDto;
+
+    const cacheKey = `getAllComments_${movieId}`;
+
+    const commentsCache = await this.redisCache.get<Comment[]>(cacheKey);
+
+    if (commentsCache) {
+      const paginatedComments = pagination(limit, page, commentsCache);
+      client.emit("movieComments", paginatedComments);
+      return;
+    }
 
     const movie = await this.movieRepository.findOneBy({ id: movieId });
 
@@ -191,6 +222,8 @@ export class CommentsGateway {
       .orderBy("comment.createdAt", "DESC")
       .getMany();
 
+    await this.redisCache.set(cacheKey, comments, 30_000);
+
     const paginatedComments = pagination(limit, page, comments);
 
     client.emit("movieComments", paginatedComments);
@@ -204,6 +237,16 @@ export class CommentsGateway {
     @ConnectedSocket() client: Socket
   ): Promise<void> {
     const { limit, page, movieId, user } = movieCommentDto;
+
+    const cacheKey = `getAllUnacceptedComments_${movieId}`;
+
+    const commentsCache = await this.redisCache.get<Comment[]>(cacheKey);
+
+    if (commentsCache) {
+      const paginatedComments = pagination(limit, page, commentsCache);
+      client.emit("unacceptedComments", paginatedComments);
+      return;
+    }
 
     const movie = await this.movieRepository.findOneBy({ id: movieId });
 
@@ -243,6 +286,8 @@ export class CommentsGateway {
       .orderBy("comment.isReviewed", "ASC")
       .addOrderBy("comment.createdAt", "DESC")
       .getMany();
+
+    await this.redisCache.set(cacheKey, comments, 30_000);
 
     const paginatedComments = pagination(limit, page, comments);
 
@@ -320,6 +365,13 @@ export class CommentsGateway {
 
     const repliedComment = await this.commentRepository.save(reply);
 
+    const cacheKeys = [
+      `getAllUnacceptedComments_${comment.movie.id}`,
+      `getAllComments_${comment.movie.id}`,
+    ];
+
+    await this.removeCommentsFromCache(cacheKeys);
+
     this.server.emit("repliedComment", repliedComment);
   }
 
@@ -358,6 +410,13 @@ export class CommentsGateway {
       },
       { isReject: false, isAccept: true }
     );
+
+    const cacheKeys = [
+      `getAllUnacceptedComments_${comment.movie.id}`,
+      `getAllComments_${comment.movie.id}`,
+    ];
+
+    await this.removeCommentsFromCache(cacheKeys);
 
     client.emit("acceptedComment", comment);
   }
@@ -401,6 +460,23 @@ export class CommentsGateway {
       { isReject: true, isAccept: false }
     );
 
+    const cacheKeys = [
+      `getAllUnacceptedComments_${comment.movie.id}`,
+      `getAllComments_${comment.movie.id}`,
+    ];
+
+    await this.removeCommentsFromCache(cacheKeys);
+
     client.emit("rejectedComment", comment);
+  }
+
+  async removeCommentsFromCache(cacheKey: string | string[]): Promise<void> {
+    if (typeof cacheKey == "string") {
+      await this.redisCache.del(cacheKey);
+    } else if (typeof cacheKey == "object") {
+      const promisesKey = cacheKey.map((key) => this.redisCache.del(key));
+
+      await Promise.all(promisesKey);
+    }
   }
 }
