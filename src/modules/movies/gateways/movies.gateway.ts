@@ -18,7 +18,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Movie } from "../entities/movie.entity";
 import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
 
-@WebSocketGateway(81, { cors: { origin: "*" } })
+@WebSocketGateway({ cors: { origin: "*" } })
 export class MoviesGateway {
   constructor(
     @InjectRepository(Like)
@@ -44,7 +44,10 @@ export class MoviesGateway {
     movieId: number,
     user: User
   ): Promise<{ updateLikes: number }> {
-    const movie = await this.moviesRepository.findOneBy({ id: movieId });
+    const movie = await this.moviesRepository.findOne({
+      where: { id: movieId },
+      relations: { likes: true },
+    });
 
     if (!movie) {
       throw new WsException(MoviesMessages.NotFoundMovie);
@@ -58,7 +61,7 @@ export class MoviesGateway {
 
     if (likedMovie) {
       await this.likeRepository.remove(likedMovie);
-      return { updateLikes: movie.likesCount };
+      return { updateLikes: --movie.likesCount };
     }
 
     const like = this.likeRepository.create({ movie, user });
@@ -66,7 +69,7 @@ export class MoviesGateway {
     await this.likeRepository.save(like);
 
     return {
-      updateLikes: movie.likesCount,
+      updateLikes: ++movie.likesCount,
     };
   }
 }

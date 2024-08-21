@@ -35,7 +35,7 @@ import { Role } from "../../../common/decorators/role.decorator";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 
-@WebSocketGateway(81, { cors: { origin: "*" } })
+@WebSocketGateway({ cors: { origin: "*" } })
 @UseFilters(AllExceptionsFilter)
 @UsePipes(WsValidationPipe)
 export class CommentsGateway {
@@ -116,7 +116,7 @@ export class CommentsGateway {
 
     await this.commentRepository.delete({ id: comment.id });
 
-    const cacheKey = `getAllComments_${comment.movie.id}`
+    const cacheKey = `getAllComments_${comment.movie.id}`;
 
     await this.removeCommentsFromCache(cacheKey);
 
