@@ -2,8 +2,10 @@ import { Movie } from "../../movies/entities/movie.entity";
 import { User } from "../../auth/entities/user.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Industry } from "../../industries/entities/industry.entity";
-import { BaseEntity } from '../../../common/abstracts/base.entity';
+import { BaseEntity } from "../../../common/abstracts/base.entity";
 import {
+  AfterInsert,
+  AfterUpdate,
   Column,
   Entity,
   JoinColumn,
@@ -27,21 +29,32 @@ export class Actor extends BaseEntity {
   @Column({ type: "varchar", nullable: true })
   photo: string;
 
+  @Column({ type: "int", nullable: false })
+  countryId: number;
+
+  @Column({ type: "int", nullable: false })
+  industryId: number;
+
+  @Column({ type: "int", nullable: true })
+  createdById?: number;
+
   @ManyToOne(() => Country, (country) => country.actors, {
     onDelete: "CASCADE",
+    nullable: false,
   })
   @JoinColumn()
   country: Country;
 
   @ManyToOne(() => Industry, (industry) => industry.actors, {
     onDelete: "CASCADE",
+    nullable: false,
   })
   @JoinColumn()
   industry: Industry;
 
   @ManyToOne(() => User, (user) => user.actors, { onDelete: "SET NULL" })
   @JoinColumn()
-  createdBy: User;
+  createdBy?: User;
 
   @ManyToMany(() => Movie, (movie) => movie.actors, { onDelete: "CASCADE" })
   movies: Movie[];
