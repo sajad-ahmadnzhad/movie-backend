@@ -3,15 +3,7 @@ import { User } from "../../auth/entities/user.entity";
 import { Country } from "../../countries/entities/country.entity";
 import { Industry } from "../../industries/entities/industry.entity";
 import { BaseEntity } from "../../../common/abstracts/base.entity";
-import {
-  AfterInsert,
-  AfterUpdate,
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToMany,
-  ManyToOne,
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne } from "typeorm";
 
 @Entity({ name: "actors" })
 export class Actor extends BaseEntity {
@@ -28,15 +20,6 @@ export class Actor extends BaseEntity {
 
   @Column({ type: "varchar", nullable: true })
   photo: string;
-
-  @Column({ type: "int", nullable: false })
-  countryId: number;
-
-  @Column({ type: "int", nullable: false })
-  industryId: number;
-
-  @Column({ type: "int", nullable: true })
-  createdById?: number;
 
   @ManyToOne(() => Country, (country) => country.actors, {
     onDelete: "CASCADE",

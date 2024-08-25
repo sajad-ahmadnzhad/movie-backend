@@ -23,6 +23,7 @@ import { RedisCache } from "cache-manager-redis-yet";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { Roles } from "../../common/enums/roles.enum";
 import { S3Service } from "../s3/s3.service";
+import { PublicMessages } from "../../common/enums/publicMessages.enum";
 
 @Injectable()
 export class ActorsService {
@@ -178,6 +179,10 @@ export class ActorsService {
   ) {
     const { name, bio, industryId } = updateActorDto;
 
+    if (!Object.keys(updateActorDto).length) {
+      throw new BadRequestException(PublicMessages.BodyCannotBeEmpty);
+    }
+
     const existingActor = await this.checkExistActor(id);
 
     if (!existingActor.createdBy && user.role !== Roles.SUPER_ADMIN) {
@@ -224,7 +229,7 @@ export class ActorsService {
         bio,
         industry: existingIndustry || undefined,
         country: existingIndustry?.country,
-        photo: filePath || existingActor.photo,
+        photo: filePath || undefined,
       }
     );
 
@@ -259,7 +264,7 @@ export class ActorsService {
   private async checkExistActor(id: number): Promise<Actor> {
     const existingActor = await this.actorRepository.findOne({
       where: { id },
-      relations: ["createdBy", "industry", "country"],
+      relations: ["country", "industry", "createdBy"],
       select: {
         createdBy: {
           id: true,
