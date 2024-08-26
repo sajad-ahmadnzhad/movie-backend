@@ -10,7 +10,6 @@ import {
 import { CreateMovieDto } from "../dto/movies/create-movie.dto";
 import { UpdateMovieDto } from "../dto/movies/update-movie.dto";
 import { MoviesMessages } from "../../../common/enums/moviesMessages.enum";
-import { existingIds } from "../../../common/utils/functions.util";
 import { pagination } from "../../../common/utils/pagination.util";
 import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
@@ -18,15 +17,7 @@ import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { RedisCache } from "cache-manager-redis-yet";
 import { User } from "../../auth/entities/user.entity";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Actor } from "../../actors/entities/actor.entity";
-import {
-  EntityNotFoundError,
-  FindManyOptions,
-  Like,
-  Repository,
-} from "typeorm";
-import { Genre } from "../../genres/entities/genre.entity";
-import { Industry } from "../../industries/entities/industry.entity";
+import { FindManyOptions, Like, Repository } from "typeorm";
 import { Movie } from "../entities/movie.entity";
 import { Like as LikeEntity } from "../entities/like.entity";
 import { Country } from "../../countries/entities/country.entity";
@@ -39,12 +30,6 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 export class MoviesService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly redisCache: RedisCache,
-    @InjectRepository(Actor)
-    private readonly actorRepository: Repository<Actor>,
-    @InjectRepository(Genre)
-    private readonly genreRepository: Repository<Genre>,
-    @InjectRepository(Industry)
-    private readonly industryRepository: Repository<Industry>,
     @InjectRepository(Country)
     private readonly countryRepository: Repository<Country>,
     @InjectRepository(LikeEntity)
@@ -67,26 +52,6 @@ export class MoviesService {
       throw new BadRequestException(MoviesMessages.RequiredPosterAndVideo);
     }
 
-    const fetchedData: Partial<{
-      actors: Actor[];
-      genres: Genre[];
-      industries: Industry[];
-    }> = {};
-
-    try {
-      fetchedData.actors = await existingIds(actors, this.actorRepository);
-      fetchedData.genres = await existingIds(genres, this.genreRepository);
-      fetchedData.industries = await existingIds(
-        industries,
-        this.industryRepository
-      );
-    } catch (error) {
-      if (error instanceof EntityNotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-      throw error;
-    }
-
     const videoPath = await this.s3Service.multipartUploadFile(
       files.video[0],
       "movies"
@@ -99,7 +64,7 @@ export class MoviesService {
     const countries = await this.countryRepository
       .createQueryBuilder("country")
       .innerJoin("country.industries", "industry")
-      .where("industry.id IN(:...ids)", { ids: industries })
+      .where("industry.id IN(:...ids)", { ids: industries.map((i) => i.id) })
       .getMany();
 
     const movie = this.movieRepository.create({
@@ -110,7 +75,9 @@ export class MoviesService {
       release_year,
       title,
       description,
-      ...fetchedData,
+      genres,
+      actors,
+      industries,
     });
 
     await this.movieRepository.save(movie);
@@ -315,7 +282,7 @@ export class MoviesService {
 
   async update(
     id: number,
-    updateMovieDto: UpdateMovieDto,
+    updateMovieDto: any,
     user: User,
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
   ): Promise<string> {
@@ -333,54 +300,54 @@ export class MoviesService {
         throw new ForbiddenException(MoviesMessages.CannotUpdateMovie);
       }
 
-    try {
-      if (genres) {
-        const fetchedGenres = await existingIds(genres, this.genreRepository);
-        await this.movieRepository
-          .createQueryBuilder()
-          .relation(Movie, "genres")
-          .of(movie)
-          .addAndRemove(fetchedGenres, movie.genres);
-      }
+    // try {
+    //   if (genres) {
+    //     const fetchedGenres = await existingIds(genres, this.genreRepository);
+    //     await this.movieRepository
+    //       .createQueryBuilder()
+    //       .relation(Movie, "genres")
+    //       .of(movie)
+    //       .addAndRemove(fetchedGenres, movie.genres);
+    //   }
 
-      if (actors) {
-        const fetchedActors = await existingIds(actors, this.actorRepository);
-        await this.movieRepository
-          .createQueryBuilder()
-          .relation(Movie, "actors")
-          .of(movie)
-          .addAndRemove(fetchedActors, movie.actors);
-      }
+    //   if (actors) {
+    //     const fetchedActors = await existingIds(actors, this.actorRepository);
+    //     await this.movieRepository
+    //       .createQueryBuilder()
+    //       .relation(Movie, "actors")
+    //       .of(movie)
+    //       .addAndRemove(fetchedActors, movie.actors);
+    //   }
 
-      if (industries) {
-        const fetchedIndustries = await existingIds(
-          industries,
-          this.industryRepository
-        );
-        await this.movieRepository
-          .createQueryBuilder()
-          .relation(Movie, "industries")
-          .of(movie)
-          .addAndRemove(fetchedIndustries, movie.industries);
+    //   if (industries) {
+    //     const fetchedIndustries = await existingIds(
+    //       industries,
+    //       this.industryRepository
+    //     );
+    //     await this.movieRepository
+    //       .createQueryBuilder()
+    //       .relation(Movie, "industries")
+    //       .of(movie)
+    //       .addAndRemove(fetchedIndustries, movie.industries);
 
-        const countries = await this.countryRepository
-          .createQueryBuilder("country")
-          .innerJoin("country.industries", "industry")
-          .where("industry.id IN(:...ids)", { ids: industries })
-          .getMany();
+    //     const countries = await this.countryRepository
+    //       .createQueryBuilder("country")
+    //       .innerJoin("country.industries", "industry")
+    //       .where("industry.id IN(:...ids)", { ids: industries })
+    //       .getMany();
 
-        await this.movieRepository
-          .createQueryBuilder()
-          .relation(Movie, "countries")
-          .of(movie)
-          .addAndRemove(countries, movie.countries);
-      }
-    } catch (error) {
-      if (error instanceof EntityNotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-      throw error;
-    }
+    //     await this.movieRepository
+    //       .createQueryBuilder()
+    //       .relation(Movie, "countries")
+    //       .of(movie)
+    //       .addAndRemove(countries, movie.countries);
+    //   }
+    // } catch (error) {
+    //   if (error instanceof EntityNotFoundError) {
+    //     throw new NotFoundException(error.message);
+    //   }
+    //   throw error;
+    // }
 
     const filePaths: Partial<{ poster: string; video: string }> = {};
     if (files.poster) {

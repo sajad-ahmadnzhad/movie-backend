@@ -1,5 +1,8 @@
 import { Transform } from "class-transformer";
 import {
+  ArrayNotEmpty,
+  IsArray,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -8,8 +11,10 @@ import {
   Min,
 } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
-import { ValidateIds } from "../../../../common/utils/custom-decorators";
 import { transformIds } from "../../../../common/utils/functions.util";
+import { Actor } from '../../../actors/entities/actor.entity';
+import { Genre } from '../../../genres/entities/genre.entity';
+import { Industry } from '../../../industries/entities/industry.entity';
 
 export class CreateMovieDto {
   @Transform(({ value }) => value?.trim())
@@ -48,8 +53,10 @@ export class CreateMovieDto {
   })
   release_year: number;
 
-  @ValidateIds()
+  @IsArray()
   @Transform(transformIds)
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
   @ApiProperty({
     isArray: true,
     type: "array",
@@ -57,10 +64,12 @@ export class CreateMovieDto {
     required: true,
     items: { type: "number" },
   })
-  genres: number[];
+  genres: Genre[];
 
-  @ValidateIds()
+  @IsArray()
   @Transform(transformIds)
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
   @ApiProperty({
     isArray: true,
     type: "array",
@@ -68,10 +77,12 @@ export class CreateMovieDto {
     required: true,
     items: { type: "number" },
   })
-  actors: number[];
+  actors: Actor[];
 
-  @ValidateIds()
+  @IsArray()
   @Transform(transformIds)
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
   @ApiProperty({
     isArray: true,
     type: "array",
@@ -79,11 +90,11 @@ export class CreateMovieDto {
     required: true,
     items: { type: "number" },
   })
-  industries: number[];
+  industries: Industry[];
 
   @ApiProperty({ type: "string", format: "binary", required: true })
-  video: any;
+  video: Express.Multer.File;
 
   @ApiProperty({ type: "string", format: "binary", required: true })
-  poster: any;
+  poster: Express.Multer.File;
 }

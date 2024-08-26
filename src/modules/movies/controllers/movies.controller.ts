@@ -31,6 +31,10 @@ import { PaginatedList } from "../../../common/interfaces/public.interface";
 import { FilterMoviesDto } from "../dto/movies/filter-movies.dot";
 import { User } from "../../auth/entities/user.entity";
 import { Movie } from "../entities/movie.entity";
+import { MovieRelationsValidationPipe } from "../../../common/pipes/movieRelationsValidation.pipe";
+import { Actor } from "../../actors/entities/actor.entity";
+import { Genre } from "../../genres/entities/genre.entity";
+import { Industry } from "../../industries/entities/industry.entity";
 
 @Controller({
   path: "movies",
@@ -46,12 +50,15 @@ export class MoviesController {
   @Throttle({ default: { ttl: 60_000, limit: 5 } })
   async create(
     @Body() createMovieDto: CreateMovieDto,
+    @Body("actors", MovieRelationsValidationPipe) actors: Actor[],
+    @Body("genres", MovieRelationsValidationPipe) genres: Genre[],
+    @Body("industries", MovieRelationsValidationPipe) industries: Industry[],
     @UploadedFiles()
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] },
     @UserDecorator() user: User
   ) {
     const success = await this.moviesService.create(
-      createMovieDto,
+      Object.assign(createMovieDto, { actors, genres, industries }),
       user,
       files
     );
