@@ -127,13 +127,17 @@ export class MoviesController {
   async update(
     @Param("id", ParseIntPipe) id: number,
     @Body() updateMovieDto: UpdateMovieDto,
+    @Body("actors", MovieRelationsValidationPipe) actors: Actor[],
+    @Body("genres", MovieRelationsValidationPipe) genres: Genre[],
+    @Body("industries", MovieRelationsValidationPipe) industries: Industry[],
     @UserDecorator() user: User,
     @UploadedFiles()
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
   ): Promise<{ message: string }> {
+
     const success = await this.moviesService.update(
       id,
-      updateMovieDto,
+      Object.assign(updateMovieDto, { actors, genres, industries }),
       user,
       files
     );

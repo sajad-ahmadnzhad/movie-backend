@@ -28,7 +28,11 @@ export const transformIds = ({
       .map(Number);
   }
 
-  return value
-    .filter((val) => typeof val == "number" || val.trim())
-    .map(Number);
+  if (value) {
+    return value
+      .filter((val) => typeof val == "number" || val.trim())
+      .map(Number);
+  }
+
+  return [];
 };

@@ -282,14 +282,13 @@ export class MoviesService {
 
   async update(
     id: number,
-    updateMovieDto: any,
+    updateMovieDto: UpdateMovieDto,
     user: User,
     files: { poster: Express.Multer.File[]; video: Express.Multer.File[] }
   ): Promise<string> {
     const movie = await this.checkExistMovieById(id);
 
-    let { release_year, title, description, actors, genres, industries } =
-      updateMovieDto;
+    const { genres, industries, actors } = updateMovieDto;
 
     if (!movie.createdBy && user.role !== Roles.SUPER_ADMIN) {
       throw new ConflictException(MoviesMessages.OnlySuperAdminCanUpdateMovie);
@@ -300,56 +299,13 @@ export class MoviesService {
         throw new ForbiddenException(MoviesMessages.CannotUpdateMovie);
       }
 
-    // try {
-    //   if (genres) {
-    //     const fetchedGenres = await existingIds(genres, this.genreRepository);
-    //     await this.movieRepository
-    //       .createQueryBuilder()
-    //       .relation(Movie, "genres")
-    //       .of(movie)
-    //       .addAndRemove(fetchedGenres, movie.genres);
-    //   }
-
-    //   if (actors) {
-    //     const fetchedActors = await existingIds(actors, this.actorRepository);
-    //     await this.movieRepository
-    //       .createQueryBuilder()
-    //       .relation(Movie, "actors")
-    //       .of(movie)
-    //       .addAndRemove(fetchedActors, movie.actors);
-    //   }
-
-    //   if (industries) {
-    //     const fetchedIndustries = await existingIds(
-    //       industries,
-    //       this.industryRepository
-    //     );
-    //     await this.movieRepository
-    //       .createQueryBuilder()
-    //       .relation(Movie, "industries")
-    //       .of(movie)
-    //       .addAndRemove(fetchedIndustries, movie.industries);
-
-    //     const countries = await this.countryRepository
-    //       .createQueryBuilder("country")
-    //       .innerJoin("country.industries", "industry")
-    //       .where("industry.id IN(:...ids)", { ids: industries })
-    //       .getMany();
-
-    //     await this.movieRepository
-    //       .createQueryBuilder()
-    //       .relation(Movie, "countries")
-    //       .of(movie)
-    //       .addAndRemove(countries, movie.countries);
-    //   }
-    // } catch (error) {
-    //   if (error instanceof EntityNotFoundError) {
-    //     throw new NotFoundException(error.message);
-    //   }
-    //   throw error;
-    // }
-
     const filePaths: Partial<{ poster: string; video: string }> = {};
+
+    if (files.video) {
+      const video = await this.s3Service.uploadFile(files.video[0], "movies");
+      filePaths.video = video.Location;
+    }
+
     if (files.poster) {
       const poster = await this.s3Service.uploadFile(
         files.poster[0],
@@ -358,22 +314,26 @@ export class MoviesService {
       filePaths.poster = poster.Location;
     }
 
-    if (files.video) {
-      const video = await this.s3Service.uploadFile(files.video[0], "movies");
-      filePaths.video = video.Location;
-    }
+    const industryIds = industries?.map((i) => i.id);
+    const countries = await this.countryRepository
+      .createQueryBuilder("country")
+      .innerJoin("country.industries", "industry")
+      .where("industry.id IN(:...ids)", {
+        ids: industryIds?.length ? industryIds : [null],
+      })
+      .getMany();
 
-    await this.movieRepository.update(
-      { id },
-      {
-        title,
-        description,
-        release_year,
-        video_URL: filePaths.video,
-        poster_URL: filePaths.poster,
-      }
-    );
+    Object.assign(movie, {
+      ...updateMovieDto,
+      video_URL: filePaths.video,
+      poster_URL: filePaths.poster,
+      industries: industries?.length ? industries : undefined,
+      genres: genres?.length ? genres : undefined,
+      actors: actors?.length ? actors : undefined,
+      countries: countries.length ? countries : undefined,
+    });
 
+    await this.movieRepository.save(movie);
     if (files.poster) await this.s3Service.deleteFile(movie.poster_URL);
     if (files.video) await this.s3Service.deleteFile(movie.video_URL);
 
