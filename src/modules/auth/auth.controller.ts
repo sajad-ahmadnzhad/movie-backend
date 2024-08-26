@@ -6,11 +6,10 @@ import {
   ParseIntPipe,
   Post,
   Req,
-  Res,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { SignupUserDto } from "./dto/signupUser.dto";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { SigninUserDto } from "./dto/signinUser.dot";
 import { ForgotPasswordDto } from "./dto/forgotPassword.dto";
 import { ResetPasswordDto } from "./dto/resetPassword.dto";
@@ -29,7 +28,9 @@ import {
   GoogleAuthDecorator,
   GoogleRedirectDecorator,
 } from "../../common/decorators/auth.decorator";
-import { GoogleOAuthUser } from "./auth.interface";
+import { GoogleOAuthUser, SigninUser, SignupUser } from "./auth.interface";
+import { extractToken } from "../../common/utils/functions.util";
+import { SignoutDto } from "./dto/signout.dto";
 
 @Throttle({ default: { ttl: 60_000, limit: 5 } })
 @ApiTags("auth")
@@ -41,80 +42,29 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @Post("signup")
   @SignUpUserDecorator
-  async signup(
-    @Body() body: SignupUserDto,
-    @Res({ passthrough: true }) res: Response
-  ): Promise<{ message: string }> {
-    const { success, accessToken, refreshToken } =
-      await this.authService.signupUser(body);
-
-    res.cookie("accessToken", accessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 5 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-    return { message: success };
+  signup(@Body() body: SignupUserDto): Promise<SignupUser> {
+    return this.authService.signupUser(body);
   }
 
   @Post("signin")
   @SignInUserDecorator
-  async signin(
-    @Body() body: SigninUserDto,
-    @Res({ passthrough: true }) res: Response
-  ): Promise<{ message: string }> {
-    const { success, accessToken, refreshToken } =
-      await this.authService.signinUser(body);
-    res.cookie("accessToken", accessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 5 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-    return { message: success };
+  signin(@Body() body: SigninUserDto): Promise<SigninUser> {
+    return this.authService.signinUser(body);
   }
 
   @Post("refresh")
   @RefreshTokenDecorator
-  async refreshToken(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { refreshToken } = req.cookies || {};
-
-    const { success, newAccessToken } = await this.authService.refreshToken(
-      refreshToken
-    );
-
-    res.cookie("accessToken", newAccessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 5 * 60 * 1000,
-    });
-
-    return { message: success };
+  refreshToken(@Req() req: Request) {
+    const refreshToken = extractToken(req);
+    return this.authService.refreshToken(refreshToken);
   }
 
   @Get("signout")
   @SignoutUserDecorator
-  async signout(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { accessToken, refreshToken } = req.cookies;
-    const success = await this.authService.signout(accessToken, refreshToken);
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+  async signout(@Body() body: SignoutDto): Promise<{ message: string }> {
+    const { refreshToken } = body;
+
+    const success = await this.authService.signout(refreshToken);
     return { message: success };
   }
 
@@ -124,26 +74,8 @@ export class AuthController {
 
   @Get("google/redirect")
   @GoogleRedirectDecorator
-  async googleRedirect(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { accessToken, refreshToken, success } =
-      await this.authService.googleAuth(req.user as GoogleOAuthUser);
-
-    res.cookie("accessToken", accessToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 5 * 60 * 1000,
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      secure: true,
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    });
-
-    return { message: success };
+  googleRedirect(@Req() req: Request) {
+    return this.authService.googleAuth(req.user as GoogleOAuthUser);
   }
 
   @Post("forgot-password")

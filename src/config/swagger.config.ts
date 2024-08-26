@@ -8,7 +8,7 @@ export const swaggerConfigInit = (app: INestApplication) => {
     .setDescription("Movie introduction website")
     .setVersion("0.0.1")
     .addServer("/api/v1")
-    .addCookieAuth("accessToken", swaggerAuthConfig(), "authorization")
+    .addBearerAuth(swaggerAuthConfig(), "Authorization")
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig, {
@@ -22,7 +22,7 @@ export const swaggerConfigInit = (app: INestApplication) => {
 
 function swaggerAuthConfig(): SecuritySchemeObject {
   return {
-    scheme: "cookie",
+    scheme: "bearer",
     type: "http",
     in: "header",
     bearerFormat: "JWT",

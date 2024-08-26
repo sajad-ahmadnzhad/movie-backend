@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiConflictResponse,
   ApiConsumes,
   ApiCookieAuth,
@@ -53,7 +54,7 @@ export const SignUpUserDecorator = applyDecorators(
     description: "Signin validation error",
     schema: BadRequestBodySchema,
   }),
-  ApiConsumes('application/json' , 'application/x-www-form-urlencoded'),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiOperation({ summary: "signup" })
 );
 
@@ -84,7 +85,7 @@ export const SignInUserDecorator = applyDecorators(
 //* Signout user decorator
 export const SignoutUserDecorator = applyDecorators(
   UseGuards(JwtGuard),
-  ApiCookieAuth(),
+  ApiBearerAuth("Authorization"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -99,6 +100,7 @@ export const SignoutUserDecorator = applyDecorators(
   }),
   ApiOkResponse({ description: "Sign out success", schema: SuccessSchema }),
   ApiOperation({ summary: "signout" }),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiInternalServerErrorResponse({
     description: "Jwt expired",
     schema: JwtExpiredSchema,
@@ -108,6 +110,7 @@ export const SignoutUserDecorator = applyDecorators(
 //* Refresh token decorator
 export const RefreshTokenDecorator = applyDecorators(
   HttpCode(HttpStatus.OK),
+  ApiBearerAuth("Authorization"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,
@@ -156,7 +159,7 @@ export const ResetPasswordDecorator = applyDecorators(
     description: "Token not found",
     schema: NotFoundSchema,
   }),
-    ApiConsumes('application/json' , 'application/x-www-form-urlencoded'),
+  ApiConsumes("application/json", "application/x-www-form-urlencoded"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",
     schema: TooManyRequests,

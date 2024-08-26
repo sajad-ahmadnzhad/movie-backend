@@ -196,11 +196,17 @@ export class AuthService {
     };
   }
 
-  async signout(accessToken: string, refreshToken: string): Promise<string> {
-    const decodeToken = this.jwtService.decode<{ id: number }>(accessToken);
+  async signout(refreshToken: string): Promise<string> {
+    let decodeToken: Partial<{ id: number }> = {};
+
+    try {
+      decodeToken = this.jwtService.decode<{ id: number }>(refreshToken);
+    } catch (error) {
+      throw new InternalServerErrorException(error.message);
+    }
 
     if (!decodeToken) {
-      throw new BadRequestException(AuthMessages.InvalidAccessToken);
+      throw new BadRequestException(AuthMessages.InvalidRefreshToken);
     }
 
     await this.validateRefreshToken(refreshToken);

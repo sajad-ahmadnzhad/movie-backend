@@ -1,4 +1,7 @@
+import { UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
+import { isJWT } from "class-validator";
+import { Request } from "express";
 
 export const hashData = (data: string, salt: number): string => {
   return bcrypt.hashSync(data, salt);
@@ -35,4 +38,15 @@ export const transformIds = ({
   }
 
   return [];
+};
+
+export const extractToken = (req: Request) => {
+  const { authorization } = req.headers;
+  if (!authorization || authorization?.trim() == "") {
+    throw new UnauthorizedException();
+  }
+  const [bearer, token] = authorization?.split(" ");
+  if (bearer?.toLowerCase() !== "bearer" || !token || !isJWT(token))
+    throw new UnauthorizedException();
+  return token;
 };

@@ -14,6 +14,7 @@ import { Request } from "express";
 import { User } from "../../modules/auth/entities/user.entity";
 import { Repository } from "typeorm";
 import { BanUser } from "../../modules/auth/entities/banUser.entity";
+import { extractToken } from "../utils/functions.util";
 
 @Injectable()
 export class JwtGuard implements CanActivate {
@@ -28,9 +29,7 @@ export class JwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as Request;
 
-    const { accessToken } = req.cookies;
-
-    if (!accessToken) return false
+    const accessToken = extractToken(req);
 
     let jwtPayload: null | { id: number } = null;
 
