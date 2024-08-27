@@ -5,6 +5,6 @@ export class SignoutDto {
   @IsNotEmpty()
   @IsString()
   @IsJWT()
-  @ApiProperty({ type: "string", required: true})
+  @ApiProperty({ type: "string", required: true })
   refreshToken: string;
 }

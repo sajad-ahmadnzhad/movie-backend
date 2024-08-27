@@ -9,7 +9,6 @@ import {
   ApiBearerAuth,
   ApiConflictResponse,
   ApiConsumes,
-  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
@@ -22,7 +21,6 @@ import {
 } from "@nestjs/swagger";
 import {
   BadRequestBodySchema,
-  BadRequestParamSchema,
   ConflictSchema,
   ForbiddenSchema,
   InternalServerErrorSchema,
@@ -85,6 +83,7 @@ export const SignInUserDecorator = applyDecorators(
 //* Signout user decorator
 export const SignoutUserDecorator = applyDecorators(
   UseGuards(JwtGuard),
+  HttpCode(HttpStatus.OK),
   ApiBearerAuth("Authorization"),
   ApiTooManyRequestsResponse({
     description: "Too many requests",

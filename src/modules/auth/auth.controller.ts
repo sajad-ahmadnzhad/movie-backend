@@ -52,20 +52,19 @@ export class AuthController {
     return this.authService.signinUser(body);
   }
 
-  @Post("refresh")
+  @Get("refresh")
   @RefreshTokenDecorator
   refreshToken(@Req() req: Request) {
     const refreshToken = extractToken(req);
     return this.authService.refreshToken(refreshToken);
   }
 
-  @Get("signout")
+  @Post("signout")
   @SignoutUserDecorator
-  async signout(@Body() body: SignoutDto): Promise<{ message: string }> {
+  signout(@Body() body: SignoutDto): Promise<{ message: string }> {
     const { refreshToken } = body;
 
-    const success = await this.authService.signout(refreshToken);
-    return { message: success };
+    return this.authService.signout(refreshToken);
   }
 
   @Get("google/login")

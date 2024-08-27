@@ -196,7 +196,7 @@ export class AuthService {
     };
   }
 
-  async signout(refreshToken: string): Promise<string> {
+  async signout(refreshToken: string): Promise<{ message: string }> {
     let decodeToken: Partial<{ id: number }> = {};
 
     try {
@@ -213,7 +213,7 @@ export class AuthService {
 
     await this.redisCache.del(`refreshToken_${decodeToken.id}_${refreshToken}`);
 
-    return AuthMessages.SignoutSuccess;
+    return { message: AuthMessages.SignoutSuccess };
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
