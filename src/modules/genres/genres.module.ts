@@ -2,12 +2,11 @@ import { Module } from "@nestjs/common";
 import { GenresService } from "./genres.service";
 import { GenresController } from "./genres.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { User } from "../auth/entities/user.entity";
 import { Genre } from "./entities/genre.entity";
-import { BanUser } from "../auth/entities/banUser.entity";
+import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Genre, BanUser])],
+  imports: [AuthModule, TypeOrmModule.forFeature([Genre])],
   controllers: [GenresController],
   providers: [GenresService],
 })

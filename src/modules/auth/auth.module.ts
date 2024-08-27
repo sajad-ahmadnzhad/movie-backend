@@ -19,5 +19,6 @@ import { Oauth2Strategy } from "./strategies/google.strategy";
   ],
   controllers: [AuthController],
   providers: [AuthService, Oauth2Strategy],
+  exports: [TypeOrmModule],
 })
 export class AuthModule {}
