@@ -7,10 +7,7 @@ import { S3Service } from "../s3/s3.service";
 import { AuthModule } from "../auth/auth.module";
 
 @Module({
-  imports: [
-    AuthModule,
-    TypeOrmModule.forFeature([Bookmark]),
-  ],
+  imports: [AuthModule, TypeOrmModule.forFeature([Bookmark])],
   controllers: [UsersController],
   providers: [UsersService, S3Service],
 })
